@@ -145,9 +145,18 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .opts{display:flex;gap:8px;flex-wrap:wrap}
 .opts button{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--brown);border:2px solid var(--brown);padding:6px 10px;border-radius:2px;font-size:13px}
 .opts button.on{border-color:var(--cream);background:#5a2a20}
-.opts canvas{width:48px;height:72px;image-rendering:pixelated}
-.prevrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-#pv{width:96px;height:144px;image-rendering:pixelated;background:#1a0d0c;border:2px solid var(--brown)}
+.opts canvas{width:48px;height:102px;image-rendering:pixelated}
+.opts.sm button{padding:4px 6px;min-width:58px}
+.opts.sm canvas{width:40px;height:40px}
+.sws{display:flex;gap:6px;flex-wrap:wrap}
+.sw{width:28px;height:28px;padding:0;border:2px solid var(--brown);border-radius:2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
+.sw.on{border-color:var(--cream);outline:2px solid var(--gold);outline-offset:1px}
+.sw.cust{position:relative;display:flex;align-items:center;justify-content:center;background:var(--brown);color:var(--cream);cursor:pointer;box-sizing:border-box;font-size:14px}
+.sw.cust input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0}
+.sw.cust:focus-within{outline:2px solid var(--gold);outline-offset:2px}
+#rndBtn{font-size:14px}
+.prevrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+#pv{width:min(288px,100%);aspect-ratio:72/30;image-rendering:pixelated;background:#1a0d0c;border:2px solid var(--brown)}
 
 /* Ending + credits */
 #ending .panel{text-align:center;max-width:720px}
@@ -209,13 +218,20 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   <div class="panel win">
     <h2>是誰走進了這棟宅邸？</h2>
     <div class="prevrow">
-      <canvas id="pv" width="16" height="24"></canvas>
-      <div style="flex:1;min-width:0">
+      <canvas id="pv" width="72" height="30" aria-label="角色預覽"></canvas>
+      <div style="flex:1;min-width:180px">
         <div class="field"><label for="nm">你的名字</label><input id="nm" maxlength="10" placeholder="輸入角色名稱" autocomplete="off"></div>
-        <div class="field"><label>身上的衣服</label><div class="opts" id="optOutfit"></div></div>
-        <div class="field"><label>醒來後頭上多了……</label><div class="opts" id="optEars"></div></div>
+        <button type="button" id="rndBtn" class="btn">🎲 隨機搭配</button>
       </div>
     </div>
+    <div class="field"><label>膚色</label><div class="sws" id="sw_skin"></div></div>
+    <div class="field"><label>髮色</label><div class="sws" id="sw_hair"></div></div>
+    <div class="field"><label>瞳色</label><div class="sws" id="sw_eye"></div></div>
+    <div class="field"><label>髮型</label><div class="opts sm" id="optCut"></div></div>
+    <div class="field"><label>萬聖節服裝</label><div class="opts" id="optOutfit"></div></div>
+    <div class="field"><label>衣服顏色</label><div class="sws" id="sw_cloth"></div></div>
+    <div class="field"><label>醒來後頭上多了……</label><div class="opts sm" id="optEars"></div></div>
+    <div class="field"><label>配件（可複選）</label><div class="opts sm" id="optAcc"></div></div>
     <div class="mbtns"><button id="goBtn" type="button">走進大廳</button><button id="setupBack" type="button">返回</button></div>
   </div>
 </div>
@@ -355,23 +371,128 @@ const CH={
       R(g,3,13,10,1,'#3f6b35');R(g,4,12,1,1,'#1e2e1a');R(g,8,14,1,1,'#1e2e1a');R(g,11,12,1,1,'#1e2e1a');R(g,6,17,1,1,'#3f6b35');R(g,10,19,1,1,'#3f6b35');
       if(d==='up')return;R(g,4,15,2,2,'#ff5fa2');R(g,7,15,2,2,'#5fd0ff');R(g,10,15,2,2,'#a8ff6a');R(g,4,14,2,1,K);R(g,7,14,2,1,K);R(g,10,14,2,1,K);}},
 };
-const OUTFITS=[
-  {id:'assoc',label:'協會制服',o:{cloth:'#3b6fb5',cloth2:'#e8ecf2',pants:'#2f4e80'}},
-  {id:'yelu',label:'夜鷺夾克',o:{cloth:'#1a1a1d',cloth2:'#a8232b',pants:'#2a2a2e'}},
-  {id:'wander',label:'流浪者裝束',o:{cloth:'#8a7a52',cloth2:'#c8743a',pants:'#4a4234'}},
+/* ---------------- 主角紙娃娃 ----------------
+   組合方式參考《broadcasting》的紙娃娃：膚色／髮色／瞳色色票＋髮型＋服裝＋配件，
+   縮成 16×24 的小人並改成萬聖節風格。顏色一律存色碼，旁邊的「自訂」可以選任何顏色。 */
+const LOOK_COLORS={
+  skin:['#f7e3cf','#f1c7a1','#e8c39e','#d9b08c','#c98d63','#a8703c','#8d5a3b','#5e3a26',
+        '#e8e2f2','#cfc6dc','#b8d0b0','#9fb38a'],                       // 後四個：幽靈白、吸血鬼灰、殭屍綠
+  hair:['#14100d','#2b2118','#3a2a22','#5a3a22','#7a5230','#a8703c','#d8c48a','#e8e3f2',
+        '#8a8f96','#e2741c','#b0202a','#5a1a2a','#7a3ab0','#3e2c55','#9a6fc9','#3fae7a',
+        '#5c9a3a','#2a3a3a','#4a8fb0','#c96f8f'],
+  eye: ['#2a1a14','#5a3a22','#3a4a54','#4a8fb0','#1f6e4a','#6b4aa0',
+        '#e0213a','#ffd25a','#ff8a1c','#7ad05a','#c08af0','#e8e3f2'],      // 後半：會發光的怪物瞳色
+  cloth:['#e2741c','#b8560f','#1d1a22','#2a2238','#3a2a4a','#4a2d5e','#7a3ab0','#5a1a2a',
+         '#a8232b','#d63939','#3b6fb5','#d7e4e7','#e8e3d4','#5c7a5f','#3f6b2a','#e7ee7b',
+         '#5c4d38','#8a7a52'],
+};
+const HAIRCUTS=[
+  {id:'short',label:'短髮'},{id:'buzz',label:'極短'},{id:'crop',label:'碎蓋'},{id:'messy',label:'亂髮'},
+  {id:'side',label:'側分'},{id:'center',label:'中分'},{id:'ahoge',label:'呆毛'},{id:'mullet',label:'狼尾'},
+  {id:'bob',label:'妹妹頭'},{id:'long',label:'長直髮'},{id:'hime',label:'公主切'},{id:'wave',label:'波浪'},
+  {id:'curly',label:'捲髮'},{id:'tail',label:'高馬尾'},{id:'twin',label:'雙馬尾'},{id:'bun',label:'丸子頭'},
+  {id:'twinbun',label:'雙丸子'},
 ];
-const EARS=[{id:'wolf',label:'狼耳'},{id:'cat',label:'貓耳'},{id:'horn',label:'小惡魔角'}];
+/* 髮型：[x,y,w,h,層] 層 0＝會描黑邊的外側頭髮、1＝貼在頭上的頭髮、2＝暗部、3＝亮部。d 只有 down/right/up（left 由 right 翻轉） */
+function hairShape(cut,d){
+  const F=d==='down',S=d==='right';
+  const base=F?[[4,3,8,3,1],[4,6,1,2,1],[11,6,1,2,1]]:S?[[4,3,8,3,1],[4,6,3,3,1]]:[[4,3,8,7,1]];
+  const longF=[[4,3,8,3,1],[4,6,1,4,1],[11,6,1,4,1]],longS=[[4,3,8,3,1],[4,6,3,4,1]];
+  switch(cut){
+    case 'buzz':return F?[[4,3,8,2,1],[4,3,8,1,3]]:S?[[4,3,8,2,1],[4,5,2,2,1]]:[[4,3,8,6,1]];
+    case 'crop':return [...base,...(F?[[4,6,1,1,1],[6,6,1,1,1],[9,6,1,1,1],[5,1,1,2,0],[8,1,1,2,0],[10,2,1,1,0]]:[[6,1,1,2,0],[9,1,1,2,0],[4,2,1,1,0]])];
+    case 'messy':return [...base,...(F?[[2,4,2,2,0],[12,4,2,2,0],[6,1,2,2,0],[5,6,1,1,1],[9,6,2,1,1]]:S?[[2,4,2,2,0],[3,8,2,2,0],[7,1,2,2,0]]:[[2,4,2,2,0],[12,4,2,2,0],[6,1,2,2,0]])];
+    case 'side':return F?[[4,3,8,3,1],[4,6,5,1,1],[4,6,1,3,1],[11,6,1,2,1],[9,3,1,2,2],[5,4,3,1,3]]:base;
+    case 'center':return F?[[4,3,8,3,1],[4,6,2,1,1],[10,6,2,1,1],[4,6,1,3,1],[11,6,1,3,1],[7,3,2,2,2]]:base;
+    case 'ahoge':return [...base,[8,0,1,3,0],[9,-1,1,1,0]];
+    case 'mullet':return [...base,...(F?[[2,8,2,5,0],[12,8,2,5,0],[5,6,1,1,1],[10,6,1,1,1]]:S?[[2,6,3,7,0]]:[[3,8,10,5,0]])];
+    case 'bob':return F?[[2,4,2,6,0],[12,4,2,6,0],[4,3,8,4,1],[4,7,1,3,1],[11,7,1,3,1]]:S?[[2,3,4,7,0],[4,3,8,4,1],[4,7,2,3,1]]:[[2,3,12,8,0],[4,3,8,7,1]];
+    case 'long':return F?[[2,4,2,12,0],[12,4,2,12,0],...longF]:S?[[1,4,4,12,0],...longS]:[[2,3,12,13,0]];
+    case 'hime':return F?[[2,4,2,12,0],[12,4,2,12,0],[4,3,8,4,1],[4,7,1,3,1],[11,7,1,3,1],[4,6,8,1,2]]:S?[[1,4,4,12,0],[4,3,8,4,1],[4,7,2,3,1]]:[[2,3,12,13,0]];
+    case 'wave':return F?[[2,4,2,5,0],[1,9,2,3,0],[2,12,2,3,0],[12,4,2,5,0],[13,9,2,3,0],[12,12,2,3,0],...longF]:S?[[1,4,4,5,0],[0,9,3,3,0],[1,12,3,3,0],...longS]:[[2,3,12,6,0],[1,9,14,3,0],[2,12,12,3,0]];
+    case 'curly':return [...base,...(F?[[2,3,2,3,0],[12,3,2,3,0],[2,7,2,3,0],[12,7,2,3,0],[5,1,6,2,0]]:S?[[2,3,2,3,0],[2,7,3,3,0],[5,1,6,2,0]]:[[2,3,2,3,0],[12,3,2,3,0],[2,7,2,3,0],[12,7,2,3,0],[5,1,6,2,0]])];
+    case 'tail':return F?[[6,0,4,3,0],...base,[7,2,2,1,2]]:S?[[1,3,3,8,0],[3,3,2,2,0],...base,[3,3,1,2,2]]:[...base,[6,0,4,3,0],[7,5,2,9,0],[7,3,2,1,2]];
+    case 'twin':return F?[[0,4,3,9,0],[13,4,3,9,0],...base,[3,4,1,1,2],[12,4,1,1,2]]:S?[[1,4,3,9,0],...base,[3,4,1,1,2]]:[[0,4,3,9,0],[13,4,3,9,0],...base];
+    case 'bun':return F?[[5,0,6,3,0],...base,[6,3,4,1,2]]:S?[[2,1,4,4,0],...base]:[[5,0,6,3,0],...base];
+    case 'twinbun':return F?[[2,1,3,3,0],[11,1,3,3,0],...base]:S?[[3,0,3,3,0],...base]:[[2,1,3,3,0],[11,1,3,3,0],...base];
+  }
+  return base;
+}
+function drawHair(g,o,d){
+  const L=hairShape(o.cut,d),hc=o.hair,col=[hc,hc,dk(hc,.35),lt(hc,.25)];
+  for(const[x,y,w,h,l]of L)if(l===0)R(g,x-1,y-1,w+2,h+2,K);
+  for(const[x,y,w,h,l]of L)R(g,x,y,w,h,col[l]);
+}
+function lt(hex,a=.25){const n=parseInt(hex.slice(1),16);const f=v=>Math.round(v+(255-v)*a);return'#'+((1<<24)|(f(n>>16)<<16)|(f((n>>8)&255)<<8)|f(n&255)).toString(16).slice(1)}
 
+/* 服裝：broadcasting 的款式＋三件陣營服，全部換成萬聖節版。id 沿用舊存檔的 assoc/yelu/wander */
+const OUTFITS=[
+  {id:'pumpkin',label:'南瓜T恤',o:{cloth:'#e2741c',cloth2:'#3f6b2a',pants:'#2a2a2e'},
+    post(g,d,o){if(d!=='down')return;R(g,5,13,2,1,K);R(g,9,13,2,1,K);R(g,5,15,6,1,K);R(g,7,15,1,1,o.cloth);R(g,8,16,1,1,K);R(g,7,12,2,1,dk(o.cloth2,.3))}},
+  {id:'vamp',label:'吸血鬼襯衫',o:{cloth:'#e8e2f2',cloth2:'#a8232b',pants:'#1d1824'},
+    pre(g){R(g,1,10,14,11,K);R(g,2,11,12,9,'#1a1424');R(g,2,17,12,3,'#7a1020')},
+    post(g,d){if(d==='up')return;R(g,2,9,2,3,'#7a1020');R(g,12,9,2,3,'#7a1020');if(d==='down'){R(g,7,13,2,3,'#a8232b');R(g,6,13,1,1,'#a8232b');R(g,9,13,1,1,'#a8232b');R(g,7,16,2,1,dk('#e8e2f2',.2))}}},
+  {id:'skull',label:'骷髏帽T',o:{cloth:'#1d1a22',cloth2:'#e8e3d4',pants:'#2a2a2e'},
+    post(g,d,o){const B='#e8e3d4';if(d==='up'){R(g,4,10,8,2,lt(o.cloth,.12));R(g,7,12,2,5,B);R(g,5,13,6,1,B);R(g,5,15,6,1,B);return}
+      if(d==='down'){R(g,7,13,2,4,B);R(g,4,13,3,1,B);R(g,9,13,3,1,B);R(g,4,15,3,1,B);R(g,9,15,3,1,B);R(g,5,17,1,1,B);R(g,10,17,1,1,B)}else{R(g,6,13,4,1,B);R(g,6,15,4,1,B)}}},
+  {id:'cat',label:'黑貓針織衫',o:{cloth:'#4a2d5e',cloth2:'#e8e3d4',pants:'#2a2228'},
+    post(g,d,o){R(g,3,17,10,1,dk(o.cloth,.3));if(d!=='down')return;R(g,5,14,6,3,K);R(g,5,13,1,1,K);R(g,10,13,1,1,K);R(g,6,15,1,1,'#ffd25a');R(g,9,15,1,1,'#ffd25a');R(g,7,16,2,1,'#e6a0b0')}},
+  {id:'zombie',label:'殭屍背心',o:{cloth:'#5c7a5f',cloth2:'#c9c1a8',pants:'#4a4234'},
+    post(g,d,o){R(g,4,17,1,1,o.skin);R(g,8,17,2,1,o.skin);R(g,6,20,1,1,o.skin);if(d==='up')return;
+      if(d==='down'){R(g,6,11,4,6,'#c9c1a8');R(g,7,13,1,1,dk('#c9c1a8',.3));R(g,8,15,1,1,dk('#c9c1a8',.3))}R(g,10,14,2,2,'#8a6a4a');R(g,10,15,2,1,K);R(g,4,12,1,3,'#e8e3d4')}},
+  {id:'hunter',label:'獵魔外套',o:{cloth:'#5c4d38',cloth2:'#efe3c8',pants:'#2a2a2e'},
+    pre(g,d){if(d!=='right')R(g,2,17,12,3,K);R(g,3,17,10,2,'#4a3d2c')},
+    post(g,d){R(g,3,15,10,1,'#2a2018');if(d==='up')return;R(g,5,15,1,1,'#d9a640');R(g,7,15,1,1,'#d9a640');R(g,9,15,1,1,'#d9a640');if(d==='down'){R(g,5,11,1,4,'#3a2f22');R(g,10,11,1,4,'#3a2f22')}}},
+  {id:'witch',label:'巫師長袍',o:{cloth:'#3a2a4a',cloth2:'#c9a13c',pants:'#3a2a4a',robe:1},
+    post(g,d,o){R(g,3,18,10,1,dk(o.cloth,.35));if(d==='up')return;R(g,7,13,2,3,'#c9a13c');R(g,6,14,4,1,'#c9a13c');R(g,6,11,4,1,dk(o.cloth,.4))}},
+  {id:'mummy',label:'木乃伊繃帶',o:{cloth:'#e8e3d4',cloth2:'#d8d0bc',pants:'#d8d0bc'},
+    post(g,d,o){const S=dk(o.cloth,.25);R(g,3,12,4,1,S);R(g,7,13,5,1,S);R(g,4,15,6,1,S);R(g,9,16,3,1,S);R(g,5,19,2,1,S);R(g,9,20,2,1,S);if(d==='down'){R(g,11,17,1,3,o.cloth);R(g,11,20,1,1,S)}}},
+  {id:'assoc',label:'協會·魔導披肩',o:{cloth:'#d7e4e7',cloth2:'#78e7ff',pants:'#2f4e80'},
+    post(g,d){const C='#5a3a8a';if(d==='up'){R(g,2,11,12,6,C);R(g,2,17,12,1,K);R(g,7,13,2,2,'#e2741c');return}
+      R(g,2,11,3,4,C);R(g,11,11,3,4,C);R(g,2,15,3,1,K);R(g,11,15,3,1,K);if(d==='down'){R(g,10,14,1,1,'#e2741c');R(g,10,13,1,1,'#3f6b2a')}}},
+  {id:'yelu',label:'夜鷺·蝙蝠夾克',o:{cloth:'#d63939',cloth2:'#490808',pants:'#1e1e22'},
+    pre(g,d){if(d==='up')return;R(g,0,11,3,5,K);R(g,13,11,3,5,K);R(g,0,12,2,2,'#490808');R(g,14,12,2,2,'#490808')},
+    post(g,d){R(g,3,17,10,1,'#490808');if(d==='up'){R(g,4,12,8,1,K);R(g,5,13,6,1,K);R(g,4,12,1,2,K);R(g,11,12,1,2,K);return}
+      if(d==='down'){R(g,5,14,6,1,K);R(g,6,15,4,1,K);R(g,4,13,1,1,K);R(g,11,13,1,1,K)}}},
+  {id:'wander',label:'流浪者·稻草人',o:{cloth:'#e7ee7b',cloth2:'#a4bc2e',pants:'#4a4234'},
+    post(g,d){const St='#d9b860';R(g,3,15,10,1,'#8a6a4a');R(g,2,17,1,2,St);R(g,13,17,1,2,St);R(g,5,21,1,1,St);R(g,10,21,1,1,St);
+      if(d==='up'){R(g,6,12,3,2,'#c8743a');return}R(g,5,13,2,2,'#c8743a');R(g,5,13,1,1,K);R(g,6,14,1,1,K)}},
+];
+/* 頭上的東西：狼耳、貓耳、狐耳會跟著髮色走 */
+const EARS=[{id:'wolf',label:'狼耳'},{id:'cat',label:'貓耳'},{id:'fox',label:'狐耳'},{id:'bat',label:'蝙蝠耳'},{id:'horn',label:'小惡魔角'}];
+const ACCS=[
+  {id:'hat',label:'巫師帽'},{id:'clip',label:'南瓜髮夾'},{id:'patch',label:'眼罩'},{id:'mask',label:'舞會面具'},
+  {id:'fang',label:'尖牙'},{id:'scar',label:'縫合疤'},{id:'bolt',label:'螺栓'},{id:'web',label:'蜘蛛網'},
+];
+const ACC_GROUP={patch:'eye',mask:'eye'};             // 同群只能選一個
+const LOOK_DEF={skin:'#f1c7a1',hair:'#3a2a22',eye:'#2a1a14',cut:'short',cloth:null,accs:[]};
+
+function drawEars(g,d,ears,hc){
+  const in1='#e6a0b0',c=dk(hc,.1);
+  if(ears==='wolf'){R(g,2,-1,5,4,K);R(g,9,-1,5,4,K);R(g,3,0,3,3,c);R(g,10,0,3,3,c);R(g,3,-1,1,1,K);R(g,12,-1,1,1,K);if(d!=='up'){R(g,4,1,1,2,in1);R(g,11,1,1,2,in1)}}
+  else if(ears==='cat'){R(g,3,-1,4,4,K);R(g,9,-1,4,4,K);R(g,4,0,2,3,c);R(g,10,0,2,3,c);R(g,3,1,1,2,c);R(g,12,1,1,2,c);if(d!=='up'){R(g,4,1,1,1,in1);R(g,11,1,1,1,in1)}}
+  else if(ears==='fox'){R(g,2,-3,5,6,K);R(g,9,-3,5,6,K);R(g,3,-2,3,5,c);R(g,10,-2,3,5,c);R(g,3,-3,1,1,K);R(g,12,-3,1,1,K);if(d!=='up'){R(g,4,0,1,3,'#f3e6d0');R(g,11,0,1,3,'#f3e6d0')}}
+  else if(ears==='bat'){const B='#2a2238';R(g,0,-1,5,5,K);R(g,11,-1,5,5,K);R(g,1,0,3,3,B);R(g,12,0,3,3,B);R(g,1,0,1,1,K);R(g,14,0,1,1,K);if(d!=='up'){R(g,2,1,1,2,'#7a3ab0');R(g,13,1,1,2,'#7a3ab0')}}
+  else{R(g,4,0,1,3,'#b0202a');R(g,3,-1,1,2,'#b0202a');R(g,11,0,1,3,'#b0202a');R(g,12,-1,1,2,'#b0202a');}
+}
+function drawAccs(g,d,L,o){
+  const has=a=>L.accs.includes(a),F=d==='down',S=d==='right';
+  if(has('web')){R(g,F?9:4,4,3,1,'#d8d2e4');R(g,F?10:5,3,1,3,'#d8d2e4');R(g,F?9:4,3,1,1,'#d8d2e4');R(g,F?11:6,5,1,1,'#d8d2e4')}
+  if(has('bolt')){R(g,1,12,2,2,'#8a8f96');R(g,13,12,2,2,'#8a8f96');R(g,1,12,1,1,'#c0c6cc');R(g,14,12,1,1,'#c0c6cc')}
+  if(d!=='up'){
+    if(has('scar')){const x=F?5:7;R(g,x,4,1,4,'#7a2b3a');R(g,x-1,5,1,1,'#7a2b3a');R(g,x+1,5,1,1,'#7a2b3a');R(g,x-1,7,1,1,'#7a2b3a');R(g,x+1,7,1,1,'#7a2b3a')}
+    if(has('fang')){if(F){R(g,7,9,2,1,K);R(g,7,10,1,1,'#fff');R(g,8,10,1,1,'#fff')}else{R(g,10,9,2,1,K);R(g,11,10,1,1,'#fff')}}
+    if(has('mask')){if(F){R(g,4,6,8,3,'#7a3ab0');R(g,5,7,2,1,o.eye);R(g,9,7,2,1,o.eye);R(g,3,6,1,1,'#c9a13c');R(g,12,6,1,1,'#c9a13c')}else{R(g,8,6,4,3,'#7a3ab0');R(g,10,7,1,1,o.eye)}}
+    if(has('patch')){if(F){R(g,4,5,8,1,K);R(g,8,6,3,3,K)}else{R(g,4,5,8,1,K);R(g,9,6,3,3,K)}}
+  }else if(has('patch')||has('mask'))R(g,4,6,8,1,has('mask')?'#7a3ab0':K);
+  if(has('clip')){const x=F?9:S?5:4;R(g,x,2,3,3,K);R(g,x+1,3,1,1,'#e2741c');R(g,x,3,1,1,'#e2741c');R(g,x+2,3,1,1,'#e2741c');R(g,x+1,2,1,1,'#3f6b2a')}
+  if(has('hat')){const H='#2a2238',Bd='#7a3ab0';R(g,0,1,16,3,K);R(g,1,2,14,1,H);R(g,4,-5,8,7,K);R(g,5,-4,6,6,H);R(g,6,-8,4,4,K);R(g,7,-7,2,4,H);R(g,8,-10,3,3,K);R(g,9,-9,1,2,H);R(g,5,0,6,1,Bd);if(d!=='up')R(g,7,0,1,1,'#ffd25a')}
+}
+function curLook(){return{...LOOK_DEF,...((S&&S.look)||{})}}
 function playerDef(){
-  const of=OUTFITS.find(x=>x.id===S.outfit)||OUTFITS[0];
-  const o=O({skin:'#f1c7a1',hair:'#3a2a22',eye:'#2a1a14',...of.o});
-  return {o,post(g,d){
-    if(S.outfit==='yelu'&&d!=='up')R(g,3,14,10,1,'#a8232b');
-    if(S.outfit==='wander')R(g,4,10,8,2,'#c8743a');
-    if(S.ears==='wolf'){R(g,3,0,3,3,'#5a4a44');R(g,10,0,3,3,'#5a4a44');R(g,4,1,1,2,'#c89a9a');R(g,11,1,1,2,'#c89a9a');R(g,3,-1,1,1,'#5a4a44');R(g,12,-1,1,1,'#5a4a44');}
-    else if(S.ears==='cat'){R(g,4,0,2,3,'#2a2228');R(g,10,0,2,3,'#2a2228');R(g,3,1,1,2,'#2a2228');R(g,12,1,1,2,'#2a2228');R(g,4,1,1,1,'#e6a0b0');R(g,11,1,1,1,'#e6a0b0');}
-    else {R(g,4,0,1,3,'#b0202a');R(g,3,-1,1,2,'#b0202a');R(g,11,0,1,3,'#b0202a');R(g,12,-1,1,2,'#b0202a');}
-  }};
+  const L=curLook(),of=OUTFITS.find(x=>x.id===S.outfit)||OUTFITS[0];
+  const o=O({...of.o,skin:L.skin,hair:L.hair,eye:L.eye,cut:L.cut,...(L.cloth?{cloth:L.cloth}:{})});
+  return {o,pre(g,d,t){of.pre&&of.pre(g,d,o)},post(g,d){of.post&&of.post(g,d,o);drawEars(g,d,S.ears,o.hair);drawAccs(g,d,L,o)}};
 }
 
 function baseChar(g,o,d,f,blink){
@@ -385,7 +506,12 @@ function baseChar(g,o,d,f,blink){
   else{R(g,2,11,1,7,K);R(g,13,11,1,7,K);R(g,3,11,10,7,o.cloth);R(g,4,12,1,4,o.shade);R(g,11,12,1,4,o.shade);R(g,3,16-(f===1?1:0),1,2,o.skin);R(g,12,16-(f===2?1:0),1,2,o.skin);if(!back)R(g,6,11,4,2,o.cloth2);}
   if(o.noHead)return;
   R(g,4,2,8,1,K);R(g,3,3,1,7,K);R(g,12,3,1,7,K);R(g,4,10,8,1,K);R(g,4,3,8,7,o.skin);
-  if(back)R(g,4,3,8,7,o.hair);
+  if(o.cut){
+    if(side)R(g,10,blink?8:7,1,blink?1:2,o.eye);
+    else if(!back){R(g,6,blink?8:7,1,blink?1:2,o.eye);R(g,9,blink?8:7,1,blink?1:2,o.eye);R(g,5,9,1,1,'rgba(230,120,120,.55)');R(g,10,9,1,1,'rgba(230,120,120,.55)');}
+    drawHair(g,o,d);
+  }
+  else if(back)R(g,4,3,8,7,o.hair);
   else if(side){R(g,4,3,8,3,o.hair);R(g,4,6,3,3,o.hair);R(g,10,blink?8:7,1,blink?1:2,o.eye);}
   else{R(g,4,3,8,3,o.hair);R(g,4,6,1,2,o.hair);R(g,11,6,1,2,o.hair);R(g,6,blink?8:7,1,blink?1:2,o.eye);R(g,9,blink?8:7,1,blink?1:2,o.eye);R(g,5,9,1,1,'rgba(230,120,120,.55)');R(g,10,9,1,1,'rgba(230,120,120,.55)');}
 }
@@ -762,7 +888,7 @@ for(const [k,sc] of Object.entries(SCENES)){
 /* ---------------- 狀態 ---------------- */
 const SAVE_KEY='eod_hw_cabin_save',END_KEY='eod_hw_cabin_endings';
 let S=null;
-function newState(name,outfit,ears){return{name,outfit,ears,scene:'hall',x:10,y:8,dir:'down',flags:{},ev:[],items:[],inv:{candy:0,ammo:0},mag:0}}
+function newState(name,outfit,ears,look){return{name,outfit,ears,look,scene:'hall',x:10,y:8,dir:'down',flags:{},ev:[],items:[],inv:{candy:0,ammo:0},mag:0}}
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 function save(){if(S&&mode==='play'){S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag=P.ammo;ls.set(SAVE_KEY,JSON.stringify(S))}}
 function loadSave(){try{return JSON.parse(ls.get(SAVE_KEY)||'null')}catch(e){return null}}
@@ -958,7 +1084,7 @@ const chOf=()=>(S&&S.flags.ch)||1;
 async function intro(){
   await n('【荒中小屋的秘密？！】');
   await n('十月三十一日，雷雨夜。');
-  await n('你在一陣頭痛中醒來——頭上，多了一對不屬於人類的'+({wolf:'狼耳',cat:'貓耳',horn:'小惡魔角'}[S.ears])+'。');
+  await n('你在一陣頭痛中醒來——頭上，多了一對不屬於人類的'+((EARS.find(e=>e.id===S.ears)||EARS[0]).label)+'。');
   await n('你試著像平常一樣使用能力——什麼都沒發生。來到這裡之後，超能力和戰鬥技巧，好像都被抽走了。');
   await n('身上什麼都沒帶。真的遇到危險，大概只能靠拳頭了。');
   await n('確認身體的劇變之後，仔細環顧四周，會發現自己正身處掛著巨大燭光吊燈的西洋宅邸大廳。');
@@ -2175,21 +2301,49 @@ function toTitle(){
   const e=endings();$('ttEnd').textContent=e.includes('act3')?'已通關：第三幕　南瓜裡的頭（未完待續）':'';
   setTimeout(()=>$('tNew').focus(),50);
 }
-let setupSel={outfit:'assoc',ears:'wolf'};
-function renderSetup(){
-  const tmpS=S;S={name:'',outfit:setupSel.outfit,ears:setupSel.ears,flags:{}};
-  const pv=$('pv').getContext('2d');pv.clearRect(0,0,16,24);pv.save();pv.translate(0,1);drawChar(pv,'me','down',0,0);pv.restore();
-  const mk=(boxId,list,key)=>{const box=$(boxId);box.innerHTML='';list.forEach(o=>{const b=document.createElement('button');b.type='button';b.classList.toggle('on',setupSel[key]===o.id);
-    const c=document.createElement('canvas');c.width=16;c.height=24;const g=c.getContext('2d');const keep=S[key];S[key]=o.id;g.translate(0,1);drawChar(g,'me','down',0,0);S[key]=keep;
-    const s=document.createElement('span');s.textContent=o.label;b.append(c,s);b.onclick=()=>{setupSel[key]=o.id;renderSetup()};box.appendChild(b)})};
-  mk('optOutfit',OUTFITS,'outfit');mk('optEars',EARS,'ears');
-  S=tmpS;
+const LOOK_KEY='eod_hw_cabin_look';
+let setupSel=(()=>{try{const v=JSON.parse(ls.get(LOOK_KEY)||'null');if(v&&v.outfit)return{...LOOK_DEF,ears:'wolf',...v,accs:v.accs||[]}}catch(e){}return{...LOOK_DEF,outfit:'pumpkin',ears:'wolf',accs:[]}})();
+function selLook(){const{outfit,ears,...look}=setupSel;return{outfit,ears,look}}
+/* 用目前的選擇（加上覆寫）畫一個主角 */
+function drawSel(g,over,dir='down',f=0){const tmpS=S,s={...setupSel,...over};S={name:'',outfit:s.outfit,ears:s.ears,look:s,flags:{}};drawChar(g,'me',dir,f,0);S=tmpS}
+let pvTick=0,pvTimer=0;
+function drawPreview(){
+  const g=$('pv').getContext('2d');g.clearRect(0,0,72,30);const f=[0,1,0,2][(pvTick>>3)%4];
+  ['down','right','up','left'].forEach((d,i)=>{g.save();g.translate(2+i*18,10);drawSel(g,{},d,f);g.restore()});
 }
-$('tNew').onclick=()=>{renderSetup();$('setup').hidden=false;$('nm').focus()};
-$('setupBack').onclick=()=>{$('setup').hidden=true};
+function renderSetup(){
+  drawPreview();
+  const thumbs=(boxId,list,key,head)=>{const box=$(boxId);box.innerHTML='';list.forEach(o=>{const b=document.createElement('button');b.type='button';
+    const on=key==='accs'?setupSel.accs.includes(o.id):setupSel[key]===o.id;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);
+    const c=document.createElement('canvas');c.width=16;c.height=head?16:34;const g=c.getContext('2d');g.translate(0,head?4:10);
+    drawSel(g,key==='accs'?{accs:[o.id]}:key==='ears'?{ears:o.id,accs:[]}:key==='outfit'?{outfit:o.id,cloth:null}:{[key]:o.id});
+    const s=document.createElement('span');s.textContent=o.label;b.append(c,s);
+    b.onclick=()=>{if(key==='accs'){const a=setupSel.accs;if(a.includes(o.id))setupSel.accs=a.filter(x=>x!==o.id);else setupSel.accs=[...a.filter(x=>!ACC_GROUP[o.id]||ACC_GROUP[x]!==ACC_GROUP[o.id]),o.id]}
+      else{setupSel[key]=o.id;if(key==='outfit')setupSel.cloth=null}renderSetup()};box.appendChild(b)})};
+  thumbs('optCut',HAIRCUTS,'cut',1);thumbs('optOutfit',OUTFITS,'outfit');thumbs('optEars',EARS,'ears',1);thumbs('optAcc',ACCS,'accs',1);
+  const cur={...setupSel};if(!cur.cloth)cur.cloth=(OUTFITS.find(x=>x.id===cur.outfit)||OUTFITS[0]).o.cloth;
+  for(const key of['skin','hair','eye','cloth']){const box=$('sw_'+key);box.innerHTML='';
+    LOOK_COLORS[key].forEach(c=>{const b=document.createElement('button');b.type='button';b.className='sw';b.style.background=c;b.title=c;b.setAttribute('aria-label',c);
+      const on=cur[key].toLowerCase()===c;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);b.onclick=()=>{setupSel[key]=c;renderSetup()};box.appendChild(b)});
+    const lab=document.createElement('label');lab.className='sw cust';lab.title='自訂顏色';const inp=document.createElement('input');inp.type='color';inp.value=cur[key];inp.setAttribute('aria-label','自訂顏色');
+    inp.oninput=()=>{setupSel[key]=inp.value;drawPreview()};inp.onchange=()=>renderSetup();lab.append(inp,'＋');box.appendChild(lab)}
+}
+function randomLook(){
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const of=pick(OUTFITS);
+  setupSel={...setupSel,skin:pick(LOOK_COLORS.skin),hair:pick(LOOK_COLORS.hair),eye:pick(LOOK_COLORS.eye),cut:pick(HAIRCUTS).id,
+    outfit:of.id,cloth:Math.random()<.6?null:pick(LOOK_COLORS.cloth),ears:pick(EARS).id,accs:[]};
+  for(const a of ACCS)if(Math.random()<.18&&!(ACC_GROUP[a.id]&&setupSel.accs.some(x=>ACC_GROUP[x]===ACC_GROUP[a.id])))setupSel.accs.push(a.id);
+  renderSetup();
+}
+$('tNew').onclick=()=>{renderSetup();$('setup').hidden=false;clearInterval(pvTimer);pvTimer=setInterval(()=>{if($('setup').hidden)return clearInterval(pvTimer);pvTick++;drawPreview()},50);$('nm').focus()};
+$('setupBack').onclick=()=>{$('setup').hidden=true;clearInterval(pvTimer)};
+$('rndBtn').onclick=randomLook;
 $('goBtn').onclick=()=>{
-  const name=$('nm').value.trim()||'新來的你';
-  $('setup').hidden=true;S=newState(name,setupSel.outfit,setupSel.ears);startPlay(true);
+  const name=$('nm').value.trim()||'新來的你';clearInterval(pvTimer);
+  ls.set(LOOK_KEY,JSON.stringify(setupSel));
+  const{outfit,ears,look}=selLook();
+  $('setup').hidden=true;S=newState(name,outfit,ears,look);startPlay(true);
 };
 $('nm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('goBtn').click()}e.stopPropagation()});
 $('tCont').onclick=()=>{const s=loadSave();if(!s)return;S=s;startPlay(false)};
