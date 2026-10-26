@@ -133,6 +133,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .usebtn{grid-column:1/-1;justify-self:start;font-size:13px;padding:2px 12px}
 .ev .tag{font-size:11px;color:var(--gold);align-self:center;letter-spacing:.1em}
 .empty{color:var(--dim)}
+/* 成就 */
+.achsum{display:flex;align-items:center;gap:10px;margin-bottom:6px;color:var(--gold);font-family:var(--f-disp)}
+.achsum i{flex:1;height:8px;background:rgba(0,0,0,.4);border:1px solid var(--brown);display:block}
+.achsum b{display:block;height:100%;background:var(--gold);width:0}
+.achlist{display:flex;flex-direction:column;gap:6px}
+.ach{display:flex;gap:10px;align-items:center;padding:6px 10px;background:rgba(0,0,0,.25);border-left:3px solid var(--brown);color:var(--dim)}
+.ach.on{border-left-color:var(--gold);color:var(--cream)}
+.ach .ic{font-size:20px;width:28px;text-align:center;flex:none;filter:grayscale(1);opacity:.6}
+.ach.on .ic{filter:none;opacity:1}
+.ach b{font-weight:700}.ach.on b{color:var(--gold)}
+.ach p{margin:0;font-size:.88em;line-height:1.5}
+#achPop{position:absolute;top:3%;right:2%;z-index:6;display:flex;gap:8px;align-items:center;padding:6px 14px 6px 10px;background:rgba(42,21,20,.97);border:2px solid var(--gold);border-radius:2px;pointer-events:none;box-shadow:0 3px 0 rgba(0,0,0,.5)}
+#achPop span{font-size:clamp(16px,2.6cqw,26px)}
+#achPop i{display:block;font-style:normal;color:var(--gold);font-size:clamp(10px,1.4cqw,14px);letter-spacing:.1em}
+#achPop b{display:block;font-family:var(--f-disp);font-weight:400;font-size:clamp(13px,2cqw,20px)}
+#achPop.go{animation:achIn 3.2s ease both}
+@keyframes achIn{0%{opacity:0;transform:translateY(-12px)}10%,85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){#achPop.go{animation:none}}
 .chars{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
 .ch{display:flex;gap:10px;align-items:flex-start;padding:8px;background:rgba(0,0,0,.25);min-width:0}
 .ch canvas{width:60px;height:60px;image-rendering:pixelated;flex:none;background:#1a0d0c;border:2px solid var(--brown)}
@@ -198,6 +216,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div id="choices" class="win" hidden></div>
     <div id="toast" hidden></div>
     <div id="bossbar" hidden><span>南瓜稻草人</span><i><b id="bossfill"></b></i></div>
+    <div id="achPop" role="status" hidden><span aria-hidden="true">🏆</span><div><i></i><b></b></div></div>
     <div id="chap" hidden><div class="c1"></div><div class="c2"></div></div>
     <div id="title">
       <div class="tt-sub">荒漠終焉・萬聖節特別篇</div>
@@ -206,6 +225,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
         <button type="button" id="tNew">開始調查</button>
         <button type="button" id="tCont">繼續</button>
         <button type="button" id="tChars">登場人物</button>
+        <button type="button" id="tAch">成就</button>
       </div>
       <div id="ttEnd"></div>
     </div>
@@ -252,6 +272,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   </div>
 </div>
 
+<div id="achOv" class="ov" hidden>
+  <div class="panel win">
+    <button class="close" id="achClose" type="button">關閉</button>
+    <h2>成就</h2>
+    <div class="achsum"><span id="achSum"></span><i><b id="achBar"></b></i></div>
+    <div id="achBody"></div>
+  </div>
+</div>
+
 <div id="menu" class="ov" hidden>
   <div class="panel win">
     <button class="close" id="menuClose" type="button">關閉</button>
@@ -270,7 +299,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
       <kbd>Esc</kbd><span>選單</span>
       <kbd>手機</kbd><span>畫面下方的方向鍵、A 鍵，「砍」「射」攻擊，「糖」吃糖果</span>
     </div>
-    <div class="mbtns"><button id="toTitle" type="button">回到標題</button></div>
+    <div class="mbtns"><button id="menuAch" type="button">成就</button><button id="toTitle" type="button">回到標題</button></div>
   </div>
 </div>
 
@@ -1019,7 +1048,7 @@ const HINT1={juice:'會長身旁的那灘液體',body:'會長本人',fridge:'廚
 const HINT3={pvoice:'屋外的大南瓜',gesture:'大南瓜旁邊翠的身體',witness:'溫室裡的薊（她好像什麼都看到了）'};
 const ITEMS={pancake:{t:'拉拉的鬆餅',d:'熱騰騰、香噴噴。拉拉說肚子餓沒辦法推理。'},atticKey:{t:'閣樓鑰匙',d:'拉拉鑰匙圈上的一把舊鑰匙，上面刻著「閣樓」。'}};
 const hasEv=k=>S.ev.includes(k), hasItem=k=>S.items.includes(k);
-function addEv(k){if(!hasEv(k)){S.ev.push(k);toast('獲得線索：'+EV[k].t);updateHUD()}}
+function addEv(k){if(!hasEv(k)){S.ev.push(k);toast('獲得線索：'+EV[k].t);updateHUD();if(Object.keys(EV).every(hasEv))ach('h_clues')}}
 function addItem(k){if(!hasItem(k)){S.items.push(k);toast('獲得道具：'+ITEMS[k].t)}}
 function rmItem(k){S.items=S.items.filter(x=>x!==k)}
 
@@ -1091,6 +1120,101 @@ function toast(t){const el=$('toast');el.textContent=t;el.hidden=false;toastT=15
 
 /* ---------------- 劇本 ---------------- */
 const chOf=()=>(S&&S.flags.ch)||1;
+/* ---------------- 成就 ----------------
+   成就跟存檔分開記在瀏覽器裡，重新開始也不會消失。
+   main：主線成就（一開始就看得到名稱）；hidden：隱藏成就，解鎖前只顯示 hint。
+   goal＋stat：累計型成就，會顯示進度。 */
+const ACH_KEY='eod_hw_cabin_ach';
+const ACHS=[
+  {id:'m_start',main:1,t:'雷雨夜的訪客',d:'在宅邸大廳醒來，頭上多了一對耳朵。'},
+  {id:'m_disc', main:1,t:'餐廳裡的尖叫',d:'發現倒在番茄汁裡的會長。'},
+  {id:'m_act1', main:1,t:'第一幕・水落石出',d:'揭穿作祟的真兇。'},
+  {id:'m_attic',main:1,t:'通往閣樓的梯子',d:'用拉拉的鑰匙打開閣樓。'},
+  {id:'m_act2', main:1,t:'第二幕・睡覺就該在床上睡',d:'找到從上鎖儲藏室消失的小波。'},
+  {id:'m_riot', main:1,t:'南瓜精靈鎮壓',d:'平息大南瓜旁的南瓜精靈暴動。'},
+  {id:'m_act3', main:1,t:'第三幕・南瓜裡的頭',d:'幫翠找回她的頭。'},
+
+  {id:'h_k10', t:'初次狩獵',d:'累計擊倒 10 隻災獸。',hint:'宅邸裡的災獸，好像怎麼打都打不完……',stat:'kills',goal:10},
+  {id:'h_k50', t:'災獸剋星',d:'累計擊倒 50 隻災獸。',hint:'再多打一些。',stat:'kills',goal:50},
+  {id:'h_k150',t:'宅邸清道夫',d:'累計擊倒 150 隻災獸。',hint:'多到數不清。',stat:'kills',goal:150},
+  {id:'h_dex', t:'災獸圖鑑',d:'南瓜蝠、骨頭犬、燭火鬼、南瓜精靈、南瓜稻草人，每一種都擊倒過。',hint:'認識宅邸裡的每一種災獸。'},
+  {id:'h_fist',t:'赤手空拳',d:'空手擊倒 5 隻災獸。',hint:'誰說一定要武器？',stat:'fist',goal:5},
+  {id:'h_deflect',t:'鍋鏟全壘打',d:'用鍋鏟打掉 15 發飛過來的東西。',hint:'阿鳳姨的鍋鏟，不只是用來砍的。',stat:'deflect',goal:15},
+  {id:'h_boss',t:'稻草人退散',d:'擊退迷宮中央的南瓜稻草人。',hint:'迷宮中央的那個稻草人……真的只是裝飾嗎？'},
+  {id:'h_boss_nohit',t:'毫髮無傷',d:'一次都沒受傷就擊退南瓜稻草人。',hint:'連一顆種子都別碰到。'},
+  {id:'h_arsenal',t:'阿鳳姨的粉絲',d:'找到鍋鏟和土製手槍。',hint:'宅邸裡到處都是「鳳」的痕跡。'},
+  {id:'h_search',t:'翻箱倒櫃',d:'在同一次調查中，翻遍宅邸裡每一個可以翻找的地方。',hint:'每個抽屜、每個木箱、每個盆栽……'},
+  {id:'h_clues',t:'記筆記的好習慣',d:'在同一次調查中，收集到所有線索與證詞。',hint:'不放過任何人說的任何一句話。'},
+  {id:'h_sweet',t:'甜食中毒',d:'累計吃掉 20 顆糖果。',hint:'萬聖節就是要吃糖。',stat:'candy',goal:20},
+  {id:'h_down',t:'溫熱的鬆餅',d:'第一次在戰鬥中倒下。',hint:'倒下也沒關係，會有人照顧你的。'},
+  {id:'h_nodeath',t:'不死之身',d:'一次都沒倒下就完成第三幕。',hint:'從頭到尾都站著。'},
+  {id:'h_detective',t:'名偵探',d:'第一幕的推理，全部一次答對。',hint:'推理的時候，別讓任何人吐槽你。'},
+  {id:'h_accuse',t:'亂槍打鳥',d:'在第一幕把其他所有人都指認過一遍。',hint:'不是你、不是你、也不是你……'},
+  {id:'h_tombs',t:'墓園巡禮',d:'讀過墓園裡每一塊不同的墓碑。',hint:'墓碑上寫的東西，每一塊都不一樣。'},
+  {id:'h_tomb_dark',t:'雷光下的名字',d:'在停電的雷光下，看清那塊被雨打糊的墓碑。',hint:'有一塊墓碑的字看不清楚。也許換個時機……'},
+  {id:'h_mirror',t:'鏡中的眼睛',d:'在停電時照了梳妝鏡。',hint:'梳妝鏡裡的耳朵會動。那停電的時候呢？'},
+  {id:'h_locked',t:'打不開的門',d:'調查過宅邸裡每一個打不開的地方。',hint:'閣樓、墓室、樹籬、鏡子、衣櫃。'},
+  {id:'h_maze',t:'迷宮的中心',d:'走到樹籬迷宮的正中央。',hint:'迷宮裡什麼都沒有。……真的嗎？'},
+  {id:'h_egg',t:'它也在看你',d:'一直盯著冰箱裡的雞蛋看。',hint:'冰箱裡那顆雞蛋好像在看你。'},
+  {id:'h_ian',t:'無底洞',d:'看著 IAN 吃到第 40 片鬆餅。',hint:'IAN 到底吃了幾片？'},
+  {id:'h_batk',t:'那雙紅眼睛',d:'和那隻飛不起來的小蝙蝠對上眼。',hint:'那隻小蝙蝠好像想說什麼。'},
+  {id:'h_horse',t:'幽靈馬的噴嚏',d:'和幽靈馬打了招呼。',hint:'雨裡的那匹馬，也是宅邸的一份子。'},
+  {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，打扮得越誇張越好。'},
+  {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
+];
+const DEX=['bat','hound','wisp','sprite','boss'];
+function achData(){try{const v=JSON.parse(ls.get(ACH_KEY)||'null');if(v&&v.got)return{got:v.got,st:v.st||{}}}catch(e){}return{got:{},st:{}}}
+let AD=achData();
+function achSave(){ls.set(ACH_KEY,JSON.stringify(AD))}
+function ach(id){
+  if(AD.got[id])return;const a=ACHS.find(x=>x.id===id);if(!a)return;
+  AD.got[id]=Date.now();achSave();achPop(a);
+}
+/* 累計數字：加完順便檢查有沒有達成門檻 */
+function achAdd(stat,n=1){
+  AD.st[stat]=(AD.st[stat]||0)+n;achSave();
+  for(const a of ACHS)if(a.stat===stat&&AD.st[stat]>=a.goal)ach(a.id);
+}
+/* 收集型：記下看過哪些，全部看過就解鎖 */
+function achSeen(stat,key,total,id){
+  const L=AD.st[stat]=AD.st[stat]||[];if(!L.includes(key)){L.push(key);achSave()}
+  if(L.length>=total)ach(id);
+}
+function achKill(e){
+  achAdd('kills');achSeen('dex',e.type,DEX.length,'h_dex');
+  if(e.by==='fist')achAdd('fist');
+}
+const achQ=[];let achBusy=false;
+function achPop(a){achQ.push(a);if(!achBusy)achNext()}
+function achNext(){
+  const a=achQ.shift(),el=$('achPop');if(!a){achBusy=false;el.hidden=true;return}
+  achBusy=true;el.querySelector('b').textContent=a.t;el.querySelector('i').textContent=a.main?'主線成就':'隱藏成就';
+  el.hidden=false;el.classList.remove('go');void el.offsetWidth;el.classList.add('go');
+  setTimeout(achNext,3200);
+}
+function renderAch(){
+  AD=achData();
+  const got=ACHS.filter(a=>AD.got[a.id]).length,body=$('achBody');
+  $('achSum').textContent=`已解鎖 ${got} / ${ACHS.length}`;$('achBar').style.width=(got/ACHS.length*100)+'%';
+  body.innerHTML='';
+  for(const[title,list]of[['主線成就',ACHS.filter(a=>a.main)],['隱藏成就',ACHS.filter(a=>!a.main)]]){
+    const h=document.createElement('h3');const gn=list.filter(a=>AD.got[a.id]).length;h.textContent=`${title}（${gn}/${list.length}）`;body.appendChild(h);
+    const wrap=document.createElement('div');wrap.className='achlist';
+    for(const a of list){
+      const on=!!AD.got[a.id],d=document.createElement('div');d.className='ach'+(on?' on':'');
+      d.innerHTML='<span class="ic" aria-hidden="true"></span><div><b></b><p></p></div>';
+      d.querySelector('.ic').textContent=on?'🏆':a.main?'🔒':'？';
+      d.querySelector('b').textContent=on||a.main?a.t:'？？？';
+      let txt=on?a.d:a.main?a.d:a.hint;
+      if(a.stat&&!on)txt+=`（${Math.min(AD.st[a.stat]||0,a.goal)} / ${a.goal}）`;
+      if(on){const dt=new Date(AD.got[a.id]);txt+=`　${dt.getMonth()+1}/${dt.getDate()} 解鎖`}
+      d.querySelector('p').textContent=txt;wrap.appendChild(d);
+    }
+    body.appendChild(wrap);
+  }
+}
+function openAch(){renderAch();$('achOv').hidden=false;$('achClose').focus()}
+
 async function intro(){
   await n('【荒中小屋的秘密？！】');
   await n('十月三十一日，雷雨夜。');
@@ -1101,6 +1225,7 @@ async function intro(){
   await n('外頭的天空似乎永遠不會日出。每隔一段時間乍到的雷雨，會讓宅邸失去所有電力。');
   await chapterCard('第一幕　會長之死');
   await n('……就在這時，大廳右上方的餐廳，傳來一聲尖叫。');
+  ach('m_start');
 }
 function chapterCard(t){
   return new Promise(res=>{
@@ -1113,7 +1238,7 @@ function chapterCard(t){
 
 /* ===== 第一章：會長之死 ===== */
 async function discovery(){
-  S.flags.discovered=true;
+  S.flags.discovered=true;ach('m_disc');
   await say('lala','啊啊啊啊啊——！！會、會長他……！');
   await n('長桌旁，會長倒在一大灘鮮紅的液體裡，一動也不動。');
   await n('他伸出的手指旁邊，地板上沾著紅色液體畫了一個圖案——圓圓的頭，下面一根細細的棍子。');
@@ -1277,7 +1402,7 @@ async function kaicho1(){
   await deduction1();
 }
 async function ask(q,opts,ok,wrong){
-  for(;;){const c=await choose(q,opts);if(c===ok)return;const w=wrong[c]||['n','好像不太對……再翻翻筆記吧。'];await say(w[0],w[1])}
+  for(;;){const c=await choose(q,opts);if(c===ok)return;S.flags.dedWrong=(S.flags.dedWrong||0)+1;const w=wrong[c]||['n','好像不太對……再翻翻筆記吧。'];await say(w[0],w[1])}
 }
 const REB1={
   lala:[['lala','我、我嗎！？'],['n','拉拉嚇得把旁邊的大理石雕像整座舉了起來。'],['lala','我只是來送鬆餅的啊！而且我又不是鬼！']],
@@ -1308,10 +1433,12 @@ async function deduction1(){
   for(;;){
     const c=await choose('這棟宅邸裡，作祟害死會長的是——',ids.map(i=>NAMES[i]));
     if(ids[c]==='po')break;
+    const acc=S.flags.accused=S.flags.accused||[];if(!acc.includes(ids[c]))acc.push(ids[c]);if(acc.length>=6)ach('h_accuse');
     await say('me',`作祟的就是你，${NAMES[ids[c]]}！`);
     for(const [w,t] of REB1[ids[c]])await say(w,t);
     await n('……好像不太對。再想想，這棟宅邸裡，誰是「鬼」？');
   }
+  if(!S.flags.dedWrong&&!(S.flags.accused||[]).length)ach('h_detective');
   await say('me','會作祟的只有幽靈。小波，就是你！');
   await say('po','咦咦咦！？我、我只是喝了草莓牛奶而已……我沒有作祟……');
   await n('小波的床單抖得像果凍一樣。');
@@ -1336,7 +1463,7 @@ async function deduction1(){
   await say('ji','剛剛那隻蝙蝠……是不是長得有點眼熟？');
   await say('boss','……好麻煩。明天再說。');
   await chapterCard('第二幕　消失的小波');
-  S.flags.ch=2;applyWorld();changeScene('hall',10,8,'down');
+  S.flags.ch=2;ach('m_act1');applyWorld();changeScene('hall',10,8,'down');
   await n('深夜。雷雨一直沒有停。');
   await n('大家各自回房，宅邸安靜得只剩下雨聲。');
   shake=14;
@@ -1365,7 +1492,7 @@ async function talkChase(id){
   if(id==='batk'){
     await n('一隻小小的蝙蝠，拚命拍著翅膀……飛不起來。');
     await n('牠回頭看了你一眼，眼睛紅紅的，好像想說什麼。');
-    addEv('batseen');
+    addEv('batseen');ach('h_batk');
     await n('——後面的錐齒獸又追上來了！小蝙蝠一蹦一蹦地繼續逃。');
   }else{
     await n('錐齒獸滿嘴尖尖的錐狀牙齒，眼睛只盯著那隻小蝙蝠，完全沒空理你。');
@@ -1373,7 +1500,7 @@ async function talkChase(id){
 }
 async function talk2(id){
   const F=S.flags;
-  if(id==='horse')return n('幽靈馬在雨裡打了個噴嚏。噴出來的是霧。');
+  if(id==='horse'){ach('h_horse');return n('幽靈馬在雨裡打了個噴嚏。噴出來的是霧。')}
   if(id==='batk'||id==='cone')return talkChase(id);
   if(id==='po')return po2();
   if(!F.disc2){
@@ -1403,7 +1530,7 @@ async function talk2(id){
         addEv('alibi');
         await say('ian','……剛剛把小波扛進去的時候，我是不是太用力了。');return;
       }
-      return say('ian','三十三片。');
+      {const F=S.flags;F.ian=(F.ian||32)+1;if(F.ian>=40)ach('h_ian');return say('ian',(F.ian>=40?'……':'')+F.ian+'片。')}
     case 'shisho':
       if(!hasEv('ghost2')){
         await say('shisho','噓。我在用餐。');
@@ -1472,7 +1599,7 @@ async function po2(){
   await n('IAN 一把扛起小波，像扛一袋麵粉，一步一步走上樓梯。');
   await say('po','Zzz……');
   await up;NPCS.ian.scene=null;NPCS.po.scene=null;
-  F.poCarried=true;
+  F.poCarried=true;ach('m_act2');
   await chapterCard('第三幕　南瓜裡的頭');
   F.ch=3;applyWorld();changeScene('hall',10,8,'down');
   await n('把小波送回床上之後，宅邸總算安靜了一點。');
@@ -1501,7 +1628,7 @@ async function talk3(id){
         addEv('gesture');return;
       }
       return n('翠的身體對著大南瓜拚命點頭……點的是脖子。');
-    case 'horse':return n('幽靈馬用鼻子頂了頂大南瓜，南瓜裡傳出「哎唷」一聲。');
+    case 'horse':ach('h_horse');return n('幽靈馬用鼻子頂了頂大南瓜，南瓜裡傳出「哎唷」一聲。');
     case 'boss':
       if(!F.riot){await say('boss','……你們要對大南瓜做什麼？');return say('boss','不准欺負大南瓜。')}
       if(!F.riotDone)return say('boss','……大南瓜被吵醒了，南瓜精靈們很生氣。');
@@ -1556,6 +1683,7 @@ function riotKill(){
   if(F.riotLeft===0&&!F.riotDone){F.riotDone=true;setTimeout(()=>run(riotEnd),700)}
 }
 async function riotEnd(){
+  ach('m_riot');
   const B=NPCS.batk,C=NPCS.cone;
   await say('boss','……好啦。好啦。');
   await say('boss','大南瓜也被吵醒了。');
@@ -1582,6 +1710,7 @@ async function riotEnd(){
 
 /* ---------------- 結局 / 名單 ---------------- */
 function finish(type){
+  if(type==='act3'){ach('m_act3');if(!S.flags.deaths)ach('h_nodeath')}
   const e=endings();if(!e.includes(type)){e.push(type);ls.set(END_KEY,JSON.stringify(e))}
   ls.del(SAVE_KEY);mode='ending';
   const ec=$('endCv'),g=ec.getContext('2d');drawLineup(g,type);
@@ -1695,10 +1824,13 @@ function objectAt(nx,ny){
     if(S.flags['s_'+sk])return n(SEARCH[sk].loot.melee||SEARCH[sk].loot.gun?'這裡已經空了。':'已經翻過了，什麼都沒剩。');
     for(const t of SEARCH[sk].t)await n(t);
     S.flags['s_'+sk]=1;gainLoot(SEARCH[sk].loot);
+    const sd=S.flags.sDone=S.flags.sDone||[];if(!sd.includes(sk))sd.push(sk);if(sd.length>=Object.keys(SEARCH).length)ach('h_search');
   };
   if(s==='kitchen'&&y===1&&(x===11||x===12))return async()=>{
     if(!hasEv('fridge')){await n('你打開冰箱。');await n('最上層貼著一張紙條：「會長專用・請勿偷喝」。');await n('……但那一整排番茄汁，全都不見了。冰箱裡只剩一顆孤零零的雞蛋。');addEv('fridge')}
-    else await n('冰箱還是空的。那顆雞蛋好像在看你。')};
+    else{const F=S.flags;F.egg=(F.egg||0)+1;
+      if(F.egg>=5){await n('你盯著那顆雞蛋看了很久很久。');await n('雞蛋……好像也盯著你看了很久很久。');await n('喀。蛋殼上出現了一道小小的裂痕。');await n('……你默默把冰箱關上了。');ach('h_egg')}
+      else await n(F.egg>=3?'冰箱還是空的。那顆雞蛋……絕對在看你。':'冰箱還是空的。那顆雞蛋好像在看你。')}};
   if(s==='dining'&&x===8&&y===6)return async()=>{
     if(!hasEv('juice')){await n('會長身旁那灘鮮紅的液體，在燭光下閃閃發亮。');await n('你湊近聞了聞——甜甜的，帶點酸味。');await n('……這是番茄汁。');addEv('juice')}
     else await n('一灘番茄汁。浪費食物是不對的。')};
@@ -1716,13 +1848,17 @@ function objectAt(nx,ny){
   if(s==='exhibit'&&x===2&&y===7&&chOf()===2)return async()=>{
     if(!hasEv('vbook')){await n('書架角落塞著一本封面發黑的書——《吸血鬼生理學》。只有這本完全沒被咬過。');await n('「長時間未進食的吸血鬼會陷入假死：體溫下降、脈搏微弱到幾乎測不到，外觀與死亡無異。」');await n('「……只要聞到喜歡的食物，通常就會自己醒來。」');addEv('vbook')}
     else await n('《吸血鬼生理學》。司書說這本太腥了。')};
-  if(s==='f2'&&x===9&&y===1&&!S.flags.atticOpen&&hasItem('atticKey'))return async()=>{await n('你把拉拉給的鑰匙插進大鎖，用力一轉——');await n('喀啦。鎖開了，閣樓的梯子緩緩降了下來。');S.flags.atticOpen=true;rmItem('atticKey')};
-  if(s==='outside'&&x===SIGN.x&&y===SIGN.y)return()=>n(S.flags.bossMaze?'木牌旁邊壓著一張紙條：「謝謝你幫我顧迷宮。那個稻草人每年萬聖節都會自己站起來，好麻煩。——翠」':'噴泉前插著一塊木牌：「恭喜你走到中央。這裡什麼都沒有，只有我的雕像。——翠」');
+  if(s==='f2'&&x===9&&y===1&&!S.flags.atticOpen&&hasItem('atticKey'))return async()=>{await n('你把拉拉給的鑰匙插進大鎖，用力一轉——');await n('喀啦。鎖開了，閣樓的梯子緩緩降了下來。');S.flags.atticOpen=true;rmItem('atticKey');ach('m_attic')};
+  if(s==='outside'&&x===SIGN.x&&y===SIGN.y)return()=>(ach('h_maze'),n(S.flags.bossMaze?'木牌旁邊壓著一張紙條：「謝謝你幫我顧迷宮。那個稻草人每年萬聖節都會自己站起來，好麻煩。——翠」':'噴泉前插著一塊木牌：「恭喜你走到中央。這裡什麼都沒有，只有我的雕像。——翠」'));
   return null;
 }
 function tileText(c,x,y){
   const s=S.scene;[x,y]=toOld(s,x,y);
-  if(LOCKED[s+':'+c])return LOCKED[s+':'+c];
+  if(LOCKED[s+':'+c]){
+    achSeen('locked',s+':'+c,Object.keys(LOCKED).length,'h_locked');
+    if(s==='roomR'&&c==='M'&&blackOn>0){ach('h_mirror');return'停電了。鏡子裡一片漆黑，只剩一雙眼睛還亮著。\n你眨了眨眼——鏡子裡那雙眼睛，晚了一拍才眨。'}
+    return LOCKED[s+':'+c];
+  }
   const ST={chapel:{Z:'告解室。簾子後面空無一人……應該吧。',A:'祭壇上鋪著白布，十字架擦得發亮。這裡的空氣特別乾淨。',q:'木頭長椅。椅背上刻著好幾道指甲抓痕。',l:'燭台上的蠟燭燒得很慢，好像永遠不會燒完。',W:'彩繪玻璃上畫著一個舉燈的人。雷光閃過時，他好像在看你。'},
     greenhouse:{r:'溫室裡的玫瑰開得又大又紅……紅得跟會長身旁那灘液體一樣。',J:'玻璃外是雨和霧，溫室裡卻暖暖的，像另一個季節。',z:'薊的調藥桌。乾燥的草藥一束束掛著，聞了會想笑。',j:'一張白色鐵椅，上面攤著一本翻開的園藝雜誌。',Q:'小噴泉的水很清，倒映著溫室的玻璃頂。'},
     maze:{h:'高高的樹籬，看不見另一邊。',Q:'迷宮中央的噴泉。噴泉中間站著一座抱著頭的騎士雕像。',r:'樹籬轉角種著一叢紅玫瑰。'},
@@ -1736,7 +1872,9 @@ function tileText(c,x,y){
   if(c==='v'&&s==='exhibit')return y===2&&x<=3?'展示櫃：一把生鏽的老電鋸。標籤寫著「拉拉的初代愛機」。':y===2?'展示櫃：一排風乾的南瓜燈，表情都有點累。':'展示櫃：各式各樣的玻璃藥瓶，標籤全被撕掉了。';
   if(c==='v')return'床頭櫃。抽屜裡只有一張寫著「早睡早起」的紙條。';
   if(c==='T')return s==='dining'?'長桌上擺著幾乎沒動過的晚餐。會長的位子前面，只有一個空杯子。':'料理台上擺著攪拌碗和一大袋麵粉。';
-  if(c==='t')return TOMBS[(x+y)%TOMBS.length];
+  if(c==='t'){const i=(x+y)%TOMBS.length;achSeen('tombs',i,TOMBS.length,'h_tombs');
+    if(i===4&&blackOn>0){ach('h_tomb_dark');return`雷光一閃——被雨打糊的字，在那一瞬間看得清清楚楚：\n「這裡長眠著：${S.name}」\n……再看一次，字又糊掉了。`}
+    return TOMBS[i]}
   if(c==='P'&&s==='exhibit')return'古典壁畫。這幅畫好像被人整幅舉起來又放回去，掛歪了一點。';
   if(c==='w'&&s==='dining')return'從這扇窗看得到外面的森林。剛才，好像有一顆頭從窗外飛過去？';
   const TT={u:'大理石雕像。底座有一圈被整座舉起來過的痕跡……這棟宅邸裡，誰有這種力氣？',p:'盆栽的葉子有點枯，大概很久沒照到太陽了。',P:'一幅古典壁畫。畫框邊緣有被搬動過的刮痕。',w:'窗外是濃濃的霧，雨一直沒停。',B:'書架上的書，幾乎每一本都缺了一角。',b:'柔軟的床。不知道為什麼，床單少了一條。',S:'爐子上的平底鍋還溫溫的，飄著奶油香。',K:'流理台上堆著剛煎好的鬆餅，旁邊是一大桶麵糊。',c:'椅子被拉開了一半。',r:'玫瑰開得很紅……紅得跟會長身旁那灘液體一樣。',e:'田裡種著南瓜和番茄。番茄好像全被摘光了。',f:'濃霧裡傳來不明生物的嚎叫。還是別靠近森林比較好。',h:'修剪整齊的樹籬。',J:'玻璃溫室。裡面暖暖的燈光透出來，有玫瑰的香味。',H:'宅邸的外牆。窗戶裡透出微弱的燭光。',I:'樓梯扶手摸起來滑滑的，好像常常有人從這裡滾下去。',O:'一顆比人還大的南瓜。首領說，這是他最好的朋友。'};
@@ -1866,6 +2004,7 @@ function hitFoe(e,dmg,kx,ky){
 }
 function hurtP(d){
   if(P.inv>0||busy)return;
+  if(CB.lockKind==='boss')S.flags.bossHurt=1;
   P.hp=Math.max(0,P.hp-d);P.inv=70;shake=10;CB.hurt=1;
 }
 let warnT=0;
@@ -1876,7 +2015,7 @@ function useCandy(){
   if(!S||busy)return;
   if(S.inv.candy<=0){warn('身上沒有糖果了。');return}
   if(P.hp>=MAXHP){warn('體力是滿的，先留著吧。');return}
-  S.inv.candy--;P.hp=Math.min(MAXHP,P.hp+2);toast(`吃了一顆糖果，回復一顆心（剩 ${S.inv.candy} 顆）`);
+  S.inv.candy--;P.hp=Math.min(MAXHP,P.hp+2);achAdd('candy');toast(`吃了一顆糖果，回復一顆心（剩 ${S.inv.candy} 顆）`);
   for(let i=0;i<6;i++){const[cx,cy]=pCenter();CB.fx.push({x:cx-4+Math.random()*8,y:cy,vx:0,vy:-.5-Math.random()*.5,life:24,c:'#ff5fa2'})}
 }
 function gainLoot(L){
@@ -1886,6 +2025,7 @@ function gainLoot(L){
   if(L.ammo){S.inv.ammo+=L.ammo;got.push('子彈 ×'+L.ammo)}
   if(L.candy){S.inv.candy+=L.candy;got.push('糖果 ×'+L.candy)}
   toast('獲得：'+got.join('、'));
+  if(S.flags.melee&&S.flags.gun)ach('h_arsenal');
   if((L.melee||L.gun)&&!S.flags.tut){S.flags.tut=1;setTimeout(()=>{toast(isTouch?'按「砍」近戰、「射」開槍、「糖」吃糖果補血':'J／X 近戰・K／C 開槍・R 換彈・H 吃糖果');toastT=360},2600)}
 }
 /* 近戰：沒撿到武器時是空手（傷害 1、距離短、不能打掉鬼火） */
@@ -1893,8 +2033,8 @@ function doMelee(){
   const armed=!!S.flags.melee;
   P.mcd=armed?22:18;CB.swing=10;CB.swingR=armed?13:9;
   const reach=armed?12:9,rad=armed?11:8,[cx,cy]=pCenter(),[dx,dy]=DV[P.dir],hx=cx+dx*reach,hy=cy+dy*reach;
-  for(const e of CB.foes)if(e.hp>0&&!e.spawn&&Math.hypot(e.x-hx,e.y-hy)<e.r+rad)hitFoe(e,armed?MELEE_DMG:1,dx*(armed?3:2),dy*(armed?3:2));
-  if(armed)for(const b of CB.eshots)if(Math.hypot(b.x-hx,b.y-hy)<12){b.life=0;spark(b.x,b.y,'#ffd25a')}
+  for(const e of CB.foes)if(e.hp>0&&!e.spawn&&Math.hypot(e.x-hx,e.y-hy)<e.r+rad){e.by=armed?'melee':'fist';hitFoe(e,armed?MELEE_DMG:1,dx*(armed?3:2),dy*(armed?3:2))}
+  if(armed)for(const b of CB.eshots)if(b.life>0&&Math.hypot(b.x-hx,b.y-hy)<12){b.life=0;spark(b.x,b.y,'#ffd25a');achAdd('deflect')}
 }
 function doFire(){
   if(!S.flags.gun){warn('身上沒有槍……');P.gcd=20;return}
@@ -1953,6 +2093,7 @@ function updFoe(e,pcx,pcy){
   }
 }
 function startBoss(){
+  S.flags.bossHurt=0;
   CB.lockKind='boss';CB.lock=new Set();
   const s=sc();
   for(let y=MZ.y0-1;y<=MZ.y1+1;y++)for(let x=MZ.x0-1;x<=MZ.x1+1;x++){
@@ -1963,7 +2104,7 @@ function startBoss(){
   run(async()=>{shake=3;await n('噴泉後面的稻草人，緩緩抬起了南瓜頭。');await n('荊棘從地面竄出來，封住了迷宮中央的出口——它不是裝飾！')});
 }
 function bossDown(){
-  S.flags.bossMaze=true;$('bossbar').hidden=true;
+  S.flags.bossMaze=true;$('bossbar').hidden=true;ach('h_boss');if(!S.flags.bossHurt)ach('h_boss_nohit');
   for(const e of CB.foes)if(e.arena)e.hp=0;
   const b=CB.foes.find(e=>e.type==='boss');
   if(b){for(let i=0;i<3;i++)CB.drops.push({x:b.x-12+i*12,y:b.y+8,t:0,k:'candy',n:1});CB.drops.push({x:b.x,y:b.y+20,t:0,k:'ammo',n:6})}
@@ -1973,7 +2114,7 @@ function bossDown(){
 function playerDown(){
   if(busy)return;
   run(async()=>{
-    clearCombat();cutDark=true;
+    clearCombat();cutDark=true;S.flags.deaths=(S.flags.deaths||0)+1;ach('h_down');
     await n('……眼前一黑。');
     changeScene('hall',10,8,'down');P.hp=MAXHP;P.reload=0;P.inv=0;cutDark=false;
     await n('你在大廳的地毯上醒來。身上蓋著一條毯子，旁邊放著一盤還溫熱的鬆餅。');
@@ -2032,7 +2173,7 @@ function updateCombat(){
   for(const b of CB.shots){
     b.x+=b.vx;b.y+=b.vy;b.life--;
     if(solidPx(b.x,b.y,false)&&!s.exitsN.some(e=>e[0]===Math.floor(b.x/T)&&e[1]===Math.floor(b.y/T))){b.life=0;spark(b.x,b.y,'#ffd25a',3);continue}
-    for(const e of CB.foes)if(e.hp>0&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+3){hitFoe(e,GUN_DMG,b.vx*.4,b.vy*.4);b.life=0;break}
+    for(const e of CB.foes)if(e.hp>0&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+3){e.by='gun';hitFoe(e,GUN_DMG,b.vx*.4,b.vy*.4);b.life=0;break}
   }
   CB.shots=CB.shots.filter(b=>b.life>0);
   for(const b of CB.eshots){
@@ -2043,7 +2184,7 @@ function updateCombat(){
   CB.eshots=CB.eshots.filter(b=>b.life>0);
   for(const e of CB.foes)if(e.hp>0&&!e.spawn&&!e.launch&&Math.hypot(e.x-pcx,e.y-pcy)<e.r+5)hurtP(FOES[e.type].dmg);
   for(const e of CB.foes)if(e.hp<=0&&!e.dead&&!e.launch){
-    e.dead=1;killFx(e);
+    e.dead=1;killFx(e);achKill(e);
     if(e.riot)riotKill();
     if(e.type==='boss')bossDown();
     else{const r=Math.random();if(r<.25)CB.drops.push({x:e.x,y:e.y,t:0,k:'candy',n:1});else if(r<.45)CB.drops.push({x:e.x,y:e.y,t:0,k:'ammo',n:2+((Math.random()*2)|0)})}
@@ -2255,7 +2396,7 @@ function updateHUD(){
   }
   $('obj').innerHTML=t;$('loc').textContent=SCENES[S.scene].name;
 }
-function overlayOpen(){return!$('note').hidden||!$('menu').hidden||!$('setup').hidden||!$('ending').hidden||!$('credits').hidden}
+function overlayOpen(){return!$('achOv').hidden||!$('note').hidden||!$('menu').hidden||!$('setup').hidden||!$('ending').hidden||!$('credits').hidden}
 let noteTab='ev';
 function openNote(tab){if(tab)noteTab=tab;renderNote();$('note').hidden=false}
 function renderNote(){
@@ -2301,6 +2442,7 @@ $('noteClose').onclick=()=>{$('note').hidden=true};
 $('btnNote').onclick=()=>openNote();$('pB').onclick=()=>openNote();
 $('btnMenu').onclick=()=>{$('menu').hidden=false};
 $('menuClose').onclick=()=>{$('menu').hidden=true};
+$('tAch').onclick=openAch;$('menuAch').onclick=()=>{$('menu').hidden=true;openAch()};$('achClose').onclick=()=>{$('achOv').hidden=true};
 $('toTitle').onclick=()=>{save();$('menu').hidden=true;toTitle()};
 
 /* 標題與建立角色 */
@@ -2308,7 +2450,8 @@ function toTitle(){
   mode='title';S=null;busy=false;dlg.hidden=true;$('choices').hidden=true;choiceState=null;clearPorts();cutDark=false;
   applyWorld();$('title').hidden=false;$('hud').style.visibility='hidden';
   $('tCont').disabled=!loadSave();
-  const e=endings();$('ttEnd').textContent=e.includes('act3')?'已通關：第三幕　南瓜裡的頭（未完待續）':'';
+  const e=endings();AD=achData();const ag=ACHS.filter(a=>AD.got[a.id]).length;
+  $('ttEnd').textContent=(e.includes('act3')?'已通關：第三幕　南瓜裡的頭（未完待續）　':'')+(ag?`成就 ${ag}/${ACHS.length}`:'');
   setTimeout(()=>$('tNew').focus(),50);
 }
 const LOOK_KEY='eod_hw_cabin_look';
@@ -2354,6 +2497,7 @@ $('goBtn').onclick=()=>{
   ls.set(LOOK_KEY,JSON.stringify(setupSel));
   const{outfit,ears,look}=selLook();
   $('setup').hidden=true;S=newState(name,outfit,ears,look);startPlay(true);
+  if(look.accs.length>=3)ach('h_dress');if(outfit==='vamp'&&look.accs.includes('fang'))ach('h_vampfan');
 };
 $('nm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('goBtn').click()}e.stopPropagation()});
 $('tCont').onclick=()=>{const s=loadSave();if(!s)return;S=s;startPlay(false)};
@@ -2373,7 +2517,7 @@ const KEYDIR={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
 window.addEventListener('keydown',e=>{
   if(e.target&&e.target.tagName==='INPUT')return;
   if(!$('credits').hidden){if(e.key==='Escape'||e.key==='Enter'){if($('crEnd').hidden){endCredits();e.preventDefault()}}return}
-  if(!$('note').hidden||!$('menu').hidden||!$('setup').hidden){if(e.key==='Escape'||((e.key==='n'||e.key==='N'||e.key==='Tab')&&!$('note').hidden)){$('note').hidden=true;$('menu').hidden=true;$('setup').hidden=true;e.preventDefault()}return}
+  if(!$('achOv').hidden||!$('note').hidden||!$('menu').hidden||!$('setup').hidden){if(e.key==='Escape'||((e.key==='n'||e.key==='N'||e.key==='Tab')&&!$('note').hidden)){$('achOv').hidden=true;$('note').hidden=true;$('menu').hidden=true;$('setup').hidden=true;e.preventDefault()}return}
   if(!$('ending').hidden)return;
   if(mode!=='play')return;
   if(choiceState){
