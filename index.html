@@ -40,41 +40,48 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .hbtn button:hover{border-color:var(--cream)}
 
 /* Stage */
-#stage{position:relative;width:100%;max-width:var(--stageW,960px);aspect-ratio:320/208;margin:0 auto;overflow:hidden;background:#000;border:2px solid var(--cream);box-shadow:inset 0 0 0 2px var(--brown),0 6px 0 rgba(0,0,0,.5)}
+#stage{position:relative;container-type:inline-size;width:100%;max-width:var(--stageW,960px);aspect-ratio:320/208;margin:0 auto;overflow:hidden;background:#000;border:2px solid var(--cream);box-shadow:inset 0 0 0 2px var(--brown),0 6px 0 rgba(0,0,0,.5)}
 #cv{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
 
 /* Dialog */
 #dlg{position:absolute;left:2%;right:2%;bottom:3%;display:flex;gap:10px;align-items:flex-start;padding:8px 12px 10px;min-height:22%;max-height:46%;box-sizing:border-box;cursor:pointer;background:rgba(42,21,20,.96)}
-#face{width:clamp(44px,9vw,76px);height:auto;aspect-ratio:1;image-rendering:pixelated;flex:none;background:#1a0d0c;border:2px solid var(--brown)}
+#face{width:clamp(44px,9cqw,88px);height:auto;aspect-ratio:1;image-rendering:pixelated;flex:none;background:#1a0d0c;border:2px solid var(--brown)}
 .dbody{flex:1;min-width:0;overflow:auto;max-height:100%}
-#dname{font-family:var(--f-disp);color:var(--gold);font-size:clamp(13px,1.8vw,16px);letter-spacing:.06em}
-#dtext{font-size:clamp(13px,1.9vw,17px);line-height:1.65;white-space:pre-wrap}
+#dname{font-family:var(--f-disp);color:var(--gold);font-size:clamp(13px,2.1cqw,21px);letter-spacing:.06em}
+#dtext{font-size:clamp(13px,2.3cqw,23px);line-height:1.65;white-space:pre-wrap}
 #dlg.narr #dtext{color:#e8d9bf}
 #dlg.narr #face,#dlg.narr #dname{display:none}
-.next{position:absolute;right:10px;bottom:4px;color:var(--cream);font-size:12px;animation:bob 1s steps(2) infinite}
+.next{position:absolute;right:10px;bottom:4px;color:var(--cream);font-size:clamp(12px,1.5cqw,15px);animation:bob 1s steps(2) infinite}
 @keyframes bob{50%{transform:translateY(3px)}}
 
 #choices{position:absolute;right:3%;bottom:calc(3% + 24%);display:flex;flex-direction:column;gap:2px;padding:6px;max-width:80%;max-height:60%;overflow:auto;background:rgba(42,21,20,.97)}
-#cq{font-size:clamp(12px,1.7vw,15px);color:var(--gold);padding:2px 8px 4px;font-family:var(--f-disp)}
-#choices button{background:none;border:0;text-align:left;padding:3px 8px 3px 22px;font-size:clamp(13px,1.8vw,16px);position:relative;border-radius:2px}
+#cq{font-size:clamp(12px,1.9cqw,19px);color:var(--gold);padding:2px 8px 4px;font-family:var(--f-disp)}
+#choices button{background:none;border:0;text-align:left;padding:3px 8px 3px 22px;font-size:clamp(13px,2.1cqw,21px);position:relative;border-radius:2px}
 #choices button.sel{background:var(--brown)}
 #choices button.sel::before{content:'▶';position:absolute;left:5px;color:var(--gold);font-size:11px;top:50%;transform:translateY(-50%)}
 #choices button.dis{color:#8a7a6a}
 
-#toast{position:absolute;top:4%;left:50%;transform:translateX(-50%);padding:4px 14px;font-size:clamp(12px,1.7vw,15px);white-space:nowrap;background:rgba(142,28,28,.95);border:2px solid var(--cream);border-radius:2px;pointer-events:none}
+#toast{position:absolute;top:4%;left:50%;transform:translateX(-50%);padding:4px 14px;font-size:clamp(12px,1.9cqw,19px);white-space:nowrap;background:rgba(142,28,28,.95);border:2px solid var(--cream);border-radius:2px;pointer-events:none}
 
 /* Portraits (RMVA 式半身立繪) */
-#ports{position:absolute;inset:0;pointer-events:none}
-.port{position:absolute;bottom:0;width:46%;height:92%;transition:filter .18s ease,transform .18s ease}
-.port.L{left:0}.port.R{right:0}
+#ports{position:absolute;inset:0 0 var(--dlgH,0px);pointer-events:none}
+.port{position:absolute;bottom:0;width:46%;height:94%;transition:filter .18s ease,transform .18s ease}
+.port.L{left:2%}.port.R{right:2%}
 .port img,.port canvas{display:block;width:100%;height:100%;object-fit:contain}
 .port canvas{image-rendering:pixelated}
 .port.L img,.port.L canvas{object-position:left bottom}
 .port.R img,.port.R canvas{object-position:right bottom}
-.port .ph{position:absolute;top:4%;padding:2px 8px;font-size:clamp(10px,1.4vw,12px);color:var(--dim);background:rgba(14,10,12,.8);border:1px dashed var(--dim);border-radius:2px;white-space:nowrap}
+.port .ph{position:absolute;top:4%;padding:2px 8px;font-size:clamp(10px,1.4cqw,13px);color:var(--dim);background:rgba(14,10,12,.8);border:1px dashed var(--dim);border-radius:2px;white-space:nowrap}
 .port.L .ph{left:3%}.port.R .ph{right:3%}
 .port.dim{filter:brightness(.4) saturate(.6);transform:translateY(2%)}
 @media (prefers-reduced-motion:reduce){.port{transition:none}}
+/* 電腦螢幕：介面文字放大 */
+@media (min-width:900px) and (pointer:fine){
+  body{font-size:17px}
+  #obj{font-size:15px}
+  .hbtn button{font-size:15px}
+  .ch p,.ev .d,.keys{font-size:15px}
+}
 /* Chapter card */
 #chap{position:absolute;inset:0;z-index:4;background:#07050a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;text-align:center}
 #chap .c1{font-family:var(--f-disp);color:var(--gold);letter-spacing:.3em;font-size:clamp(13px,2vw,18px)}
@@ -1041,10 +1048,13 @@ function showPort(who){
   for(const [kk,s] of Object.entries(ports))s.el.classList.toggle('dim',kk!==k);
   lastNpc=who;
 }
+/* 立繪站在對話框上緣：繪師畫的是半身，下緣要貼著對話框而不是被蓋住 */
+function fitPorts(){const st=$('stage');st.style.setProperty('--dlgH',dlg.hidden?'0px':(st.clientHeight-dlg.offsetTop)+'px')}
+new ResizeObserver(fitPorts).observe(dlg);new ResizeObserver(fitPorts).observe($('stage'));
 function clearPorts(){for(const s of Object.values(ports)){s.id=null;s.el.hidden=true}lastNpc=null}
 function say(who,text){
   return new Promise(res=>{
-    dlg.hidden=false;dlg.classList.toggle('narr',who==='n');showPort(who);
+    dlg.hidden=false;fitPorts();dlg.classList.toggle('narr',who==='n');showPort(who);
     face.hidden=!!PORTRAITS[who];
     if(who!=='n'){dname.textContent=who==='me'?S.name:NAMES[who];drawFace(who)}
     const full=text.replace(/\{me\}/g,S.name);let i=0;dtext.textContent='';
