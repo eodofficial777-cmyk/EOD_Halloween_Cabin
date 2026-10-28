@@ -1338,93 +1338,93 @@ const chOf=()=>S?(S.flags.ch??1):1;
    goal＋stat：累計型成就，會顯示進度。 */
 const ACH_KEY='eod_hw_cabin_ach';
 const ACHS=[
-  {id:'m_start',main:1,t:'雷雨夜的訪客',d:'在宅邸大廳醒來，頭上多了一對耳朵。'},
-  {id:'m_prologue',main:1,t:'序幕・雷雨夜的晚餐',d:'和宅邸裡的每個人都聊過一輪。'},
-  {id:'m_disc', main:1,t:'餐廳裡的尖叫',d:'發現倒在番茄汁裡的會長。'},
-  {id:'m_act1', main:1,t:'第一幕・水落石出',d:'揭穿作祟的真兇。'},
-  {id:'m_attic',main:1,t:'通往閣樓的梯子',d:'用拉拉的鑰匙打開閣樓。'},
-  {id:'m_act2', main:1,t:'第二幕・睡覺就該在床上睡',d:'找到從上鎖儲藏室消失的小波。'},
-  {id:'m_riot', main:1,t:'南瓜精靈鎮壓',d:'平息大南瓜旁的南瓜精靈暴動。'},
-  {id:'m_act3', main:1,t:'第三幕・南瓜裡的頭',d:'幫翠找回她的頭。'},
-  {id:'m_act4', main:1,t:'第四幕・縫線的真相',d:'揭開 IAN 斷成兩半的真相，替拉拉洗清冤屈。'},
-  {id:'m_seal',main:1,t:'四盞南瓜燈',d:'解開謎題，點亮通往墓室深處的四盞南瓜燈。'},
-  {id:'m_final',main:1,t:'終幕・不給糖就搗蛋',d:'打倒地下墓室深處的南瓜幽靈，和大家一起離開宅邸。'},
+  {id:'m_start',main:1,t:'雷雨夜的訪客',d:'在宅邸大廳醒來，頭上多了一對耳朵。',lk:'一切從一聲雷響開始。'},
+  {id:'m_prologue',main:1,t:'序幕・雷雨夜的晚餐',d:'和宅邸裡的每個人都聊過一輪。',lk:'晚餐桌上，每個人都有話想說。'},
+  {id:'m_disc', main:1,t:'餐廳裡的尖叫',d:'發現倒在番茄汁裡的會長。',lk:'餐廳的方向，傳來了尖叫。'},
+  {id:'m_act1', main:1,t:'第一幕・水落石出',d:'揭穿作祟的真兇。',lk:'真相，往往不是第一眼看到的那樣。'},
+  {id:'m_attic',main:1,t:'通往閣樓的梯子',d:'用拉拉的鑰匙打開閣樓。',lk:'有一把鑰匙，一直掛在某人的腰上。'},
+  {id:'m_act2', main:1,t:'第二幕・睡覺就該在床上睡',d:'找到從上鎖儲藏室消失的小波。',lk:'上了鎖的門，擋不住想睡覺的人。'},
+  {id:'m_riot', main:1,t:'南瓜精靈鎮壓',d:'平息大南瓜旁的南瓜精靈暴動。',lk:'大南瓜旁邊，好像很吵。'},
+  {id:'m_act3', main:1,t:'第三幕・南瓜裡的頭',d:'幫翠找回她的頭。',lk:'有人把頭弄丟了。'},
+  {id:'m_act4', main:1,t:'第四幕・縫線的真相',d:'揭開 IAN 斷成兩半的真相，替拉拉洗清冤屈。',lk:'線，是怎麼斷掉的？'},
+  {id:'m_seal',main:1,t:'四盞南瓜燈',d:'解開謎題，點亮通往墓室深處的四盞南瓜燈。',lk:'四個地方，四道光。'},
+  {id:'m_final',main:1,t:'終幕・不給糖就搗蛋',d:'打倒地下墓室深處的南瓜幽靈，和大家一起離開宅邸。',lk:'最深的地方，有誰在等著一起玩。'},
 
-  {id:'q_po',side:1,t:'睡教的信徒',d:'把最舒服的枕頭供奉在睡教的祭壇上。'},
-  {id:'q_lala',side:1,t:'鬆餅牧羊人',d:'抓回六坨逃跑的史萊姆鬆餅。'},
-  {id:'q_shisho',side:1,t:'靈魂保住了',d:'幫司書找齊宅邸裡的書。'},
-  {id:'q_ji',side:1,t:'薊的研究助理',d:'完成神秘試作藥水的所有實驗。'},
-  {id:'q_sui',side:1,t:'駱馬馴養師',d:'餵飽幽靈駱馬，讓牠願意親近翠。'},
-  {id:'q_ian',side:1,t:'怪物全壘打',d:'在怪物棒球打出三支全壘打。'},
-  {id:'q_kaicho',side:1,t:'番茄汁收藏家',d:'幫會長找齊五瓶番茄汁。'},
-  {id:'q_boss',side:1,t:'南瓜邊的發呆大師',d:'陪首領在大南瓜旁邊發呆三輪。'},
+  {id:'q_po',side:1,t:'睡教的信徒',d:'把最舒服的枕頭供奉在睡教的祭壇上。',lk:'有人在找一個完美的枕頭。'},
+  {id:'q_lala',side:1,t:'鬆餅牧羊人',d:'抓回六坨逃跑的史萊姆鬆餅。',lk:'廚房的鬆餅，好像不太安分。'},
+  {id:'q_shisho',side:1,t:'靈魂保住了',d:'幫司書找齊宅邸裡的書。',lk:'有人的點心，散落在宅邸各處。'},
+  {id:'q_ji',side:1,t:'薊的研究助理',d:'完成神秘試作藥水的所有實驗。',lk:'溫室的主人，需要一隻白老鼠。'},
+  {id:'q_sui',side:1,t:'駱馬馴養師',d:'餵飽幽靈駱馬，讓牠願意親近翠。',lk:'中庭那隻駱馬，看起來肚子很餓。'},
+  {id:'q_ian',side:1,t:'怪物全壘打',d:'在怪物棒球打出三支全壘打。',lk:'大個子想玩一場不太一樣的棒球。'},
+  {id:'q_kaicho',side:1,t:'番茄汁收藏家',d:'幫會長找齊五瓶番茄汁。',lk:'某人的冰箱，永遠不夠滿。'},
+  {id:'q_boss',side:1,t:'南瓜邊的發呆大師',d:'陪首領在大南瓜旁邊發呆三輪。',lk:'有些事，什麼都不做才能完成。'},
 
-  {id:'f_po',side:1,secret:1,t:'失眠之夜',d:'供奉了另一個枕頭，大家一起熬夜聊到了天亮。',hint:'小波的支線，還有另一條路線。'},
-  {id:'f_lala',side:1,secret:1,t:'偷吃',d:'偷吃了一坨史萊姆鬆餅。卡士達口味。',hint:'拉拉的支線，還有另一條路線。'},
-  {id:'f_shisho',side:1,secret:1,t:'被咬了一口',d:'推薦了別本書，靈魂被司書輕輕咬了一小口。',hint:'司書的支線，還有另一條路線。'},
-  {id:'f_ji',side:1,secret:1,t:'亂報藥水',d:'實驗結果報得一團亂，卻意外發現了全新的藥效。',hint:'薊的支線，還有另一條路線。'},
-  {id:'f_sui',side:1,secret:1,t:'森林裡的駱馬',d:'駱馬跑進了森林，在那裡過得很開心。',hint:'翠的支線，還有另一條路線。'},
-  {id:'f_ian',side:1,secret:1,t:'換你揮棒',d:'三振之後，換你拿起鏟子把怪物打飛。',hint:'IAN的支線，還有另一條路線。'},
-  {id:'f_kaicho',side:1,secret:1,t:'又被喝掉了',d:'會長的番茄汁，被小波喝光了。',hint:'會長的支線，還有另一條路線。'},
-  {id:'f_boss',side:1,secret:1,t:'坐著也不錯',d:'躺不住，改成坐著陪首領聊天。',hint:'首領的支線，還有另一條路線。'},
-  {id:'h_allwin',t:'標準答案',d:'在同一次調查中，八條支線都走了第一條路線。',hint:'每個人都得到了他們想要的。'},
-  {id:'h_allfail',t:'我行我素',d:'在同一次調查中，八條支線都走了另一條路線。',hint:'不按照別人的期待走。'},
-  {id:'h_mixed',t:'屬於自己的萬聖夜',d:'在同一次調查中完成了八條支線，兩種路線都有走到。',hint:'有些照著走，有些照自己的意思走。'},
-  {id:'h_kaichovine',t:'玫瑰的擁抱',d:'讓玫瑰觸手怪纏住了正在種花的會長。',hint:'在溫室種花的那個人……'},
-  {id:'h_pillowfirst',t:'睡教的神諭',d:'親自試躺過五個以上的枕頭，選出了正確的那一個。',hint:'拿枕頭到床上試躺看看。'},
-  {id:'h_morph2',t:'變身大師',d:'喝了藥水，變成過蝙蝠也變成過南瓜。',hint:'藥水的效果，每次都不太一樣。'},
-  {id:'h_llama_nohit',t:'一滴口水都沒沾到',d:'餵駱馬的時候，一次都沒被口水噴到。',hint:'駱馬心情不好的時候很會吐口水。'},
-  {id:'h_pitch3',t:'完美投手',d:'怪物棒球連續三次正中紅心。',hint:'IAN 說，要丟得很準很準。'},
-  {id:'h_kaicho_can',t:'晚點喝',d:'在序幕就把番茄汁交給了會長本人。',hint:'趁他還醒著的時候……'},
-  {id:'h_bat_can',t:'吱！',d:'把番茄汁給了那隻飛不起來的小蝙蝠。',hint:'那隻小蝙蝠的眼睛，紅得跟番茄一樣。'},
-  {id:'h_idle_perfect',t:'不動如山',d:'一次都沒動，就撐完了三輪發呆。',hint:'連停電都不能讓你動一下。'},
-  {id:'h_trick',t:'不給糖就搗蛋',d:'沒有給南瓜幽靈糖果。',hint:'南瓜幽靈會問你要不要給糖。'},
-  {id:'h_treat',t:'給糖也導彈',d:'給了南瓜幽靈糖果……結果還是被導彈追著跑。',hint:'給了糖，就不會被搗蛋了吧？'},
-  {id:'h_legs',t:'斷腿助攻',d:'IAN 的下半身幫你踢飛了 10 隻災獸。',hint:'第四幕裡，有個很會踢的伙伴。',stat:'legs',goal:10},
-  {id:'h_radio',t:'不能申訴退款',d:'聽完了廣播頭的廣播。',hint:'故事最後，好像有誰在廣播。'},
-  {id:'h_hints',t:'其實早就有跡象',d:'在南瓜幽靈坦白之前，就找到了拉拉、司書、薊、首領沒被作祟的伏筆。',hint:'廚房角落的客人、一疊咖啡杯、會轉頭的玫瑰、很兇的大南瓜。'},
-  {id:'h_bath',t:'香噴噴',d:'在古典大浴缸裡泡了個澡。',hint:'2F 右客房的旁邊，好像有一扇門。'},
-  {id:'h_bath3',t:'髒到不行',d:'身上同時沾著三種以上的髒東西去泡澡。',hint:'口水、南瓜汁、麵糊、灰塵、花瓣……全部一起洗掉。'},
-  {id:'h_snack3',t:'台灣零食巡禮',d:'吃過糖果、乘乘米果和鳳梨酥。',hint:'宅邸裡，不只有糖果可以吃。'},
-  {id:'h_magic3',t:'七十二變',d:'喝神奇藥水變成過怪物、南瓜和幽靈。',hint:'神奇藥水的效果，每次都不一樣。'},
-  {id:'h_candyroom',t:'秘密糖果倉庫',d:'用稻草人的鑰匙，打開了迷宮裡的秘密倉庫。',hint:'迷宮入口附近的樹籬裡，有一扇上鎖的小木門。'},
-  {id:'h_lost',t:'失物招領',d:'把迷宮裡撿到的五樣失物，都還給了主人。',hint:'迷宮的死路裡，好像掉了不少東西。'},
-  {id:'h_wish',t:'許願池',d:'在迷宮中央的噴泉丟糖果許願。',hint:'噴泉的池底閃閃發亮。'},
-  {id:'h_wish_wink',t:'雕像眨眼了',d:'許願時，騎士雕像對你眨了眨眼。',hint:'許願池的雕像，好像會動？'},
-  {id:'h_wish_talk',t:'雕像說話了',d:'許願時，騎士雕像開口說了一句話。',hint:'非常、非常偶爾才會發生。'},
+  {id:'f_po',side:1,secret:1,t:'失眠之夜',d:'供奉了另一個枕頭，大家一起熬夜聊到了天亮。',hint:'睡不著的夜晚，也許更熱鬧。'},
+  {id:'f_lala',side:1,secret:1,t:'偷吃',d:'偷吃了一坨史萊姆鬆餅。卡士達口味。',hint:'那些鬆餅，聞起來好香……'},
+  {id:'f_shisho',side:1,secret:1,t:'被咬了一口',d:'推薦了別本書，靈魂被司書輕輕咬了一小口。',hint:'別人推薦的書，比較好吃嗎？'},
+  {id:'f_ji',side:1,secret:1,t:'亂報藥水',d:'實驗結果報得一團亂，卻意外發現了全新的藥效。',hint:'實驗報告，一定要寫對嗎？'},
+  {id:'f_sui',side:1,secret:1,t:'森林裡的駱馬',d:'駱馬跑進了森林，在那裡過得很開心。',hint:'有些動物，比較喜歡自由。'},
+  {id:'f_ian',side:1,secret:1,t:'換你揮棒',d:'三振之後，換你拿起鏟子把怪物打飛。',hint:'球棒，不一定只有一個人能拿。'},
+  {id:'f_kaicho',side:1,secret:1,t:'又被喝掉了',d:'會長的番茄汁，被小波喝光了。',hint:'有個睡迷糊的人，也很口渴。'},
+  {id:'f_boss',side:1,secret:1,t:'坐著也不錯',d:'躺不住，改成坐著陪首領聊天。',hint:'躺著、坐著，都是陪伴。'},
+  {id:'h_allwin',t:'標準答案',d:'在同一次調查中，八條支線都走了第一條路線。',hint:'每一次，都照著別人說的做。'},
+  {id:'h_allfail',t:'我行我素',d:'在同一次調查中，八條支線都走了另一條路線。',hint:'每一次，都照著自己的意思走。'},
+  {id:'h_mixed',t:'屬於自己的萬聖夜',d:'在同一次調查中完成了八條支線，兩種路線都有走到。',hint:'有時聽話，有時不聽。'},
+  {id:'h_kaichovine',t:'玫瑰的擁抱',d:'讓玫瑰觸手怪纏住了正在種花的會長。',hint:'溫室裡的花，很喜歡擁抱。'},
+  {id:'h_pillowfirst',t:'睡教的神諭',d:'親自試躺過五個以上的枕頭，選出了正確的那一個。',hint:'好枕頭，要親自躺過才知道。'},
+  {id:'h_morph2',t:'變身大師',d:'喝了藥水，變成過蝙蝠也變成過南瓜。',hint:'同一瓶藥，不同的自己。'},
+  {id:'h_llama_nohit',t:'一滴口水都沒沾到',d:'餵駱馬的時候，一次都沒被口水噴到。',hint:'乾乾淨淨地吃完一頓飯。'},
+  {id:'h_pitch3',t:'完美投手',d:'怪物棒球連續三次正中紅心。',hint:'一、二、三，都在同一個地方。'},
+  {id:'h_kaicho_can',t:'晚點喝',d:'在序幕就把番茄汁交給了會長本人。',hint:'有些東西，越早送到越好。'},
+  {id:'h_bat_can',t:'吱！',d:'把番茄汁給了那隻飛不起來的小蝙蝠。',hint:'紅色的眼睛，紅色的飲料。'},
+  {id:'h_idle_perfect',t:'不動如山',d:'一次都沒動，就撐完了三輪發呆。',hint:'比石頭還安靜。'},
+  {id:'h_trick',t:'不給糖就搗蛋',d:'沒有給南瓜幽靈糖果。',hint:'有人會跟你要點什麼。拒絕看看？'},
+  {id:'h_treat',t:'給糖也導彈',d:'給了南瓜幽靈糖果……結果還是被導彈追著跑。',hint:'有人會跟你要點什麼。答應看看？'},
+  {id:'h_legs',t:'斷腿助攻',d:'IAN 的下半身幫你踢飛了 10 隻災獸。',hint:'有一雙腿，比你還想戰鬥。',stat:'legs',goal:10},
+  {id:'h_radio',t:'不能申訴退款',d:'聽完了廣播頭的廣播。',hint:'故事結束之後，請不要急著關掉。'},
+  {id:'h_hints',t:'其實早就有跡象',d:'在南瓜幽靈坦白之前，就找到了拉拉、司書、薊、首領沒被作祟的伏筆。',hint:'有四個人，從來沒被纏上。為什麼？'},
+  {id:'h_bath',t:'香噴噴',d:'在古典大浴缸裡泡了個澡。',hint:'洗去一身疲憊。'},
+  {id:'h_bath3',t:'髒到不行',d:'身上同時沾著三種以上的髒東西去泡澡。',hint:'越髒，洗起來越痛快。'},
+  {id:'h_snack3',t:'台灣零食巡禮',d:'吃過糖果、乘乘米果和鳳梨酥。',hint:'這座宅邸裡，藏著家鄉的味道。'},
+  {id:'h_magic3',t:'七十二變',d:'喝神奇藥水變成過怪物、南瓜和幽靈。',hint:'同一瓶藥，三種模樣。'},
+  {id:'h_candyroom',t:'秘密糖果倉庫',d:'用稻草人的鑰匙，打開了迷宮裡的秘密倉庫。',hint:'樹籬裡藏著一扇小門。鑰匙在誰手上？'},
+  {id:'h_lost',t:'失物招領',d:'把迷宮裡撿到的五樣失物，都還給了主人。',hint:'迷宮的死路，並不是空的。'},
+  {id:'h_wish',t:'許願池',d:'在迷宮中央的噴泉丟糖果許願。',hint:'水底有東西在發光。'},
+  {id:'h_wish_wink',t:'雕像眨眼了',d:'許願時，騎士雕像對你眨了眨眼。',hint:'石頭也會有表情。'},
+  {id:'h_wish_talk',t:'雕像說話了',d:'許願時，騎士雕像開口說了一句話。',hint:'運氣非常、非常好的時候。'},
   {id:'h_bookmon',t:'會咬人的書',d:'打倒了書本怪，把書拿回來。',hint:'有一本書，好像不想被撿走。'},
-  {id:'h_bookquiz',t:'懂書的人',d:'答對了司書出的題目。',hint:'撿書的時候，也要好好讀內容。'},
-  {id:'h_fakemilk',t:'標籤詐欺',d:'識破了兩瓶以上被換成草莓牛奶的番茄汁。',hint:'這瓶番茄汁，顏色好像有點粉紅？'},
+  {id:'h_bookquiz',t:'懂書的人',d:'答對了司書出的題目。',hint:'讀書，不是只有用嘴巴。'},
+  {id:'h_fakemilk',t:'標籤詐欺',d:'識破了兩瓶以上被換成草莓牛奶的番茄汁。',hint:'有些標籤在說謊。'},
   {id:'h_k10', t:'初次狩獵',d:'累計擊倒 10 隻災獸。',hint:'宅邸裡的災獸，好像怎麼打都打不完……',stat:'kills',goal:10},
   {id:'h_k50', t:'災獸剋星',d:'累計擊倒 50 隻災獸。',hint:'再多打一些。',stat:'kills',goal:50},
   {id:'h_k150',t:'宅邸清道夫',d:'累計擊倒 150 隻災獸。',hint:'多到數不清。',stat:'kills',goal:150},
-  {id:'h_dex', t:'災獸圖鑑',d:'南瓜蝠、骨頭犬、燭火鬼、南瓜精靈、南瓜稻草人，每一種都擊倒過。',hint:'認識宅邸裡的每一種災獸。'},
+  {id:'h_dex', t:'災獸圖鑑',d:'南瓜蝠、骨頭犬、燭火鬼、南瓜精靈、南瓜稻草人，每一種都擊倒過。',hint:'認識宅邸裡的每一位住民。'},
   {id:'h_fist',t:'赤手空拳',d:'空手擊倒 5 隻災獸。',hint:'誰說一定要武器？',stat:'fist',goal:5},
-  {id:'h_deflect',t:'鍋鏟全壘打',d:'用鍋鏟打掉 15 發飛過來的東西。',hint:'阿鳳姨的鍋鏟，不只是用來砍的。',stat:'deflect',goal:15},
-  {id:'h_boss',t:'稻草人退散',d:'擊退迷宮中央的南瓜稻草人。',hint:'迷宮中央的那個稻草人……真的只是裝飾嗎？'},
+  {id:'h_deflect',t:'鍋鏟全壘打',d:'用鍋鏟打掉 15 發飛過來的東西。',hint:'鍋鏟的用法，不只一種。',stat:'deflect',goal:15},
+  {id:'h_boss',t:'稻草人退散',d:'擊退迷宮中央的南瓜稻草人。',hint:'迷宮中央的那個，真的只是裝飾嗎？'},
   {id:'h_boss_nohit',t:'毫髮無傷',d:'一次都沒受傷就擊退南瓜稻草人。',hint:'連一顆種子都別碰到。'},
-  {id:'h_arsenal',t:'阿鳳姨的粉絲',d:'找到鍋鏟和土製手槍。',hint:'宅邸裡到處都是「鳳」的痕跡。'},
-  {id:'h_search',t:'翻箱倒櫃',d:'在同一次調查中，翻遍宅邸裡每一個可以翻找的地方。',hint:'每個抽屜、每個木箱、每個盆栽……'},
-  {id:'h_clues',t:'記筆記的好習慣',d:'在同一次調查中，收集到所有線索與證詞。',hint:'不放過任何人說的任何一句話。'},
+  {id:'h_arsenal',t:'阿鳳姨的粉絲',d:'找到鍋鏟和土製手槍。',hint:'「鳳」這個字，到處都是。'},
+  {id:'h_search',t:'翻箱倒櫃',d:'在同一次調查中，翻遍宅邸裡每一個可以翻找的地方。',hint:'每個抽屜都值得打開。'},
+  {id:'h_clues',t:'記筆記的好習慣',d:'在同一次調查中，收集到所有線索與證詞。',hint:'不放過任何一句話。'},
   {id:'h_sweet',t:'甜食中毒',d:'累計吃掉 20 顆糖果。',hint:'萬聖節就是要吃糖。',stat:'candy',goal:20},
-  {id:'h_down',t:'溫熱的鬆餅',d:'第一次在戰鬥中倒下。',hint:'倒下也沒關係，會有人照顧你的。'},
+  {id:'h_down',t:'溫熱的鬆餅',d:'第一次在戰鬥中倒下。',hint:'倒下也沒關係。'},
   {id:'h_nodeath',t:'不死之身',d:'一次都沒倒下就完成終幕。',hint:'從頭到尾都站著。'},
   {id:'h_detective',t:'名偵探',d:'第一幕的推理，全部一次答對。',hint:'推理的時候，別讓任何人吐槽你。'},
   {id:'h_accuse',t:'亂槍打鳥',d:'在第一幕把其他所有人都指認過一遍。',hint:'不是你、不是你、也不是你……'},
-  {id:'h_tombs',t:'墓園巡禮',d:'讀過墓園裡每一塊不同的墓碑。',hint:'墓碑上寫的東西，每一塊都不一樣。'},
-  {id:'h_tomb_dark',t:'雷光下的名字',d:'在停電的雷光下，看清那塊被雨打糊的墓碑。',hint:'有一塊墓碑的字看不清楚。也許換個時機……'},
-  {id:'h_mirror',t:'鏡中的眼睛',d:'在停電時照了梳妝鏡。',hint:'梳妝鏡裡的耳朵會動。那停電的時候呢？'},
-  {id:'h_locked',t:'打不開的門',d:'調查過宅邸裡每一個打不開的地方。',hint:'閣樓、墓室、樹籬、鏡子、衣櫃。'},
+  {id:'h_tombs',t:'墓園巡禮',d:'讀過墓園裡每一塊不同的墓碑。',hint:'每一塊石頭，都有自己的故事。'},
+  {id:'h_tomb_dark',t:'雷光下的名字',d:'在停電的雷光下，看清那塊被雨打糊的墓碑。',hint:'有些字，要換個光線才看得清。'},
+  {id:'h_mirror',t:'鏡中的眼睛',d:'在停電時照了梳妝鏡。',hint:'鏡子在黑暗中，也許會看見別的東西。'},
+  {id:'h_locked',t:'打不開的門',d:'調查過宅邸裡每一個打不開的地方。',hint:'那些打不開的地方，你都試過了嗎？'},
   {id:'h_maze',t:'迷宮的中心',d:'走到樹籬迷宮的正中央。',hint:'迷宮裡什麼都沒有。……真的嗎？'},
-  {id:'h_egg',t:'它也在看你',d:'一直盯著冰箱裡的雞蛋看。',hint:'冰箱裡那顆雞蛋好像在看你。'},
-  {id:'h_ian',t:'無底洞',d:'看著 IAN 吃到第 40 片鬆餅。',hint:'IAN 到底吃了幾片？'},
-  {id:'h_batk',t:'那雙紅眼睛',d:'和那隻飛不起來的小蝙蝠對上眼。',hint:'那隻小蝙蝠好像想說什麼。'},
-  {id:'h_bosspumpkin',t:'八十分的南瓜',d:'變成南瓜，讓首領打了分數。',hint:'首領最喜歡的東西是什麼？如果你也變成那個……'},
-  {id:'h_batear',t:'蝙蝠的耳朵',d:'變成蝙蝠，聽見了倒下的會長的聲音。',hint:'倒下的會長一動也不動。也許只有某種耳朵才聽得見……'},
-  {id:'h_batchat',t:'蝙蝠之間的秘密',d:'變成蝙蝠，和那隻飛不起來的小蝙蝠說上了話。',hint:'同類之間，也許聊得起來。'},
-  {id:'h_shishono',t:'謝絕髒客',d:'全身髒兮兮的，被司書擋在展覽室門外。',hint:'司書很愛惜他的書（和他的點心）。'},
-  {id:'h_horse',t:'幽靈駱馬的噴嚏',d:'和幽靈駱馬打了招呼。',hint:'雨裡的那隻駱馬，也是宅邸的一份子。'},
-  {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，打扮得越誇張越好。'},
+  {id:'h_egg',t:'它也在看你',d:'一直盯著冰箱裡的雞蛋看。',hint:'冰箱裡，有誰在看你。'},
+  {id:'h_ian',t:'無底洞',d:'看著 IAN 吃到第 40 片鬆餅。',hint:'大胃王的極限在哪裡？'},
+  {id:'h_batk',t:'那雙紅眼睛',d:'和那隻飛不起來的小蝙蝠對上眼。',hint:'那雙紅色的眼睛，好像想說什麼。'},
+  {id:'h_bosspumpkin',t:'八十分的南瓜',d:'變成南瓜，讓首領打了分數。',hint:'如果你也變成首領喜歡的東西……'},
+  {id:'h_batear',t:'蝙蝠的耳朵',d:'變成蝙蝠，聽見了倒下的會長的聲音。',hint:'有些聲音，人類的耳朵聽不到。'},
+  {id:'h_batchat',t:'蝙蝠之間的秘密',d:'變成蝙蝠，和那隻飛不起來的小蝙蝠說上了話。',hint:'同類之間，比較好說話。'},
+  {id:'h_shishono',t:'謝絕髒客',d:'全身髒兮兮的，被司書擋在展覽室門外。',hint:'有個地方，謝絕某種客人。'},
+  {id:'h_horse',t:'幽靈駱馬的噴嚏',d:'和幽靈駱馬打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
+  {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
 ];
 const DEX=['bat','hound','wisp','sprite','boss'];
@@ -1470,7 +1470,7 @@ function renderAch(){
       d.innerHTML='<span class="ic" aria-hidden="true"></span><div><b></b><p></p></div>';
       const shown=a.main||(a.side&&!a.secret);d.querySelector('.ic').textContent=on?'🏆':shown?'🔒':'？';
       d.querySelector('b').textContent=on||shown?a.t:'？？？';
-      let txt=on||shown?a.d:a.hint;
+      let txt=on?a.d:shown?(a.lk||a.d):a.hint;
       if(a.stat&&!on)txt+=`（${Math.min(AD.st[a.stat]||0,a.goal)} / ${a.goal}）`;
       if(on){const dt=new Date(AD.got[a.id]);txt+=`　${dt.getMonth()+1}/${dt.getDate()} 解鎖`}
       d.querySelector('p').textContent=txt;wrap.appendChild(d);
@@ -3875,7 +3875,7 @@ const ALLIES={
   ian:{reach:30,cd:70,lines:['IAN 掄起鏟子，把{f}揮成了一記全壘打！','「鏘！」IAN 又把{f}打飛了。','IAN：「下一個！」']},
   sui:{reach:30,cd:80,lines:['翠把自己的頭甩出去，把{f}砸飛了！','幽靈駱馬一個後踢，{f}飛出了圍牆。','翠：「欸嘿～打中了！」']},
 };
-let meleeHeld=false,gunHeld=false;
+let meleeHeld=false,gunHeld=false,meleeQ=0,gunQ=0;  /* Q：冷卻中按下的那一下先記著，冷卻一結束就補發 */
 const isTouch=matchMedia('(hover:none) and (pointer:coarse)').matches;
 function clearCombat(){Object.assign(CB,{slimes:[],mini:null,foes:[],shots:[],eshots:[],fx:[],drops:[],lock:null,lockKind:null,spawnT:600+Math.random()*600,graveT:300+Math.random()*300,swing:0,muzzle:0});$('bossbar').hidden=true}
 function camOrigin(){const s=sc(),[px,py]=pPix();
@@ -3946,7 +3946,7 @@ function hurtP(d){
 let warnT=0;
 function warn(t){if(tick-warnT>90){warnT=tick;toast(t)}}
 const canFight=()=>!!(S&&(S.flags.melee||S.flags.gun));
-function startReload(){if(!S.flags.gun||P.reload>0||P.ammo>=GUN_MAG)return;if(S.inv.ammo<=0){warn('沒有備用子彈了，到處翻找看看吧。');return}P.reload=70}
+function startReload(){if(!S.flags.gun||P.reload>0||P.ammo>=GUN_MAG)return;if(S.inv.ammo<=0){warn('沒有備用子彈了，到處翻找看看吧。');return}P.reload=50}
 /* 補血零食：按 H 會自動挑最剛好的那個吃 */
 const SNACK={
   candy:{t:'萬聖節糖果',heal:2,c:'#ff5fa2',eat:'吃了一顆糖果',d:'吃一顆回復一顆心。'},
@@ -4012,7 +4012,7 @@ function doFire(){
   if(!S.flags.gun){warn('身上沒有槍……');P.gcd=20;return}
   if(P.reload>0)return;
   if(P.ammo<=0){startReload();P.gcd=20;return}
-  P.ammo--;P.gcd=14;CB.muzzle=4;
+  P.ammo--;P.gcd=11;CB.muzzle=4;
   const[cx,cy]=pCenter(),[dx,dy]=DV[P.dir];
   CB.shots.push({x:cx+dx*9,y:cy+dy*9,vx:dx*5,vy:dy*5,life:40});
   if(P.ammo===0&&S.inv.ammo>0)startReload();
@@ -4120,8 +4120,9 @@ function updateCombat(){
   if(P.inv>0)P.inv--;if(P.mcd>0)P.mcd--;if(P.gcd>0)P.gcd--;
   if(CB.swing>0)CB.swing--;if(CB.muzzle>0)CB.muzzle--;if(CB.hurt>0)CB.hurt=Math.max(0,CB.hurt-.05);
   if(P.reload>0&&--P.reload===0){const take=Math.min(GUN_MAG-P.ammo,S.inv.ammo);P.ammo+=take;S.inv.ammo-=take}
-  if(meleeHeld&&P.mcd<=0)doMelee();
-  if(gunHeld&&P.gcd<=0)doFire();
+  if(meleeQ>0)meleeQ--;if(gunQ>0)gunQ--;
+  if((meleeHeld||meleeQ)&&P.mcd<=0){meleeQ=0;doMelee()}
+  if((gunHeld||gunQ)&&P.gcd<=0){gunQ=0;doFire()}
   if(S.flags.discovered&&!CB.lock){
     if(s.out&&!(S.flags.riot&&!S.flags.riotDone)&&--CB.spawnT<=0){
       CB.spawnT=900+Math.random()*900;
@@ -4284,7 +4285,7 @@ function drawHUD(){
   }
   let hx=5;
   if(S.flags.gun){
-    if(P.reload>0){R(ctx,5,14,22,3,'#2a1a14');R(ctx,5,14,22*(1-P.reload/70),3,'#d9a640')}
+    if(P.reload>0){R(ctx,5,14,22,3,'#2a1a14');R(ctx,5,14,22*(1-P.reload/50),3,'#d9a640')}
     else for(let i=0;i<GUN_MAG;i++)R(ctx,5+i*4,13,2,5,i<P.ammo?'#d9a640':'#4a3a2a');
     pxText('/'+S.inv.ammo,30,13,S.inv.ammo?'#e8d9bf':'#a05050');hx=50;
   }
@@ -4559,7 +4560,7 @@ function startPlay(isNew){
   if(S.v!==2){[S.x,S.y]=toNew(S.scene,S.x,S.y);S.v=2}
   Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,hp:S.hp>0?S.hp:MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
-  clearCombat();meleeHeld=gunHeld=false;
+  clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
   applyWorld();spawnSlimes();fade=1;nextBlack=60*45;blackOn=0;updateHUD();
   if(isNew)run(intro);
 }
@@ -4579,8 +4580,8 @@ window.addEventListener('keydown',e=>{
     return;
   }
   const lk=e.key.toLowerCase();
-  if(lk==='j'||lk==='x'){e.preventDefault();if(!busy)meleeHeld=true;return}
-  if(lk==='k'||lk==='c'){e.preventDefault();if(!busy)gunHeld=true;return}
+  if(lk==='j'||lk==='x'){e.preventDefault();if(!busy){meleeHeld=true;if(!e.repeat)meleeQ=20}return}
+  if(lk==='k'||lk==='c'){e.preventDefault();if(!busy){gunHeld=true;if(!e.repeat)gunQ=20}return}
   if(lk==='r'){if(!busy)startReload();return}
   if(lk==='h'||lk==='q'){if(!busy)useCandy();return}
   if(lk==='v'){if(!busy)useMagic();return}
@@ -4599,8 +4600,8 @@ document.querySelectorAll('.dpad button').forEach(b=>{
   const off=()=>{const i=held.indexOf(d);if(i>=0)held.splice(i,1);b.classList.remove('on')};
   b.addEventListener('pointerdown',on);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,off));
 });
-[['pM',v=>meleeHeld=v],['pG',v=>gunHeld=v]].forEach(([id,f])=>{const b=$(id);
-  b.addEventListener('pointerdown',e=>{e.preventDefault();f(true)});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>f(false)))});
+[['pM',v=>{meleeHeld=v;if(v)meleeQ=20}],['pG',v=>{gunHeld=v;if(v)gunQ=20}]].forEach(([id,f])=>{const b=$(id);
+  b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}if(!busy)f(true)});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>f(false)))});
 $('pH').addEventListener('pointerdown',e=>{e.preventDefault();useCandy()});
 $('cv').addEventListener('pointerdown',e=>{if(PITCH&&dlgRes){e.preventDefault();dlgRes()}});
 $('pA').addEventListener('pointerdown',e=>{e.preventDefault();if(choiceState)pickChoice();else if(dlgRes)advance();else interact()});
