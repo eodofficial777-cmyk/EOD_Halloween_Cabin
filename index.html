@@ -2249,6 +2249,92 @@ function restartGame(){
   S=newState(old.name,old.outfit,old.ears,old.look);startPlay(true);chapterSave(0);
 }
 
+/* ---------------- 隨劇情慢慢變多的裝飾 ----------------
+   ch：從第幾章開始出現（0 序幕、1~4 各幕、5 終幕）。只是畫在地上的擺設，不會擋路，面對它按調查會有一句描述。 */
+const DECOR=[
+  /* 廚房：拉拉的麵粉和失敗作越來越多 */
+  {sc:'kitchen',x:1,y:2,k:'flourbag',ch:0},{sc:'kitchen',x:5,y:4,k:'bowl',ch:0},
+  {sc:'kitchen',x:7,y:7,k:'flour',ch:1},{sc:'kitchen',x:10,y:8,k:'burnt',ch:1},{sc:'kitchen',x:3,y:10,k:'flour',ch:1},
+  {sc:'kitchen',x:11,y:6,k:'goo',ch:2},{sc:'kitchen',x:6,y:4,k:'stack',ch:2},{sc:'kitchen',x:14,y:8,k:'plates',ch:2},{sc:'kitchen',x:2,y:8,k:'flour',ch:2},
+  {sc:'kitchen',x:4,y:5,k:'ppie',ch:3},{sc:'kitchen',x:8,y:9,k:'steps',ch:3},{sc:'kitchen',x:12,y:10,k:'burnt',ch:3},
+  {sc:'kitchen',x:16,y:3,k:'saw',ch:4},{sc:'kitchen',x:5,y:8,k:'eggs',ch:4},{sc:'kitchen',x:9,y:10,k:'flour',ch:4},{sc:'kitchen',x:15,y:2,k:'flour',ch:4},
+  /* 小教堂：蠟燭和小南瓜頭一天比一天多 */
+  {sc:'chapel',x:2,y:2,k:'candles',ch:1},{sc:'chapel',x:17,y:2,k:'candles',ch:1},
+  {sc:'chapel',x:1,y:5,k:'phead',ch:2},{sc:'chapel',x:18,y:5,k:'phead',ch:2},{sc:'chapel',x:7,y:3,k:'candle',ch:2},
+  {sc:'chapel',x:12,y:3,k:'candle',ch:3},{sc:'chapel',x:3,y:4,k:'phead',ch:3},{sc:'chapel',x:16,y:6,k:'phead',ch:3},{sc:'chapel',x:2,y:10,k:'candles',ch:3},
+  {sc:'chapel',x:17,y:10,k:'candles',ch:4},{sc:'chapel',x:16,y:12,k:'phead',ch:4},{sc:'chapel',x:17,y:11,k:'phead',ch:4},{sc:'chapel',x:2,y:13,k:'phead',ch:4},{sc:'chapel',x:8,y:12,k:'candle',ch:4},
+  /* 2F 左客房：小波的房間，越睡越亂 */
+  {sc:'roomL',x:3,y:8,k:'toys',ch:0},
+  {sc:'roomL',x:4,y:3,k:'sheet',ch:1},{sc:'roomL',x:6,y:9,k:'carton',ch:1},
+  {sc:'roomL',x:9,y:6,k:'wrap',ch:2},{sc:'roomL',x:3,y:2,k:'zzz',ch:2},
+  {sc:'roomL',x:11,y:4,k:'pillows',ch:3},{sc:'roomL',x:13,y:9,k:'toys',ch:3},
+  {sc:'roomL',x:8,y:8,k:'fort',ch:4},{sc:'roomL',x:4,y:9,k:'wrap',ch:4},
+  /* 2F 右客房：鏡子和衣櫃那間，越來越詭異 */
+  {sc:'roomR',x:5,y:3,k:'web',ch:1},
+  {sc:'roomR',x:14,y:3,k:'clothes',ch:2},
+  {sc:'roomR',x:15,y:5,k:'candles',ch:3},{sc:'roomR',x:1,y:3,k:'web',ch:3},
+  {sc:'roomR',x:15,y:6,k:'phead',ch:4},{sc:'roomR',x:14,y:5,k:'phead',ch:4},{sc:'roomR',x:10,y:9,k:'web',ch:4},
+  /* 餐廳 */
+  {sc:'dining',x:16,y:1,k:'plates',ch:2},{sc:'dining',x:3,y:1,k:'phead',ch:3},{sc:'dining',x:2,y:8,k:'candles',ch:4},
+];
+const DECOR_T={
+  flourbag:'一大袋麵粉，袋口開著。上面寫著「鬆餅專用」。',
+  bowl:'攪拌碗和打蛋器。碗底黏著一點奶黃色的麵糊……好像動了一下。',
+  flour:'地上灑了一灘麵粉，上面印著半個手掌印。',
+  burnt:'一片燒焦的鬆餅，硬得可以拿來當盤子。上面用奶油寫著「失敗作」。',
+  goo:'一灘奶黃色的麵糊，看到你就往旁邊縮了一下。……是逃跑失敗的史萊姆鬆餅？',
+  stack:'疊得高高的鬆餅塔。旁邊的紙條寫著：「IAN 的，請勿偷吃。」',
+  plates:'一疊吃得乾乾淨淨的盤子。每個盤子都被舔得發亮。',
+  ppie:'南瓜口味的鬆餅……上面用果醬畫了一張咧嘴笑的臉。',
+  steps:'一排白白的麵粉腳印，從廚房一路走到門口。',
+  saw:'拉拉的電鋸靠在牆邊，鋸齒上只有麵糊。……真的只有麵糊。',
+  eggs:'一堆碎蛋殼。看來拉拉今天打了很多很多次麵糊。',
+  candle:'一根正在燃燒的蠟燭。蠟油流得長長的。',
+  candles:'好幾根蠟燭擠在一起燒著。不知道是誰點的，每天都多了幾根。',
+  phead:'一顆刻著笑臉的小南瓜頭，裡面點著蠟燭。……昨天這裡還沒有它。',
+  toys:'幾隻縫縫補補的布偶，排得整整齊齊，好像在等誰回來陪它們睡覺。',
+  sheet:'皺巴巴的床單。小波好像常常在這裡換床單……還是換身體？',
+  carton:'一個空的牛奶盒，上面貼著「草莓牛奶」的標籤。……底下還有一張被撕掉的「番茄汁」標籤。',
+  wrap:'散落一地的糖果紙。小波睡前好像都會偷吃糖。',
+  zzz:'空氣裡飄著淡淡的「Zzz……」。這個房間的睡意好像會傳染。',
+  pillows:'一大堆枕頭疊成了小山。小波還在找最舒服的那一個。',
+  fort:'用床單和枕頭搭成的小城堡。門口寫著：「睡教總部・請勿打擾」。',
+  web:'角落結了一張蜘蛛網。網子正中間，蜘蛛排成了一個南瓜的形狀。',
+  clothes:'衣櫃前散落了一堆衣服。衣櫃裡傳來咚咚的敲門聲……衣服是被推出來的？',
+};
+function decorAt(x,y){return S?DECOR.find(d=>d.sc===S.scene&&d.x===x&&d.y===y&&chOf()>=d.ch)||null:null}
+function drawDecor(cx,cy){
+  if(!S)return;const g=ctx,ch=chOf(),fl=(tick>>3)%2;
+  for(const d of DECOR){
+    if(d.sc!==S.scene||ch<d.ch)continue;const X=d.x*T-cx,Y=d.y*T-cy;
+    switch(d.k){
+      case 'flourbag':R(g,X+3,Y+4,10,11,K);R(g,X+4,Y+5,8,9,'#e8dfc8');R(g,X+5,Y+3,6,2,'#c9bfa0');R(g,X+6,Y+8,4,3,'#c8202a');R(g,X+1,Y+13,4,2,'#efe8dc');break;
+      case 'bowl':R(g,X+3,Y+8,10,5,K);R(g,X+4,Y+8,8,4,'#b8bec4');R(g,X+5,Y+8,6,2,'#f6e3a1');R(g,X+10,Y+3,1,6,'#8a8f96');R(g,X+9,Y+2,3,2,'#c8ccd2');break;
+      case 'flour':R(g,X+2,Y+7,10,5,'rgba(246,240,228,.9)');R(g,X+4,Y+5,6,2,'rgba(246,240,228,.75)');R(g,X+11,Y+9,3,2,'rgba(246,240,228,.6)');R(g,X+1,Y+10,2,1,'rgba(246,240,228,.6)');R(g,X+13,Y+5,1,1,'rgba(246,240,228,.8)');R(g,X+5,Y+8,4,1,'rgba(220,210,190,.9)');R(g,X+5,Y+9,1,2,'rgba(220,210,190,.9)');break;
+      case 'burnt':R(g,X+3,Y+8,10,5,'#1b1018');R(g,X+4,Y+9,8,3,'#3a2214');R(g,X+6,Y+10,4,1,'#efe8dc');if(fl){R(g,X+6,Y+4,1,3,'rgba(200,200,200,.4)');R(g,X+9,Y+3,1,3,'rgba(200,200,200,.3)')}break;
+      case 'goo':{const b=fl;R(g,X+3,Y+9-b,10,5+b,'#f6e3a1');R(g,X+4,Y+8-b,7,1,'#f6e3a1');R(g,X+3,Y+13,10,1,'#d9b860');R(g,X+6,Y+10,1,1,K);R(g,X+9,Y+10,1,1,K);break}
+      case 'stack':for(let i=0;i<5;i++){R(g,X+3,Y+12-i*2,10,2,i%2?'#d9a050':'#c88a3a')}R(g,X+5,Y+2,6,1,'#f6e3a1');R(g,X+7,Y+1,2,1,'#ffd25a');break;
+      case 'plates':for(let i=0;i<4;i++){R(g,X+3,Y+12-i*2,10,2,'#efe8dc');R(g,X+3,Y+13-i*2,10,1,'#b8b0a0')}break;
+      case 'ppie':R(g,X+3,Y+5,10,7,'#e2741c');R(g,X+3,Y+11,10,1,'#b8560f');R(g,X+5,Y+7,2,1,'#8e101a');R(g,X+9,Y+7,2,1,'#8e101a');R(g,X+5,Y+9,6,1,'#8e101a');break;
+      case 'steps':for(let i=0;i<3;i++){R(g,X+2+i*5,Y+4+(i%2)*6,3,4,'rgba(239,232,220,.7)');R(g,X+2+i*5,Y+3+(i%2)*6,1,1,'rgba(239,232,220,.7)')}break;
+      case 'saw':R(g,X+4,Y+2,6,12,K);R(g,X+5,Y+3,4,8,'#8a8f96');for(let i=0;i<4;i++)R(g,X+9,Y+3+i*2,1,1,'#c8ccd2');R(g,X+5,Y+11,4,3,'#a8232b');R(g,X+6,Y+5,2,3,'#f6e3a1');break;
+      case 'eggs':for(const[ex,ey]of[[3,9],[8,11],[11,8],[6,6]]){R(g,X+ex,Y+ey,3,2,'#efe8dc');R(g,X+ex,Y+ey+1,1,1,'#c9bfa0')}break;
+      case 'candle':R(g,X+6,Y+6,3,8,'#efe3c8');R(g,X+6,Y+13,4,1,'#c9bfb0');R(g,X+7,Y+4-fl,1,2,'#ffcc55');R(g,X+6,Y+5,3,1,'rgba(255,200,90,.4)');break;
+      case 'candles':for(const[cx2,h]of[[3,7],[7,10],[11,6]]){R(g,X+cx2,Y+14-h,2,h,'#efe3c8');R(g,X+cx2,Y+12-h-((fl+cx2)%2),1,2,'#ffcc55')}R(g,X+2,Y+14,12,1,'#c9bfb0');break;
+      case 'phead':{const gl=(tick>>3)%5?'#ffd25a':'#ffb03a';R(g,X+3,Y+5,10,9,K);R(g,X+4,Y+6,8,7,'#e2741c');R(g,X+7,Y+3,2,3,'#3f6b2a');R(g,X+5,Y+8,2,2,gl);R(g,X+9,Y+8,2,2,gl);R(g,X+6,Y+11,4,1,gl);break}
+      case 'toys':R(g,X+2,Y+7,6,7,'#c9a57a');R(g,X+2,Y+5,2,2,'#c9a57a');R(g,X+6,Y+5,2,2,'#c9a57a');R(g,X+4,Y+9,1,1,K);R(g,X+6,Y+9,1,1,K);R(g,X+9,Y+8,5,6,'#efe8dc');R(g,X+10,Y+6,1,2,'#efe8dc');R(g,X+10,Y+10,1,1,K);R(g,X+12,Y+10,1,1,K);break;
+      case 'sheet':R(g,X+1,Y+7,14,7,'#eef0f6');R(g,X+3,Y+5,6,3,'#eef0f6');R(g,X+4,Y+10,8,1,'#cdd2e0');R(g,X+10,Y+8,4,1,'#cdd2e0');break;
+      case 'carton':R(g,X+5,Y+4,6,10,K);R(g,X+6,Y+5,4,8,'#f2b8c6');R(g,X+6,Y+8,4,2,'#efe8dc');R(g,X+6,Y+5,4,1,'#ff5fa2');break;
+      case 'wrap':for(const[wx,wy,c]of[[2,6,'#ff5fa2'],[9,4,'#ffd25a'],[6,11,'#5fd0ff'],[12,10,'#a8ff6a']]){R(g,X+wx,Y+wy,3,2,c);R(g,X+wx-1,Y+wy,1,2,c);R(g,X+wx+3,Y+wy,1,2,c)}break;
+      case 'zzz':{const o=(tick>>4)%3;for(let i=0;i<2;i++){const zx=X+4+i*5,zy=Y+8-i*5-o;R(g,zx,zy,4,1,'#b9a58e');R(g,zx+2,zy+1,1,1,'#b9a58e');R(g,zx+1,zy+2,1,1,'#b9a58e');R(g,zx,zy+3,4,1,'#b9a58e')}break}
+      case 'pillows':for(const[px,py,c]of[[1,9,'#efe8dc'],[7,9,'#b89ad8'],[4,5,'#f4f6fb'],[9,4,'#e8dfc8']]){R(g,X+px,Y+py,7,5,K);R(g,X+px+1,Y+py+1,5,3,c)}break;
+      case 'fort':R(g,X-2,Y+2,20,13,K);R(g,X-1,Y+3,18,11,'#eef0f6');R(g,X+5,Y+7,6,7,'#2a2238');R(g,X-1,Y+3,18,1,'#cdd2e0');R(g,X+7,Y-2,1,5,'#8a6a4a');R(g,X+8,Y-2,4,3,'#ff5fa2');break;
+      case 'web':for(let i=0;i<6;i++){R(g,X+1+i,Y+1,1,1,'rgba(230,230,240,.7)');R(g,X+1,Y+1+i,1,1,'rgba(230,230,240,.7)');R(g,X+1+i,Y+7-i,1,1,'rgba(230,230,240,.6)')}R(g,X+4,Y+4,2,2,'#e2741c');break;
+      case 'clothes':R(g,X+1,Y+8,8,6,'#4a2d5e');R(g,X+6,Y+6,8,5,'#a8232b');R(g,X+3,Y+11,10,3,'#3b4a5a');R(g,X+9,Y+12,3,2,'#efe8dc');break;
+    }
+  }
+}
+
 /* ---------------- 支線清單（調查筆記） ---------------- */
 function questRows(){
   const rows=[];
@@ -3131,6 +3217,7 @@ function interact(){
   const id=npcAt(tx,ty);
   if(id){const o=NPCS[id];o.dir={up:'down',down:'up',left:'right',right:'left'}[P.dir];o.wait=Math.max(o.wait||0,150);return run(()=>talk(id))}
   const o=objectAt(tx,ty);if(o)return run(o);
+  {const dc=decorAt(tx,ty);if(dc)return run(()=>n(DECOR_T[dc.k]))}
   const t=tileText(tileAt(tx,ty),tx,ty);if(t)return run(()=>n(t));
 }
 const TOMBS=['這裡長眠著：說了「我去去就回」的人。','這裡長眠著：最後一片鬆餅。——拉拉 立','R.I.P. 首領的超能力（2054–2055）','這裡長眠著：IAN 的左手小指。他說之後會挖回來。','墓碑上的字被雨打得看不清了。','這裡長眠著：司書吃掉的第一千本書。'];
@@ -3653,7 +3740,7 @@ function render(){
   if(shake>0){cx+=Math.round((Math.random()-.5)*4);cy+=Math.round((Math.random()-.5)*4)}
   R(ctx,0,0,320,208,'#07050a');
   ctx.drawImage(s.cache,-cx,-cy);
-  if(S&&mode==='play')drawProps(cx,cy);
+  if(S&&mode==='play'){drawDecor(cx,cy);drawProps(cx,cy)}
   if(key0()==='chapel'&&qDoneP('po')){const[ax]=toNew('chapel',7,1),X=ax*T+8-cx,Y=T-cy;R(ctx,X-6,Y+2,12,7,K);R(ctx,X-5,Y+3,10,5,'#f4f6fb');R(ctx,X-2,Y+5,1,1,K);R(ctx,X+1,Y+5,1,1,K)}
   const key=S?S.scene:'outside';
   // floor-level objects
