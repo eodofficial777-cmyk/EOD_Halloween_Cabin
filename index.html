@@ -1429,7 +1429,7 @@ const ACHS=[
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
 ];
-const DEX=['nbat','bat','hound','wisp','sheet','eye','lantern','sprite','pghost','boss'];
+const DEX=['nbat','bat','hound','phound','wisp','sheet','eye','lantern','sprite','pghost','boss'];
 function achData(){try{const v=JSON.parse(ls.get(ACH_KEY)||'null');if(v&&v.got)return{got:v.got,st:v.st||{}}}catch(e){}return{got:{},st:{}}}
 let AD=achData();
 function achSave(){ls.set(ACH_KEY,JSON.stringify(AD))}
@@ -2000,7 +2000,7 @@ function llamaWin(){
 /* ---------------- IAN：怪物棒球 ---------------- */
 let PITCH=null;
 function catchFoe(e){
-  const q=qGet('ian');if(!q||q.st!=='on'||!['nbat','bat','hound','wisp','sprite','sheet','eye','lantern','pghost'].includes(e.type))return;
+  const q=qGet('ian');if(!q||q.st!=='on'||!['nbat','bat','hound','phound','wisp','sprite','sheet','eye','lantern','pghost'].includes(e.type))return;
   q.sack=q.sack||[];if(q.sack.length>=3)return;
   q.sack.push(e.type);toast(`抓到${FOES[e.type].name}了！（怪物袋 ${q.sack.length}/3）`);
 }
@@ -3871,6 +3871,7 @@ function tileText(c,x,y){
 const FOES={
   nbat:{name:'小黑蝠',hp:2,r:5,spd:.8,dmg:1},
   bat:{name:'南瓜蝠',hp:2,r:5,spd:.85,dmg:1},
+  phound:{name:'南瓜骨頭犬',hp:5,r:6,spd:.55,dmg:2},
   sheet:{name:'床單鬼',hp:3,r:6,spd:.5,dmg:1},
   eye:{name:'漂浮眼球',hp:3,r:5,spd:.5,dmg:1},
   lantern:{name:'南瓜燈籠',hp:4,r:6,spd:.6,dmg:1},
@@ -3934,7 +3935,7 @@ const SEARCH={
 const CB={foes:[],shots:[],eshots:[],fx:[],drops:[],lock:null,lockKind:null,spawnT:900,graveT:300,swing:0,swingR:13,muzzle:0,hurt:0,allyT:-9999};
 /* 會隨機出現災獸的室內房間 */
 /* 出怪表：前期的災獸還沒有南瓜腦袋，越到後期南瓜頭越多 */
-const FOE_OUT={1:['nbat','nbat','hound','wisp','sheet'],2:['nbat','bat','hound','wisp','sheet','eye'],3:['bat','bat','hound','eye','lantern','wisp'],4:['bat','hound','lantern','pghost','eye']};
+const FOE_OUT={1:['nbat','nbat','hound','wisp','sheet'],2:['nbat','bat','hound','wisp','sheet','eye'],3:['bat','bat','hound','phound','eye','lantern','wisp'],4:['bat','phound','phound','lantern','pghost','eye']};
 const FOE_IN={1:['nbat','nbat','wisp','sheet'],2:['nbat','bat','wisp','sheet','eye'],3:['bat','wisp','eye','lantern'],4:['bat','lantern','pghost','eye']};
 const foeCh=()=>Math.max(1,Math.min(4,chOf()));
 const foeBat=()=>chOf()<=1?'nbat':'bat';
@@ -3999,13 +4000,14 @@ function spawnRandom(n,types,o={}){
 }
 function spark(x,y,c,n=5){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=.6+Math.random()*1.2;CB.fx.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:12+((Math.random()*8)|0),c})}}
 function killFx(e){
-  const C={nbat:['#2a2238','#ff3030','#1b1018'],sheet:['#e8e4f0','#c8c4d8','#fff'],eye:['#f0ece4','#e0213a','#4a8a3a'],lantern:['#e2741c','#ffd25a','#5a5a5a'],pghost:['#e2741c','#3a2a4a','#ff9a2a'],bat:['#e2741c','#ffd25a','#1b1018'],hound:['#e8e4d4','#a8a49c','#ff3030'],wisp:['#9a5ad0','#e0c0ff','#c08af0'],boss:['#e2741c','#d9b860','#4a3a5a'],sprite:['#e2741c','#3f6b2a','#ffd25a'],vine:['#2f5a28','#c8202a','#efe3c8'],llama:['#e8f4f0','#b8e0d8','#fff'],ghost:['#e2741c','#eef0f6','#ffd25a'],book:['#7a2b2b','#efe3c8','#c9a13c']}[e.type];
+  const C={phound:['#e2741c','#d8d4c4','#ff9a2a'],nbat:['#2a2238','#ff3030','#1b1018'],sheet:['#e8e4f0','#c8c4d8','#fff'],eye:['#f0ece4','#e0213a','#4a8a3a'],lantern:['#e2741c','#ffd25a','#5a5a5a'],pghost:['#e2741c','#3a2a4a','#ff9a2a'],bat:['#e2741c','#ffd25a','#1b1018'],hound:['#e8e4d4','#a8a49c','#ff3030'],wisp:['#9a5ad0','#e0c0ff','#c08af0'],boss:['#e2741c','#d9b860','#4a3a5a'],sprite:['#e2741c','#3f6b2a','#ffd25a'],vine:['#2f5a28','#c8202a','#efe3c8'],llama:['#e8f4f0','#b8e0d8','#fff'],ghost:['#e2741c','#eef0f6','#ffd25a'],book:['#7a2b2b','#efe3c8','#c9a13c']}[e.type];
   for(let i=0;i<(e.type==='boss'||e.type==='ghost'?40:14);i++){const a=Math.random()*6.28,v=.5+Math.random()*2;CB.fx.push({x:e.x,y:e.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-.6,g:.05,life:20+((Math.random()*20)|0),c:C[i%3],s:2})}
 }
 function hitFoe(e,dmg,kx,ky){
   if(e.launch)return;e.dormant=false;
   e.hp-=dmg;e.flash=8;const m=e.type==='boss'?.15:1;e.kx+=kx*m;e.ky+=ky*m;
   if(e.type==='hound'&&e.state==='wind'){e.state='rest';e.st=30}
+  if(e.type==='phound'&&e.state==='wind'&&dmg>=2){e.state='rest';e.st=50}
   spark(e.x,e.y,'#fff6c8');
 }
 function hurtP(d){
@@ -4120,6 +4122,17 @@ function updFoe(e,pcx,pcy){
     case 'sprite':
       if((e.t%40)<22)moveE(e,ux*F.spd*1.6,uy*F.spd*1.6);
       break;
+    /* 南瓜骨頭犬：眼睛冒火蓄力後暴衝，撞到牆或衝完會重新瞄準，最多連衝三次 */
+    case 'phound':
+      if(e.state==='walk'){
+        if(dist<150)moveE(e,ux*F.spd,uy*F.spd);else moveE(e,Math.sin(e.t/40)*.3,Math.cos(e.t/50)*.3);
+        if(--e.cd<=0&&dist<130){e.state='wind';e.st=40;e.combo=3}
+      }else if(e.state==='wind'){if(--e.st<=0){const a=Math.atan2(dy,dx);e.dx=Math.cos(a);e.dy=Math.sin(a);e.face=Math.sign(e.dx)||e.face;e.state='dash';e.st=34}}
+      else if(e.state==='dash'){const hit=moveE(e,e.dx*3.2,e.dy*3.2);if(e.t%3===0)CB.fx.push({x:e.x,y:e.y+4,vx:0,vy:-.3,life:14,c:'#ff9a2a'});
+        if(hit)shake=Math.max(shake,4);
+        if(--e.st<=0||hit){if(--e.combo>0){e.state='wind';e.st=22}else{e.state='rest';e.st=110}}}
+      else if(--e.st<=0){e.state='walk';e.cd=150+((Math.random()*80)|0)}
+      break;
     case 'sheet':
       if(e.phase>0){e.phase--;moveE(e,ux*1.25,uy*1.25)}
       else{moveE(e,ux*F.spd+Math.sin(e.t/20)*.3,uy*F.spd);if(--e.cd<=0&&dist<140){e.cd=170+((Math.random()*60)|0);e.phase=70}}
@@ -4127,19 +4140,19 @@ function updFoe(e,pcx,pcy){
     case 'eye':
       e.lx=ux;e.ly=uy;
       if(e.state==='aim'){if(--e.st<=0){e.state='burst';e.st=3;e.bt=0}}
-      else if(e.state==='burst'){if(--e.bt<=0){e.bt=9;CB.eshots.push({x:e.x,y:e.y,vx:ux*2.2,vy:uy*2.2,life:160,dmg:1,k:'eye'});if(--e.st<=0){e.state='walk';e.cd=140+((Math.random()*60)|0)}}}
-      else{const want=dist<70?-1:dist>120?1:0,w=Math.sin(e.t/40)*.5;moveE(e,ux*F.spd*want-uy*w,uy*F.spd*want+ux*w);if(--e.cd<=0&&dist<160){e.state='aim';e.st=40}}
+      else if(e.state==='burst'){if(--e.bt<=0){e.bt=12;CB.eshots.push({x:e.x,y:e.y,vx:ux*1.9,vy:uy*1.9,life:160,dmg:1,k:'eye'});if(--e.st<=0){e.state='walk';e.cd=210+((Math.random()*80)|0)}}}
+      else{const want=dist<70?-1:dist>120?1:0,w=Math.sin(e.t/40)*.5;moveE(e,ux*F.spd*want-uy*w,uy*F.spd*want+ux*w);if(--e.cd<=0&&dist<160){e.state='aim';e.st=50}}
       break;
     case 'lantern':
       if(dist<160){const want=dist<55?-1:dist>90?1:0;moveE(e,ux*F.spd*want-uy*.6,uy*F.spd*want+ux*.6);
-        if(--e.cd<=0){e.cd=150+((Math.random()*40)|0);e.rot=e.rot?0:Math.PI/4;for(let i=0;i<4;i++){const a=i*Math.PI/2+e.rot;CB.eshots.push({x:e.x,y:e.y,vx:Math.cos(a)*1.3,vy:Math.sin(a)*1.3,life:200,dmg:1,k:'fire'})}}}
+        if(--e.cd<=0){e.cd=220+((Math.random()*60)|0);e.rot=e.rot?0:Math.PI/4;for(let i=0;i<4;i++){const a=i*Math.PI/2+e.rot;CB.eshots.push({x:e.x,y:e.y,vx:Math.cos(a)*1.3,vy:Math.sin(a)*1.3,life:200,dmg:1,k:'fire'})}}}
       else moveE(e,Math.sin(e.t/30)*.4,Math.cos(e.t/37)*.4);
       break;
     case 'pghost':
       if(e.blink>0){e.blink--;
-        if(e.blink===20){for(let i=0;i<8;i++){const a=Math.random()*6.28,nx=pcx+Math.cos(a)*55,ny=pcy+Math.sin(a)*55;if(!solidPx(nx,ny,false)){e.x=nx;e.y=ny;break}}}
-        if(e.blink===0){e.cd=200+((Math.random()*60)|0);for(let i=0;i<8;i++){const a=i/8*Math.PI*2;CB.eshots.push({x:e.x,y:e.y,vx:Math.cos(a)*1.2,vy:Math.sin(a)*1.2,life:200,dmg:1,k:'seed'})}}}
-      else{moveE(e,ux*F.spd,uy*F.spd);if(--e.cd<=0&&dist<170)e.blink=40}
+        if(e.blink===25){for(let i=0;i<8;i++){const a=Math.random()*6.28,nx=pcx+Math.cos(a)*55,ny=pcy+Math.sin(a)*55;if(!solidPx(nx,ny,false)){e.x=nx;e.y=ny;break}}}
+        if(e.blink===0){e.cd=290+((Math.random()*80)|0);for(let i=0;i<6;i++){const a=i/6*Math.PI*2;CB.eshots.push({x:e.x,y:e.y,vx:Math.cos(a)*1.1,vy:Math.sin(a)*1.1,life:200,dmg:1,k:'seed'})}}}
+      else{moveE(e,ux*F.spd,uy*F.spd);if(--e.cd<=0&&dist<170)e.blink=50}
       break;
     case 'nbat':case 'bat':
       if(dist<170){const w=Math.sin(e.t/8)*.7;moveE(e,ux*F.spd-uy*w,uy*F.spd+ux*w)}
@@ -4159,7 +4172,7 @@ function updFoe(e,pcx,pcy){
     case 'wisp':{
       const want=dist<60?-1:dist>110?1:0,s=Math.sin(e.t/50)*.5;
       moveE(e,ux*F.spd*want-uy*s,uy*F.spd*want+ux*s);
-      if(--e.cd<=0&&dist<170){e.cd=110+((Math.random()*40)|0);CB.eshots.push({x:e.x,y:e.y,vx:ux*1.5,vy:uy*1.5,life:200,dmg:1,k:'fire'})}
+      if(--e.cd<=0&&dist<170){e.cd=(chOf()>=3?150:110)+((Math.random()*40)|0);CB.eshots.push({x:e.x,y:e.y,vx:ux*1.5,vy:uy*1.5,life:200,dmg:1,k:'fire'})}
       break}
     case 'boss':{
       moveE(e,ux*F.spd,uy*F.spd);
@@ -4314,6 +4327,16 @@ function drawFoe(e,X,Y){
     else{R(g,x,y+7,4,2,K);R(g,x+1,y+6,3,1,K);R(g,x+12,y+7,4,2,K);R(g,x+12,y+6,3,1,K)}
     R(g,x+4,y+4,8,7,K);R(g,x+5,y+5,6,5,'#2a2238');R(g,x+5,y+2,1,2,K);R(g,x+10,y+2,1,2,K);
     R(g,x+6,y+6,1,1,'#ff3030');R(g,x+9,y+6,1,1,'#ff3030');R(g,x+7,y+9,1,1,'#fff');R(g,x+9,y+9,1,1,'#fff');
+  }else if(e.type==='phound'){
+    const shk=e.state==='wind'?((t>>1)%2):0;g.save();g.translate(X+shk,Y);if(e.face<0)g.scale(-1,1);
+    const lf=(t>>(e.state==='dash'?1:3))%2,gl=e.state==='wind'||e.state==='dash'?((t>>1)%2?'#ffd25a':'#ff5a1a'):'#ffb03a';
+    R(g,-8,-3,2,1,'#d8d4c4');R(g,-6,-2,11,5,'#d8d4c4');
+    R(g,-4,-1,1,3,'#3a3030');R(g,-2,-1,1,3,'#3a3030');R(g,0,-1,1,3,'#3a3030');
+    R(g,2,-9,9,8,K);R(g,3,-8,7,6,'#e2741c');R(g,5,-8,1,6,'#b8560f');R(g,6,-11,2,3,'#3f6b2a');
+    R(g,7,-6,2,2,gl);R(g,4,-6,1,2,gl);R(g,5,-3,5,1,gl);
+    if(e.state==='wind'||e.state==='dash'){R(g,9,-10,1,2,'#ff9a2a');R(g,4,-11,1,2,'#ff9a2a')}
+    R(g,-5,3,1,lf?3:2,'#c8c4b4');R(g,-2,3,1,lf?2:3,'#c8c4b4');R(g,1,3,1,lf?3:2,'#c8c4b4');R(g,3,3,1,lf?2:3,'#c8c4b4');
+    g.restore();
   }else if(e.type==='sheet'){
     const y=Y+Math.round(Math.sin(t/10)*2),W='#e8e4f0',Sd='#c8c4d8';if(e.phase>0)g.globalAlpha*=.3;
     R(g,X-4,y-9,8,1,K);R(g,X-6,y-8,12,13,K);R(g,X-4,y-8,8,1,W);R(g,X-5,y-7,10,12,W);R(g,X+3,y-6,2,11,Sd);
@@ -4333,7 +4356,7 @@ function drawFoe(e,X,Y){
     R(g,X-4,y-4,2,2,gl);R(g,X+2,y-4,2,2,gl);R(g,X-3,y,6,1,gl);R(g,X-2,y+1,1,1,gl);R(g,X+1,y+1,1,1,gl);
   }else if(e.type==='pghost'){
     const y=Y+Math.round(Math.sin(t/16)*2),gl=(t>>3)%5?'#ff9a2a':'#ff5a1a';
-    if(e.blink>0)g.globalAlpha*=e.blink>20?(e.blink-20)/20:(20-e.blink)/20;
+    if(e.blink>0)g.globalAlpha*=e.blink>25?(e.blink-25)/25:(25-e.blink)/25;
     R(g,X-7,y-3,14,11,K);R(g,X-6,y-2,12,9,'#3a2a4a');R(g,X-2,y-2,1,8,'#2a1e36');
     for(let i=0;i<5;i++)R(g,X-6+i*3,y+7,2,1+((i+(t>>3))%2),'#3a2a4a');
     R(g,X-9,y,3,2,'#3a2a4a');R(g,X+6,y,3,2,'#3a2a4a');R(g,X-10,y+1,1,1,'#8fa58a');R(g,X+9,y+1,1,1,'#8fa58a');
