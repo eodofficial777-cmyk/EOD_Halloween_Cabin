@@ -1215,7 +1215,6 @@ function applyWorld(){
     if(F.poAwake)set('po','hall',12,6,'stand');else if(F.poFell)set('po','hall',9,5,'pile');else set('po','roomL',2,3,'sleep');
   }else{
     set('lala','kitchen',1,4);
-    set('batk','outside',12,17,'hop');set('cone','outside',12,18);
     if(ch===2){set('ian','kitchen',9,4);if(F.poFell2&&!F.poCarried)set('po','hall',9,5,'pile')}
     else{set('po','roomL',2,3,'sleep');if(!F.suiBack){set('sui','outside',7,12,'nohead');set('horse','outside',8,11)}}
   }
@@ -1238,7 +1237,25 @@ function applyWorld(){
   if((ch===1&&F.discovered)||(ch===0&&F.gathered))pat('lala',[[9,4],[9,2],[4,2],[4,3]]);
   if((ch===1&&F.poAwake)||(ch===0&&F.gathered))pat('po',[[12,6],[15,6],[15,8],[12,8]]);
   /* 被錐齒獸追著跑的蝙蝠會長（第二、三幕） */
-  if(ch>=2&&ch<5){pat('batk',[[12,17],[22,17],[22,23],[12,23]],1.5,6);NPCS.batk.follower='cone'}
+  if(ch>=2&&ch<5)placeChase();
+}
+/* 被錐齒獸追著跑的蝙蝠會長：每一幕追到不同的地方，有的幕還會換房間 */
+const CHASE={2:[{sc:'hall',p:[[10,6],[15,6],[15,11],[10,11]]},{sc:'dining',p:[[2,7],[17,7],[17,9],[2,9]]}],
+  3:[{sc:'outside',p:[[12,17],[22,17],[22,23],[12,23]]}],
+  4:[{sc:'outside',p:[[12,7],[40,7]]},{sc:'chapel',p:[[9,3],[9,12],[10,12],[10,3]]}]};
+let chaseIdx=0,chaseT=60*75;
+function placeChase(){
+  const L=CHASE[chOf()];if(!L)return;const loc=L[chaseIdx%L.length],[x,y]=loc.p[0];
+  const base={mv:null,queue:[],qdone:null,dir:'down',wait:30,wc:0,pi:0,pspd:null,pwait:null,patrol:null,follower:null};
+  Object.assign(NPCS.batk,base,{scene:loc.sc,x,y,state:'hop',patrol:loc.p.map(q=>q.slice()),pspd:1.5,pwait:6,follower:'cone'});
+  Object.assign(NPCS.cone,base,{scene:loc.sc,x:x-1>0?x-1:x+1,y,state:undefined});
+}
+function chaseTick(){
+  const L=CHASE[chOf()];if(!L||L.length<2||busy||!S||mode!=='play'||CB.mini)return;
+  if(--chaseT>0)return;chaseT=60*75;
+  const was=NPCS.batk.scene;chaseIdx++;placeChase();
+  if(was===S.scene&&NPCS.batk.scene!==S.scene)toast('小蝙蝠和錐齒獸一路追著跑出去了……');
+  else if(NPCS.batk.scene===S.scene)toast('小蝙蝠和錐齒獸衝了進來！');
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function npcWalkable(o,x,y){
@@ -1324,7 +1341,10 @@ const EV={
   batseen:{t:'不會飛的小蝙蝠',d:'一隻眼睛紅紅的小蝙蝠，翅膀拍得很努力，卻飛不起來，一直被錐齒獸追著跑。'},
   pvoice:{t:'南瓜裡的聲音',d:'大南瓜裡傳出翠的聲音，說裡面好黑。她的頭在南瓜裡。',key:1},
   gesture:{t:'翠的身體比的手勢',d:'翠的身體指了指大南瓜，又指了指被錐齒獸追著跑的小蝙蝠，做出把東西往上拋的動作。',key:1},
-  witness:{t:'薊的目擊證詞',d:'錐齒獸追著不會飛的小蝙蝠衝過去，撞到翠，她的頭飛起來，剛好掉進大南瓜頂上的洞裡。',key:1},
+  witness:{t:'薊的目擊證詞',d:'薊看到翠的頭畫了一道漂亮的拋物線，掉進大南瓜頂上的洞。她一口咬定是首領踢的……可是她其實沒看到。',key:1},
+  fur:{t:'南瓜上的凹痕',d:'大南瓜的側面凹了一塊。凹痕上卡著幾根銀灰色、混著棕黃色的毛。……不是首領的白頭髮。',key:1},
+  skid:{t:'中庭的爪痕',d:'中庭石板上有一條長長的爪痕，從東邊一路衝向大南瓜。旁邊散落著幾根小蝙蝠的毛。',key:1},
+  ianhr:{t:'阿北的全壘打',d:'IAN 說他昨晚打了一記超大的全壘打，怪物飛向了南瓜田……該不會是他打到的吧？'},
 };
 Object.assign(EV,{
   cut:{t:'IAN 的證詞（三）',d:'睡覺時，好像有人往他身上倒了什麼，涼涼甜甜的。身體一直變大，然後「啪」地斷成兩半。',key:1},
@@ -1345,10 +1365,10 @@ Object.assign(EV,{
   gate:{t:'打開的柵欄',d:'翠看到小教堂裡，通往地下墓室的柵欄被打開了一條縫。'},
 });
 const REQ1=['juice','body','fridge','ghost','sheet'];
-const REQ3=['pvoice','gesture','witness'];
+const REQ3=['pvoice','gesture','witness','fur','skid'];
 const HINT1={juice:'會長身旁的那灘液體',body:'會長本人',fridge:'廚房的冰箱',ghost:'展覽室裡的司書',sheet:'2F 左客房的小波（他看起來很愛吃）'};
-const HINT3={pvoice:'屋外的大南瓜',gesture:'大南瓜旁邊翠的身體',witness:'溫室裡的薊（她好像什麼都看到了）'};
-const ITEMS={pancake:{t:'拉拉的鬆餅',d:'熱騰騰、香噴噴。拉拉說肚子餓沒辦法推理。'},atticKey:{t:'閣樓鑰匙',d:'拉拉鑰匙圈上的一把舊鑰匙，上面刻著「閣樓」。'}};
+const HINT3={pvoice:'屋外的大南瓜',gesture:'大南瓜旁邊翠的身體',witness:'溫室裡的薊（她好像什麼都看到了）',fur:'大南瓜的表面（繞著仔細看看）',skid:'中庭的石板地'};
+const ITEMS={stack20:{t:'一大疊鬆餅（二十片）',d:'從梯子上收下來的史萊姆鬆餅。拉拉說，處理掉才能把梯子借你。'},ladder:{t:'長梯子',d:'拉拉借你的梯子。上面還黏著一點麵糊。'},pancake:{t:'拉拉的鬆餅',d:'熱騰騰、香噴噴。拉拉說肚子餓沒辦法推理。'},atticKey:{t:'閣樓鑰匙',d:'拉拉鑰匙圈上的一把舊鑰匙，上面刻著「閣樓」。'}};
 const hasEv=k=>S.ev.includes(k), hasItem=k=>S.items.includes(k);
 function addEv(k){if(!hasEv(k)){S.ev.push(k);toast('獲得線索：'+EV[k].t);updateHUD();if(Object.keys(EV).every(hasEv))ach('h_clues')}}
 function addItem(k){if(!hasItem(k)){S.items.push(k);toast('獲得道具：'+ITEMS[k].t)}}
@@ -3321,6 +3341,8 @@ function drawMazeStuff(cx,cy,key){
     if(((tick+gr.x*17)%60)<10){R(g,X+12,Y+1,1,5,'#fff6c8');R(g,X+10,Y+3,5,1,'#fff6c8')}})}
   if(chOf()>=1)for(const l of LOST){if(l.sc!==key||(F.lostGot||[]).includes(l.id))continue;const X=l.x*T-cx,Y=l.y*T-cy;R(g,X+6,Y+10,4,3,'rgba(201,165,122,.55)');
     if(((tick+l.x*31)%150)<14){R(g,X+8,Y+5,1,5,'#fff6c8');R(g,X+6,Y+7,5,1,'#fff6c8')}}
+  if(key==='outside'&&chOf()===3&&!F.riotDone){for(let x=15;x<=22;x++){const X=x*T-cx,Y=20*T-cy;for(const o of[3,7,11])R(g,X,Y+o,16,1,'rgba(20,14,12,.55)');}
+    if(!hasEv('skid')&&(tick>>4)%2){const X=18*T-cx,Y=20*T-cy;R(g,X+7,Y-2,1,5,'#fff6c8');R(g,X+5,Y,5,1,'#fff6c8')}}
   if(key==='maze'){drawGarden(cx,cy);if(RACE)Q(RACE.fy,()=>drawRacer(cx,cy))}
   if(chOf()===4&&F.riddle)for(const k in LAMP_POS){const[sc,x,y]=LAMP_POS[k];if(sc!==key)continue;Q(y*T,()=>drawLamp(g,x*T-cx+(k==='maze'?14:0),y*T-cy-(k==='chapel'?4:0),lampOn(k)))}
   if(key==='crypt'&&chOf()===4&&lampsN()<4){const X=9*T-cx,Y=8*T-cy;
@@ -3810,18 +3832,78 @@ async function talk3(id){
       return say('boss','……大南瓜沒事就好。');
     case 'ji':
       if(!hasEv('witness')){
-        await say('ji','你在找翠的頭嗎？我的溫室視野可是最好的，全部都看到了喔～');
-        await say('ji','那隻錐齒獸追著一隻不會飛的小蝙蝠，一路衝過去——「碰」！撞到翠。');
-        await say('ji','她的頭就「咻——」地飛起來，剛好掉進大南瓜頂上那個洞裡。');
-        await say('ji','很漂亮的拋物線呢。');
+        await say('ji','你在找翠的頭嗎？我的溫室視野可是最好的～');
+        await say('ji','我看到一顆綠綠的東西，「咻——」地畫了一道超漂亮的拋物線，掉進大南瓜頂上的洞裡。');
+        await say('ji','那時候首領就躺在南瓜旁邊喔～……嗯，一定是他踢的吧！');
+        await say('me','你有看到他踢嗎？');
+        await say('ji','……沒有。我在幫玫瑰梳頭髮。可是他長得很可疑嘛～');
         addEv('witness');return;
       }
       return say('ji','要把南瓜打開的話，小心首領喔～他對那顆南瓜，比對我們好多了。');
-    case 'ian':await say('ian','要把南瓜劈開嗎？交給我，一鏟子就搞定！');return say('ian','啊，首領會生氣吧。算了算了！');
-    case 'lala':return say('lala','翠的頭在南瓜裡？那我把整顆南瓜舉起來倒一倒就好啦！……咦？大家為什麼都在搖頭？');
+    case 'ian':
+      if(hasItem('stack20')){
+        await say('me','阿北，這裡有二十片鬆餅……');
+        await say('ian','二十片？大叔我三口就解決！');
+        await n('IAN 把鬆餅一片一片塞進嘴裡。一片、兩片……十片……二十片。');
+        await n('最後一片還在他嘴裡扭了一下。');
+        await say('ian','……嗝。年紀大了，消化沒以前快啦。不過很好吃！幫我跟拉拉說謝謝！');
+        rmItem('stack20');F.stackEaten=1;F.ian=(F.ian||32)+20;if(F.ian>=40)ach('h_ian');return;
+      }
+      if(!hasEv('ianhr')){
+        await say('ian','翠的頭？……說到這個，大叔我昨晚打了一記超大的全壘打！');
+        await say('ian','怪物飛得好高好高，一路飛向南瓜田那邊……');
+        await say('ian','……該不會，是我打到翠了吧？哈哈哈……哈……');
+        addEv('ianhr');return;
+      }
+      await say('ian','要把南瓜劈開嗎？交給我，一鏟子就搞定！');return say('ian','啊，首領會生氣吧。算了算了！');
+    case 'lala':
+      if(F.needLadder&&!hasItem('ladder')&&!F.ladderSet){
+        if(F.stackEaten){
+          await say('lala','鬆餅都吃光了？唐先生好厲害！');
+          await say('lala','梯子拿去吧！……咦，梯子上還黏著一片。算了，那片是你的。');
+          addItem('ladder');return;
+        }
+        if(hasItem('stack20'))return say('lala','那疊鬆餅要趁熱吃喔！唐先生應該很樂意幫忙～');
+        await say('lala','梯子？有啊！……不過我現在拿它來晾鬆餅。');
+        await n('廚房角落，一把長梯子橫架在兩張椅子中間，每一格都掛滿了正在晾乾的史萊姆鬆餅。');
+        await n('……有幾片正試圖沿著梯子爬走。');
+        await say('lala','要借梯子的話，得先把這些鬆餅處理掉——一共二十片！');
+        await say('lala','我、我是說吃掉啦！浪費食物不好！');
+        await n('拉拉把一大疊鬆餅塞進你懷裡。……要找一個很能吃的人。');
+        addItem('stack20');return;
+      }
+      return say('lala','翠的頭在南瓜裡？那我把整顆南瓜舉起來倒一倒就好啦！……咦？大家為什麼都在搖頭？');
     case 'shisho':return say('shisho','頭在南瓜裡？……翠的頭本來就常常不在該在的地方。南瓜不好吃，我不幫忙。');
     case 'po':return n('小波睡得很熟，床單一起一伏。');
   }
+}
+async function skidMark(){
+  if(hasEv('skid'))return n('中庭石板上那條長長的爪痕，一路指向大南瓜。');
+  await n('中庭的石板上，有一條長長的爪痕，從東邊一路衝向大南瓜的方向。');
+  await n('爪痕旁邊，散落著幾根小小的黑色……羽毛？蝙蝠有羽毛嗎？');
+  await n('……仔細一看，是蝙蝠的毛。有一隻小蝙蝠，曾經被什麼東西追著，從這裡跑過去。');
+  addEv('skid');
+}
+async function deduction3(){
+  const F=S.flags;
+  await n('你把大家叫到了大南瓜旁邊。南瓜裡的翠：「欸？要開庭了嗎？」');
+  await ask('翠的頭是怎麼跑進南瓜裡的？',['首領把它塞進去的','被撞飛，畫了一道拋物線掉進去','阿北的全壘打打進去的'],1,
+    {0:['boss','……我連翻身都懶。還塞頭？'],2:['ian','大叔我打的是怪物，又不是翠的頭！……應該吧？']});
+  await say('me','翠的身體比了「咻——」的手勢，薊也看到了拋物線。她的頭是被撞飛的。');
+  await ask('是誰撞飛了翠？',['首領','幽靈羊駝','錐齒獸'],2,
+    {0:['boss','……南瓜上卡的毛，是銀灰色的。我是白色的。你眼睛也是南瓜做的嗎。'],1:['n','羊駝「呸」地吐了你一臉口水。……好像在說：才不是我。']});
+  addDirt('spit');
+  await say('me','南瓜凹痕上卡著銀灰色混棕黃色的毛，中庭還有一條爪痕一路衝向南瓜。是錐齒獸撞的！');
+  await ask('錐齒獸為什麼會衝過中庭？',['想吃大南瓜','被首領派去的','在追那隻飛不起來的小蝙蝠'],2,
+    {0:['shisho','……想吃南瓜的，只有拉拉的鍋子。'],1:['boss','……好麻煩。我沒有部下。']});
+  await say('me','爪痕旁邊有小蝙蝠的毛。錐齒獸在追小蝙蝠，一頭撞上了翠——所以，首領不是犯人！');
+  await say('boss','……早就說了。');
+  await say('ji','哎呀～原來我看錯了嘛。首領，對不起囉～');
+  await say('ian','大叔我也跟著亂猜……抱歉啦，首領！');
+  await say('boss','……好麻煩。原諒你們。……下次懷疑別人之前，先動動腦。');
+  F.ded3=true;F.needLadder=true;
+  await n('……接下來，只剩一個問題：要怎麼把翠的頭撈出來？');
+  await n('南瓜頂上的洞，比你高了快兩個頭。……得找一把梯子。');
 }
 async function pumpkin3(){
   const F=S.flags;
@@ -3832,14 +3914,27 @@ async function pumpkin3(){
     await n('南瓜裡傳出悶悶的聲音……是翠！');
     addEv('pvoice');return;
   }
+  if(!hasEv('fur')){
+    await n('你繞著大南瓜仔細看了一圈——');
+    await n('南瓜的側面凹了一塊，像是被什麼東西狠狠撞過。');
+    await n('凹痕上卡著幾根毛：銀灰色的，混著一點棕黃色。……不是首領的白頭髮。');
+    addEv('fur');return;
+  }
   const miss=REQ3.filter(k=>!hasEv(k));
   if(miss.length){
     await n('南瓜裡的翠：「快想辦法把我弄出去啦～頭髮都沾到南瓜籽了～」');
-    return n('……先弄清楚翠的頭是怎麼掉進去的吧。可以問問'+HINT3[miss[0]]+'。');
+    return n('……先弄清楚翠的頭是怎麼掉進去的吧。可以去查查'+HINT3[miss[0]]+'。');
   }
   if(F.riot)return n('南瓜精靈還在暴動，先把牠們打倒！');
-  const c=await choose('要想辦法把翠的頭弄出來嗎？',['動手吧','再等一下']);
+  if(!F.ded3){const c=await choose('線索都齊了。要把大家叫來，公布推理嗎？',['公布推理','再調查一下']);if(c===1)return;await deduction3();return}
+  if(!hasItem('ladder')){
+    await n('南瓜頂上的洞，比你高了快兩個頭。踮起腳尖也搆不到。');
+    return n('……要是有一把梯子就好了。廚房的拉拉，好像什麼東西都有。');
+  }
+  const c=await choose('要架好梯子，爬上大南瓜嗎？',['架梯子','再等一下']);
   if(c===1)return;
+  rmItem('ladder');F.ladderSet=1;
+  await n('你把梯子架在大南瓜上，一格一格往上爬——');
   await say('boss','……你們要對大南瓜做什麼。');
   await n('首領慢慢站了起來，懷裡南瓜燈的火光猛地亮了起來。');
   await say('boss','不准欺負大南瓜。');
@@ -3862,12 +3957,15 @@ async function riotEnd(){
   const B=NPCS.batk,C=NPCS.cone;
   await say('boss','……好啦。好啦。');
   await say('boss','大南瓜也被吵醒了。');
+  await n('你重新爬上梯子，把手伸進南瓜頂上的洞裡——');
+  await n('……摸到了一團濕濕的、黏著南瓜籽的頭髮。');
   await n('就在這時，中庭那邊傳來一陣急促的腳步聲——');
   for(const o of[B,C])Object.assign(o,{patrol:null,follower:null,mv:null,queue:[],scene:'outside'});
   Object.assign(B,{x:10,y:15});Object.assign(C,{x:10,y:18});
   await Promise.all([walkTo('batk',8,12,1.8,true),sleep(300).then(()=>walkTo('cone',7,11,2.2,true))]);
   shake=18;
   await n('咚！！錐齒獸收不住腳，一頭撞上了大南瓜。');
+  await n('梯子被撞倒了，你一屁股摔進南瓜田裡。');
   await n('「啵」的一聲——一顆綠頭髮的腦袋從南瓜頂上彈了出來，在空中轉了兩圈……');
   NPCS.sui.state=undefined;S.flags.suiBack=true;
   await n('……剛好落回翠自己的手裡。');
@@ -3876,8 +3974,8 @@ async function riotEnd(){
   await say('boss','……大南瓜沒事吧。');
   const away=Promise.all([walkTo('batk',10,22,1.8,true),sleep(300).then(()=>walkTo('cone',10,22,1.8,true))]);
   await n('錐齒獸晃了晃腦袋，又追著那隻不會飛的小蝙蝠跑走了。');
-  await say('ji','原來是錐齒獸撞的啊～首領，剛剛懷疑你，對不起嘛～……誰叫你長得一副很可疑的樣子。');
-  await say('boss','……好麻煩。原諒你們。下次懷疑別人之前，先動動腦。');
+  await say('ji','……還真的又是錐齒獸撞的耶～這傢伙是撞南瓜上癮了嗎？');
+  await say('boss','……大南瓜被撞了兩次。……好麻煩。');
   await n('錐齒獸跑過的泥地上，掉著一排南瓜籽。……牠到底是從哪裡跑進宅邸的？');
   addEv('seed3');
   await away;
@@ -4586,7 +4684,7 @@ function update(){
   if(PITCH)pitchTick();
   idleTick();
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
-  if(mode==='play'){pfTick();raceTick();suiAmbient()}
+  if(mode==='play'){pfTick();raceTick();suiAmbient();chaseTick()}
   sokoBarSync();
   if(ORGAN_T>0)ORGAN_T--;if(BROOM_T>0)BROOM_T--;
   if(mode==='play'&&!busy&&P.light>0&&--P.light===0)toast('蠟燭燒完了。（可以再去取火）');
@@ -4640,6 +4738,7 @@ function objectAt(nx,ny){
   {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
   {const l=lostAt(nx,ny);if(l)return()=>takeLost(l)}
   {const gr=gearAt(nx,ny);if(gr)return()=>openGear(gr)}
+  if(s==='outside'&&chOf()===3&&!S.flags.riotDone&&ny===20&&nx>=15&&nx<=22)return skidMark;
   if(SOKO[s]){if(pfAt(nx,ny))return pfPoke;if(pfGate(nx,ny)&&!SOKO[s].next)return pfEnd}
   if(s==='maze'){
     {const bd=bedAt(nx,ny);if(bd)return()=>gardenBed(bd)}
@@ -5375,13 +5474,14 @@ function render(){
   // markers
   if(mode==='play'&&S.flags.discovered&&!busy){
     const F=S.flags,ch=chOf(),sp=[];
-    const pend=ch===4?{ian:'cut',legs:'seam',lala:'lala4',shisho:'growth',boss:'laugh',sui:'gate',ji:hasEv('bottle')?'notji':null}:ch===1?{lala:'lala',shisho:'ghost',sui:'sui',boss:'boss',ian:'ian',ji:'potion'}:ch===2?{ian:'alibi',shisho:'ghost2',sui:'sight',boss:'boss2',ji:'potion2'}:{sui:'gesture',ji:'witness'};
+    const pend=ch===4?{ian:'cut',legs:'seam',lala:'lala4',shisho:'growth',boss:'laugh',sui:'gate',ji:hasEv('bottle')?'notji':null}:ch===1?{lala:'lala',shisho:'ghost',sui:'sui',boss:'boss',ian:'ian',ji:'potion'}:ch===2?{ian:'alibi',shisho:'ghost2',sui:'sight',boss:'boss2',ji:'potion2'}:{sui:'gesture',ji:'witness',ian:'ianhr'};
     for(const [id,o] of Object.entries(NPCS)){
       if(o.scene!==key)continue;
       let need=pend[id]&&!hasEv(pend[id]);
       if(ch===1){if(id==='po'&&o.state==='pile')need=true;if(id==='kaicho'&&(!hasEv('body')||REQ1.every(hasEv)))need=true}
       else if(ch===2){if(!F.disc2)need=false;if(id==='lala'&&hasEv('sight')&&!hasItem('atticKey')&&!F.atticOpen)need=true;if(id==='po'&&o.state==='pile')need=true}
       else if(ch===3&&id==='sui'&&F.suiBack)need=false;
+      if(ch===3&&F.ded3&&!F.ladderSet){if(id==='lala'&&!hasItem('ladder')&&!hasItem('stack20'))need=true;if(id==='ian'&&hasItem('stack20'))need=true}
       if(ch===4){if(!F.disc4)need=false;if(id==='ian'&&REQ4.every(hasEv)&&!F.ded4)need=true}
       if(id==='batk'&&!hasEv('batseen')&&ch<5)need=true;
       if(need){const[bx,by]=npcPos(o);bubble(bx-cx,by-cy-(id==='ji'?22:16))}
@@ -5479,7 +5579,9 @@ function updateHUD(){
     const k=REQ3.filter(hasEv).length;
     if(!F.a3seen)t='第三幕｜外面傳來悶悶的求救聲，去 <b>屋外的大南瓜</b> 看看。';
     else if(k<REQ3.length)t=`第三幕｜翠的頭是怎麼掉進大南瓜的？線索 <b>${k}/${REQ3.length}</b>`;
-    else if(!F.riot)t='第三幕｜到 <b>大南瓜</b> 旁邊，想辦法把翠的頭弄出來。';
+    else if(!F.ded3)t='第三幕｜線索齊了！到 <b>大南瓜</b> 旁邊公布推理。';
+    else if(!F.ladderSet&&!hasItem('ladder'))t=hasItem('stack20')?'第三幕｜找個 <b>很能吃的人</b> 把二十片鬆餅吃掉。':F.stackEaten?'第三幕｜鬆餅吃光了，回 <b>廚房</b> 找拉拉借梯子。':'第三幕｜南瓜太高了，需要一把 <b>梯子</b>。拉拉好像什麼都有。';
+    else if(!F.riot)t='第三幕｜帶著梯子到 <b>大南瓜</b> 旁邊，把翠的頭撈出來。';
     else t=`第三幕｜南瓜精靈暴動中！靠近就會被攻擊。剩下 <b>${F.riotLeft||0}</b> 隻`;
   }
   $('obj').innerHTML=t;$('loc').textContent=SCENES[S.scene].name;
