@@ -2413,11 +2413,14 @@ async function cansToBat(){
 /* ---------------- 首領：陪大南瓜發呆（什麼都不要按） ---------------- */
 let IDLE=null;
 const IDLE_DUR=[20,40,60];
+/* 干擾事件：[秒數, 種類, 文字]。qte／fakeend 是陷阱——按下去就算「動了」 */
 const IDLE_EV=[
-  [[3,'thought','好安靜……'],[8,'bat'],[13,'thought','鼻子好癢……'],[17,'boss','……zzz']],
-  [[3,'thunder'],[7,'thought','腳好像麻了……'],[12,'head'],[18,'bat'],[23,'thought','剛剛那是什麼聲音？'],[28,'chase'],[34,'boss','……大南瓜說你很乖。']],
-  [[3,'thought','好想看一下時間……'],[8,'thunder'],[12,'chase'],[17,'head'],[22,'thought','有東西在耳邊飛……'],[24,'bat'],[30,'blackout'],
-   [40,'thought','……是不是有人在叫我？'],[44,'voice','「{me}～鬆餅煎好囉～快來吃！」'],[50,'bat'],[53,'thunder'],[57,'boss','……再一下下。']],
+  [[2,'thought','好安靜……'],[5,'qte','快按 C！'],[8,'thought','……什麼事都沒發生。'],[9,'bat'],[12,'mosquito'],[16,'boss','……你的手指剛剛是不是動了？'],[18,'thought','……沒有動。']],
+  [[3,'thunder'],[6,'lala','鬆餅放這裡喔～趁熱吃！'],[11,'qte','連打 Z 接住鬆餅！'],[14,'thought','……鬆餅好香。不能動。'],[15,'head'],[19,'tickle'],[24,'ian','鏘——！'],
+   [29,'chase'],[33,'fakeend'],[36,'boss','……還沒結束。笨。'],[38,'boss','……大南瓜說你很乖。']],
+  [[3,'thought','好想看一下時間……'],[6,'ji','這瓶新的個人秘方，給你聞聞看～'],[10,'qte','按住 X 撐住！'],[13,'thought','……什麼都沒有要撐。'],[14,'thunder'],[17,'llama'],[21,'po','……這裡好睡。管他的。'],
+   [26,'phone','🔔 新訊息：「發呆發得怎麼樣？」'],[30,'blackout'],[39,'qte','QTE！快按 C 閃開！'],[42,'thought','……閃什麼？'],[44,'voice','「{me}～鬆餅煎好囉～快來吃！」'],[48,'mosquito'],
+   [52,'fakeend'],[55,'boss','……再一下下。'],[57,'thought','……睡著了嗎？']],
 ];
 function idleRound(r){
   return new Promise(res=>{dlg.hidden=true;clearPorts();IDLE={r,t:0,dur:IDLE_DUR[r]*60,ev:IDLE_EV[r],grace:45,done:res}});
@@ -2449,7 +2452,7 @@ function drawIdle(){
   if((t>>5)%3===0){const zx=66+((t>>3)%4),zy=150-((t>>3)%8);R(g,zx,zy,4,1,'#b9a58e');R(g,zx+2,zy+1,1,1,'#b9a58e');R(g,zx+1,zy+2,1,1,'#b9a58e');R(g,zx,zy+3,4,1,'#b9a58e')}
   let dark=false;
   for(const[s,k,txt]of IDLE.ev){
-    const len=k==='blackout'?480:180,a=t-s*60;if(a<0||a>=len)continue;const p=a/len;
+    const len=k==='blackout'?480:k==='qte'||k==='fakeend'?150:k==='mosquito'||k==='po'?240:k==='lala'?200:180,a=t-s*60;if(a<0||a>=len)continue;const p=a/len;
     if(k==='thought')idleBubble(txt,226,128);
     else if(k==='boss')idleBubble(txt,66,136);
     else if(k==='voice')idleBubble(txt.replace('{me}',S.name),160,40);
@@ -2458,6 +2461,30 @@ function drawIdle(){
     else if(k==='chase'){const x=Math.round(-30+p*380);g.save();g.translate(x,176);drawChar(g,'batk','down',0,tick);g.restore();g.save();g.translate(x-26,178);drawChar(g,'cone','right',0,tick);g.restore()}
     else if(k==='thunder'&&p<.3)idleText('轟隆——！',160,24,'#ffd25a');
     else if(k==='blackout')dark=p;
+    else if(k==='qte'){const on=(tick>>2)%2,X=96,Y=56;R(g,X-2,Y-2,132,50,on?'#ffd25a':'#fff6c8');R(g,X,Y,128,46,'#5a0f14');R(g,X+2,Y+2,124,2,'#8e1c1c');
+      const key=(txt.match(/[CZX]/)||['C'])[0];R(g,X+8,Y+12,22,22,K);R(g,X+9,Y+13,20,18,'#efe8dc');R(g,X+9,Y+29,20,2,'#b8b0a0');
+      g.font='14px DotGothic16, monospace';g.textAlign='center';g.textBaseline='middle';g.fillStyle=K;g.fillText(key,X+19,Y+22);g.textAlign='left';
+      R(g,X+36,Y+36,86,4,'#2a0808');R(g,X+36,Y+36,Math.round(86*(1-p)),4,on?'#ff5a5a':'#ffd25a');idleText(txt,172,Y+20)}
+    else if(k==='fakeend'){R(g,60,200,200,3,'#7ad05a');if((tick>>3)%2)idleText('✔ 發呆完成！按任意鍵起來～',160,176)}
+    else if(k==='mosquito'){const r=40*(1-p)+3,a2=t*.25,mx=Math.round(232+Math.cos(a2)*r),my=Math.round(168+Math.sin(a2*1.3)*r*.6);R(g,mx,my,2,2,K);if((tick>>1)%2){R(g,mx-2,my-1,2,1,'#c8c4d8');R(g,mx+2,my-1,2,1,'#c8c4d8')}
+      if(p<.8)idleBubble('嗡嗡嗡……',240,128);else idleBubble('……停在鼻子上了。',226,128)}
+    else if(k==='tickle'){const w=Math.round(Math.sin(t/3)*3);R(g,236+w,160,1,10,'#efe8dc');R(g,237+w,158,4,1,'#efe8dc');R(g,238+w,161,4,1,'#efe8dc');R(g,238+w,164,3,1,'#efe8dc');
+      idleBubble(p<.6?'有根羽毛在鼻子前面晃……':'哈……哈……哈啾……不、不能動……',226,128)}
+    else if(k==='lala'){const x=Math.round(Math.min(1,p*2.5)*-70+330);g.save();g.translate(x,150);g.scale(1.5,1.5);drawChar(g,'lala','left',(tick>>3)%2+1,tick);g.restore();
+      if(p>.35){R(g,248,176,18,4,'#efe8dc');R(g,250,172,14,4,'#d9a050');R(g,251,169,12,3,'#c88a3a');if((tick>>3)%2)R(g,255,163,1,4,'rgba(255,255,255,.5)')}
+      if(p>.2)idleBubble(lalaSpeak(txt),250,110)}
+    else if(k==='ian'){g.save();g.translate(30,128);g.scale(1.5,1.5);drawChar(g,'ian','right',0,tick);g.restore();
+      if(p>.3){const q2=(p-.3)/.7,bx=Math.round(60+q2*280),by=Math.round(150-Math.sin(q2*Math.PI)*60);drawFoe({type:'nbat',t:tick,x:0,y:0,hp:1,max:1,face:1,flash:0},bx,by)}
+      if(p<.5)idleBubble(txt,60,100);else idleBubble('……剛剛有東西從臉上飛過去。',226,128)}
+    else if(k==='ji'){g.save();g.translate(262,140);g.scale(1.5,1.5);drawChar(g,'ji','left',0,tick);g.restore();
+      for(let i=0;i<4;i++){const q2=((t+i*20)%80)/80;g.fillStyle=`rgba(255,140,200,${.35*(1-q2)})`;g.beginPath();g.arc(240-q2*10,166-q2*20,4+q2*6,0,6.28);g.fill()}
+      idleBubble(p<.55?txt:'……好香……好想笑……不能笑……',p<.55?250:226,p<.55?110:128)}
+    else if(k==='llama'){const x=Math.round(330-Math.min(1,p*3)*60);g.save();g.translate(x,150);g.globalAlpha=.75;drawChar(g,'horse','left',0,tick);g.restore();
+      if(p>.4&&p<.6){const q2=(p-.4)/.2;R(g,Math.round(x-q2*30),Math.round(158+q2*14),3,3,'rgba(220,240,255,.9)')}
+      if(p>=.6)R(g,240,176,5,2,'rgba(220,240,255,.8)');idleBubble(p<.45?'羊駝斜眼看著你……':p<.6?'呸！':'……口水落在臉旁邊一公分的地方。',226,128)}
+    else if(k==='po'){const y=Math.round(Math.min(1,p*3)*58+110);g.save();g.translate(222,y);g.rotate(-Math.PI/2);drawChar(g,'po','down',0,tick,'sleep');g.restore();
+      idleBubble(p<.5?txt:'……好重。小波整個人趴在你身上睡著了。',p<.5?240:226,p<.5?100:128)}
+    else if(k==='phone'){R(g,186,20,124,22,'#1a1214');R(g,186,20,124,1,'#efe8dc');idleText(txt,248,31)}
   }
   if(dark!==false){const a=Math.min(1,dark*6,(1-dark)*6)*.94;g.fillStyle=`rgba(2,1,4,${a})`;g.fillRect(0,0,320,208);
     if(dark>.25&&dark<.85){R(g,150,104,3,2,'#e0213a');R(g,166,104,3,2,'#e0213a');idleText('……停電了。',160,150,'#b9a58e')}}
@@ -2676,6 +2703,7 @@ async function idleSession(){
   else if(chOf()===4)await say('boss','……又有人被冤枉了？……這間屋子的人，懷疑別人的速度比南瓜長得還快。');
   if(F.bigPumpkin)await n('大南瓜比之前大了一倍，躺在旁邊，像靠著一座溫暖的小山。');
   await say('boss','……躺下來。什麼都不要做。……這你應該很擅長吧。');
+  if(!q.round&&!q.fails)await say('boss','……不管發生什麼事、不管誰叫你做什麼，都不要動。');
   await n(`（第 ${q.round+1} 輪：撐過 ${IDLE_DUR[q.round]} 秒，什麼按鍵都不要按，也不要點畫面。動了 5 次的話，首領會換個方式陪你。）`);
   for(;;){
     await n('你在大南瓜旁邊躺了下來。雨聲沙沙的。');
