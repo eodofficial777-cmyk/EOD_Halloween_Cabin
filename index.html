@@ -700,7 +700,7 @@ function drawEntity(g,id,X,Y,dir,f,t,st,blink){
 }
 
 /* ---------------- 地圖 ---------------- */
-const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&()]~^:!'.split(''));
+const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&()]~^:!{}'.split(''));
 function buildOutside(){
   const W=46,H=29,m=[];
   for(let y=0;y<H;y++){const r=[];for(let x=0;x<W;x++)r.push((x<3||x>42||y<2||y>26)?'f':'g');m.push(r)}
@@ -900,7 +900,17 @@ const SCENES={
     '#######DD#######'],
     exits:[[7,11,'outside',6,6,'down'],[8,11,'outside',6,6,'down'],[14,9,'crypt',10,14,'up']]},
   maze:{name:'花園迷宮',out:1,map:buildMaze(),
-    exits:[[0,10,'outside',32,18,'left']]},
+    exits:[[0,10,'outside',32,18,'left'],[0,1,'candy',1,4,'right']]},
+  candy:{name:'秘密糖果倉庫',map:[
+    '############',
+    '#{{{{.}}}}.#',
+    '#..........#',
+    '#.%.{{..%..#',
+    'D..........#',
+    '#.%......%.#',
+    '#..........#',
+    '############'],
+    exits:[[0,4,'maze',1,1,'right']]},
   crypt:{name:'地下墓室',map:[
     '######################',
     '#l..................l#',
@@ -945,7 +955,8 @@ function drawTile(g,c,X,Y,tx,ty,sc){
   const wall=()=>{R(g,X,Y,16,16,'#2b1a1f');R(g,X+2,Y,1,13,'#36212a');R(g,X+10,Y,1,13,'#36212a');R(g,X+6,Y+3,1,1,'#43282f');R(g,X+14,Y+8,1,1,'#43282f');R(g,X,Y+13,16,3,'#1a0e12');R(g,X,Y+13,16,1,'#5a3a2a')};
   const grass=(b,l)=>{R(g,X,Y,16,16,b);for(let i=0;i<4;i++)R(g,X+((h>>(i*4))%15),Y+((h>>(i*4+2))%13),1,2,l)};
   switch(c){
-    case '.':if(sc==='bath'){R(g,X,Y,16,16,(tx+ty)%2?'#e8e2d8':'#3a3640');R(g,X,Y,16,1,(tx+ty)%2?'#f6f0e6':'#4a4650')}
+    case '.':if(sc==='candy'){R(g,X,Y,16,16,'#5a3a3e');for(let i=0;i<4;i++){R(g,X,Y+i*4,16,1,'#6a464a');R(g,X,Y+i*4+3,16,1,'#46282c')}if(h%7===0)R(g,X+5,Y+6,2,2,['#ff5fa2','#5fd0ff','#ffd25a'][h%3])}
+      else if(sc==='bath'){R(g,X,Y,16,16,(tx+ty)%2?'#e8e2d8':'#3a3640');R(g,X,Y,16,1,(tx+ty)%2?'#f6f0e6':'#4a4650')}
       else if(sc==='crypt'){R(g,X,Y,16,16,'#26222a');R(g,X,Y,16,1,'#1c1920');R(g,X,Y,1,16,'#1c1920');if(h%5===0)R(g,X+5,Y+6,4,1,'#302b34');if(h%11===0)R(g,X+9,Y+10,2,1,'#e2741c')}
       else if(sc==='greenhouse'){R(g,X,Y,16,16,'#5a3a2e');R(g,X,Y,16,1,'#4a2e24');R(g,X,Y,1,16,'#4a2e24');R(g,X+8,Y+8,8,1,'#4a2e24');R(g,X+8,Y+8,1,8,'#4a2e24')}
       else if(sc==='chapel'){R(g,X,Y,16,16,'#3e383c');R(g,X,Y,16,1,'#332e31');R(g,X,Y,1,16,'#332e31');if(h%4===0)R(g,X+4,Y+5,3,1,'#4a4448')}else floor();break;
@@ -953,6 +964,10 @@ function drawTile(g,c,X,Y,tx,ty,sc){
     case '#':wall();break;
     case 'w':wall();R(g,X+3,Y+1,10,11,'#6b4a3a');R(g,X+4,Y+2,8,9,'#16202e');R(g,X+7,Y+2,2,9,'#6b4a3a');R(g,X+4,Y+6,8,1,'#6b4a3a');R(g,X+5,Y+3,1,2,'#2a3a50');R(g,X+10,Y+7,1,2,'#2a3a50');break;
     case 'P':wall();R(g,X+2,Y+2,12,9,'#b08a3a');R(g,X+3,Y+3,10,7,['#3a4a3a','#4a3040','#2e3e52'][h%3]);R(g,X+6,Y+5,4,4,['#c9b38a','#8a6a50','#d8c8a0'][h%3]);R(g,X+5,Y+9,6,1,'#1d1420');break;
+    case '{':{floor();R(g,X,Y+1,16,14,'#5a3420');R(g,X,Y+7,16,1,'#3a2214');R(g,X,Y+14,16,1,'#3a2214');
+      const cs=['#ff5fa2','#5fd0ff','#a8ff6a','#ffd25a','#e2741c','#c08af0'];for(let r=0;r<2;r++)for(let i=0;i<3;i++){const c=cs[(tx*3+i+r*2)%6],x=X+1+i*5,y=Y+2+r*7;R(g,x,y,4,5,'rgba(220,235,245,.55)');R(g,x+1,y+2,2,3,c);R(g,x,y,4,1,'#c9a13c')}break}
+    case '}':{floor();R(g,X,Y+1,16,14,'#3a2214');R(g,X,Y+7,16,1,'#22120a');for(let r=0;r<2;r++)for(let i=0;i<3;i++){const x=X+2+i*5,y=Y+2+r*7;R(g,x,y+1,3,4,['#9ad8c8','#c08af0','#ff9ac0'][(i+r+tx)%3]);R(g,x+1,y,1,1,'#c9a13c');R(g,x,y+3,3,1,'#e2741c')}
+      if(tx===8&&ty===1){R(g,X+7,Y+9,3,4,'#120a08')}break}
     case '~':{const bg=(tx+ty)%2?'#e8e2d8':'#3a3640';R(g,X,Y,16,16,bg);const L=at(-1,0)!=='~',Rr=at(1,0)!=='~',Tp=at(0,-1)!=='~';
       const x0=X+(L?2:0),w=16-(L?2:0)-(Rr?2:0);
       if(Tp){R(g,x0,Y+6,w,10,'#f6f4ee');R(g,x0,Y+5,w,2,'#d9a640');R(g,x0+(L?1:0),Y+8,w-(L?1:0)-(Rr?1:0),8,'#9ad0e0');R(g,X+3+((tx*5)%7),Y+9,3,2,'#ffd2e6');R(g,X+9-((tx*3)%5),Y+12,2,2,'#fff');R(g,X+6,Y+10,2,2,'#ffb8d8');
@@ -988,7 +1003,7 @@ function drawTile(g,c,X,Y,tx,ty,sc){
       if(!Tp){R(g,X+3,Y+12,4,3,'#5a5a62');R(g,X+4,Y+11,2,1,'#8a8f96')}
       break}
     case '&':R(g,X,Y,16,16,'#26222a');R(g,X+3,Y+1,10,14,'#1a0e0a');R(g,X+4,Y+2,8,12,'#5e3a20');R(g,X+4,Y+2,8,1,'#7a5232');R(g,X+7,Y+4,2,8,'#c9a54a');R(g,X+5,Y+6,6,2,'#c9a54a');break;
-    case 'D':if(sc==='bath')R(g,X,Y,16,16,'#e8e2d8');else if(sc==='crypt')R(g,X,Y,16,16,'#26222a');else if(sc==='outside')R(g,X,Y,16,16,tx===6?'#c4bcac':tx===28?'#2a3a3e':'#352325');else if(sc==='greenhouse'||sc==='chapel')R(g,X,Y,16,16,sc==='chapel'?'#3e383c':'#5a3a2e');else floor();R(g,X+2,Y,12,16,'#2a170e');R(g,X+3,Y+1,10,15,'#5e3a20');R(g,X+3,Y+8,10,1,'#4a2c18');R(g,X+8,Y+1,1,15,'#4a2c18');R(g,X+10,Y+9,1,1,'#e0b84a');break;
+    case 'D':if(sc==='candy')R(g,X,Y,16,16,'#5a3a3e');else if(sc==='bath')R(g,X,Y,16,16,'#e8e2d8');else if(sc==='crypt')R(g,X,Y,16,16,'#26222a');else if(sc==='outside')R(g,X,Y,16,16,tx===6?'#c4bcac':tx===28?'#2a3a3e':'#352325');else if(sc==='greenhouse'||sc==='chapel')R(g,X,Y,16,16,sc==='chapel'?'#3e383c':'#5a3a2e');else floor();R(g,X+2,Y,12,16,'#2a170e');R(g,X+3,Y+1,10,15,'#5e3a20');R(g,X+3,Y+8,10,1,'#4a2c18');R(g,X+8,Y+1,1,15,'#4a2c18');R(g,X+10,Y+9,1,1,'#e0b84a');break;
     case '=':case 'U':R(g,X,Y,16,16,'#5c3c2d');for(let i=0;i<4;i++){R(g,X,Y+i*4+3,16,1,'#2e1c14');R(g,X,Y+i*4,16,1,'#704a38')}if(c==='U')R(g,X,Y,16,16,'rgba(0,0,0,.35)');break;
     case 'I':floor();R(g,X+6,Y,4,16,'#2a170e');R(g,X+7,Y,2,16,'#6b4026');break;
     case 'T':floor();if(sc==='dining'){R(g,X,Y,16,16,'#d9cfc0');R(g,X,Y+6,16,4,'#8e1c24');if(OY===3)R(g,X,Y,16,1,'#b8ae9f');if(h%3===0){R(g,X+7,Y+2,2,4,'#efe3c8');R(g,X+7,Y,2,2,'#ffcc55')}else if(h%3===1){R(g,X+4,Y+11,8,3,'#efe8dc');R(g,X+5,Y+12,6,1,'#c9bfb0')}}else{R(g,X,Y+1,16,13,'#7a5232');R(g,X,Y+1,16,2,'#8e6440');if(h%2)R(g,X+4,Y+5,7,4,'#c9b38a')}break;
@@ -1229,6 +1244,11 @@ Object.assign(EV,{
   lala4:{t:'拉拉的證詞（二）',d:'拉拉整晚都在廚房做鬆餅，電鋸上只有麵糊。她說電鋸切出來的斷口，不會那麼「毛毛的」。'},
   notji:{t:'不是薊的藥水',d:'薊的藥水瓶上都畫著荊棘標誌。咧嘴笑的南瓜標誌，她從來沒看過。'},
   laugh:{t:'首領聽到的笑聲',d:'首領說，墓園的地底下好像一直有東西在嘻嘻嘻地笑。'},
+  riddle:{t:'封印上的紙條',d:'「想見我？先把四盞南瓜燈點亮吧！」一、睡教的祭壇前，說出唯一的教義。二、迷宮裡的騎士，把頭轉向回家的方向。三、小波床邊的盒子，密碼是那天晚上喝掉的「草莓牛奶」數量。四、首領最好的朋友身邊，有一顆會發光的弟弟。',key:1},
+  hint_sui:{t:'翠的迷路秘訣',d:'翠在迷宮裡迷路時，都會把頭轉向宅邸的方向。宅邸在迷宮的西邊。'},
+  hint_boss:{t:'大南瓜的弟弟',d:'首領說，田裡第三排、最右邊那顆南瓜，是大南瓜的弟弟。敲一敲就會亮。'},
+  scare:{t:'稻草人的南瓜頭',d:'迷宮稻草人的南瓜頭內側，畫著咧嘴笑的南瓜標誌。稻草人，也是某個人的惡作劇？'},
+  stash:{t:'南瓜標誌的藥水架',d:'迷宮裡的秘密糖果倉庫，排著一整排畫著咧嘴笑南瓜的藥水。「超級長大藥水（試作品）」那一格是空的。'},
   gate:{t:'打開的柵欄',d:'翠看到小教堂裡，通往地下墓室的柵欄被打開了一條縫。'},
 });
 const REQ1=['juice','body','fridge','ghost','sheet'];
@@ -1324,6 +1344,7 @@ const ACHS=[
   {id:'m_riot', main:1,t:'南瓜精靈鎮壓',d:'平息大南瓜旁的南瓜精靈暴動。'},
   {id:'m_act3', main:1,t:'第三幕・南瓜裡的頭',d:'幫翠找回她的頭。'},
   {id:'m_act4', main:1,t:'第四幕・縫線的真相',d:'揭開 IAN 斷成兩半的真相，替拉拉洗清冤屈。'},
+  {id:'m_seal',main:1,t:'四盞南瓜燈',d:'解開謎題，點亮通往墓室深處的四盞南瓜燈。'},
   {id:'m_final',main:1,t:'終幕・不給糖就搗蛋',d:'打倒地下墓室深處的南瓜幽靈，和大家一起離開宅邸。'},
 
   {id:'q_po',side:1,t:'睡教的信徒',d:'把最舒服的枕頭供奉在睡教的祭壇上。'},
@@ -1363,6 +1384,11 @@ const ACHS=[
   {id:'h_bath3',t:'髒到不行',d:'身上同時沾著三種以上的髒東西去泡澡。',hint:'口水、南瓜汁、麵糊、灰塵、花瓣……全部一起洗掉。'},
   {id:'h_snack3',t:'台灣零食巡禮',d:'吃過糖果、乘乘米果和鳳梨酥。',hint:'宅邸裡，不只有糖果可以吃。'},
   {id:'h_magic3',t:'七十二變',d:'喝神奇藥水變成過怪物、南瓜和幽靈。',hint:'神奇藥水的效果，每次都不一樣。'},
+  {id:'h_candyroom',t:'秘密糖果倉庫',d:'用稻草人的鑰匙，打開了迷宮裡的秘密倉庫。',hint:'迷宮入口附近的樹籬裡，有一扇上鎖的小木門。'},
+  {id:'h_lost',t:'失物招領',d:'把迷宮裡撿到的五樣失物，都還給了主人。',hint:'迷宮的死路裡，好像掉了不少東西。'},
+  {id:'h_wish',t:'許願池',d:'在迷宮中央的噴泉丟糖果許願。',hint:'噴泉的池底閃閃發亮。'},
+  {id:'h_wish_wink',t:'雕像眨眼了',d:'許願時，騎士雕像對你眨了眨眼。',hint:'許願池的雕像，好像會動？'},
+  {id:'h_wish_talk',t:'雕像說話了',d:'許願時，騎士雕像開口說了一句話。',hint:'非常、非常偶爾才會發生。'},
   {id:'h_k10', t:'初次狩獵',d:'累計擊倒 10 隻災獸。',hint:'宅邸裡的災獸，好像怎麼打都打不完……',stat:'kills',goal:10},
   {id:'h_k50', t:'災獸剋星',d:'累計擊倒 50 隻災獸。',hint:'再多打一些。',stat:'kills',goal:50},
   {id:'h_k150',t:'宅邸清道夫',d:'累計擊倒 150 隻災獸。',hint:'多到數不清。',stat:'kills',goal:150},
@@ -1708,6 +1734,7 @@ async function sideTalk(id){
 }
 function sideOption(id){
   const ch=chOf();
+  {const lo=LOST.find(l=>l.owner===id&&hasItem('lost_'+l.id));if(lo&&NPCS[id].state!=='nohead')return['把'+lo.t+'還給'+NAMES[id],()=>returnLost(lo)]}
   const F=S.flags;
   if(cansOk()){
     if(id==='kaicho'&&ch===0)return['把番茄罐頭交給會長',cansToKaicho];
@@ -2042,6 +2069,7 @@ function drawIdle(){
 }
 
 async function altar(){
+  if(chOf()===4&&S.flags.riddle&&!lampOn('chapel'))return lampChapel();
   const q=qGet('po');
   if(q&&q.st==='done')return n('祭壇正中央供奉著那顆會飄的白色抱枕。一靠近，就忍不住想打哈欠。');
   if(q&&q.st==='alt')return n('祭壇上供奉著'+PILLOWS[q.offered].t+'。坐在這裡，就會很想找人聊天。');
@@ -2439,6 +2467,138 @@ async function takeBath(){
   await n('……身體暖呼呼的，體力全部恢復了。');
   F.dirt=[];F.dirtTalk=0;F.freshTalk=0;P.fresh=60*90;P.hp=MAXHP;ach('h_bath');
   toast('洗得香噴噴的了！體力全滿。');
+}
+
+/* ---------------- 花園迷宮：稻草人、糖果倉庫、失物、許願池 ---------------- */
+const STRAW={x:13,y:12};
+Object.assign(ITEMS,{mazeKey:{t:'生鏽的小鑰匙',d:'從迷宮稻草人的稻草堆裡找到的。上面刻著一顆咧嘴笑的南瓜。'}});
+const LOST=[
+  {id:'pinky',owner:'ian',x:14,y:4,t:'IAN 的左手小指',d:'一根縫線斷掉的手指。墓碑上說，IAN 之後會來挖回去……原來掉在這裡。'},
+  {id:'earring',owner:'sui',x:8,y:11,t:'骷髏耳環',d:'小小的骷髏造型耳環。翠甩頭的時候，好像常常把東西甩飛。'},
+  {id:'recipe',owner:'lala',x:8,y:20,t:'被吹走的食譜',d:'一張沾滿麵糊的食譜。最後一行寫著：「第 401 下：？？？」'},
+  {id:'bookmark',owner:'shisho',x:17,y:20,t:'被咬過的書籤',d:'缺了一角的書籤。咬痕很整齊。'},
+  {id:'trowel',owner:'ji',x:29,y:20,t:'小花鏟',d:'握把上纏著荊棘的小花鏟。'},
+];
+for(const l of LOST)ITEMS['lost_'+l.id]={t:l.t+'（失物）',d:l.d+' 還給主人吧。'};
+const lostAt=(x,y)=>S&&S.scene==='maze'?LOST.find(l=>l.x===x&&l.y===y&&!(S.flags.lostGot||[]).includes(l.id))||null:null;
+async function takeLost(l){
+  await n(l.d);(S.flags.lostGot=S.flags.lostGot||[]).push(l.id);addItem('lost_'+l.id);
+  await n(`這應該是${NAMES[l.owner]}的東西。`);
+}
+async function returnLost(l){
+  rmItem('lost_'+l.id);(S.flags.lostRet=S.flags.lostRet||[]).push(l.id);
+  const L={
+    ian:[['ian','……我的小指。'],['ian','找了好久。謝謝。'],['n','IAN 把小指按回左手，用點滴架的管子咻咻咻地纏了幾圈。']],
+    sui:[['sui','我的耳環！！甩頭甩到不知道掉哪去了～謝謝你！'],['n','翠把耳環戴回去，又開心地甩了一下頭。耳環又飛出去了。'],['sui','……啊。']],
+    lala:[['lala','我的食譜！第 401 下……我還寫了這個？'],['lala','「第 401 下：再打一下，它就會乖了。」……才怪！！']],
+    shisho:[['shisho','……我的書籤。上面的咬痕，是我的。'],['shisho','這本書我還沒吃完。謝謝。']],
+    ji:[['ji','我的小花鏟！沒有它，花花們都不太聽話呢～謝謝你！'],['n','薊身後的玫瑰，好像一起對你點了點頭。']],
+  }[l.owner];
+  for(const[w,t]of L)await(w==='n'?n(t):say(w,t));
+  gainLoot(S.flags.lostRet.length%2?{pine:1}:{candy:1,rice:1});
+  if(S.flags.lostRet.length>=LOST.length)ach('h_lost');
+}
+async function strawPile(){
+  if(S.flags.mazeKey)return n('一堆乾草。稻草人的南瓜頭還躺在裡面，咧著嘴對你笑。');
+  await n('稻草堆裡，滾著稻草人的南瓜頭。');
+  await n('南瓜頭的內側，畫著一個咧嘴笑的南瓜標誌。……這個稻草人，也是某個人的惡作劇？');
+  addEv('scare');
+  await n('稻草堆底下，還壓著一把生鏽的小鑰匙。');
+  S.flags.mazeKey=1;addItem('mazeKey');
+}
+async function candyDoor(){
+  await n('你把生鏽的小鑰匙插進樹籬裡的小木門。');
+  await n('喀啦。門開了。一股甜甜的香味撲面而來。');
+  S.flags.candyOpen=1;rmItem('mazeKey');
+}
+async function potionRack(){
+  await n('架子上排著一整排小藥水，每一瓶的標籤上都畫著咧嘴笑的南瓜。');
+  await n('「隱形藥水」「說真話藥水」「打嗝停不下來藥水」……還有一個空位，標籤寫著「超級長大藥水（試作品）」。');
+  await n('那一格是空的。');
+  addEv('stash');ach('h_candyroom');
+}
+/* 許願池：中央噴泉，翠的雕像 */
+async function wishWell(){
+  if(!(S.inv.candy>0))return n('迷宮中央的噴泉。噴泉中間站著一座抱著頭的騎士雕像。\n池底閃閃發亮，好像有人在這裡丟過糖果許願。（身上沒有糖果可以丟）');
+  const c=await choose('噴泉的池底閃閃發亮。要丟一顆糖果許願嗎？',['丟一顆糖果','算了']);if(c===1)return;
+  S.inv.candy--;S.flags.wish=(S.flags.wish||0)+1;ach('h_wish');
+  await n('你閉上眼睛，把糖果丟進噴泉裡。……噗通。');
+  const r=Math.random();
+  if(r<.24){P.hp=MAXHP;await n('噴泉的水閃閃發光。你覺得渾身充滿了力氣。（體力全滿）')}
+  else if(r<.42){await n('噴泉裡浮起一塊鳳梨酥……居然是乾的。');gainLoot({pine:1})}
+  else if(r<.54){await n('噴泉裡咕嘟咕嘟地冒出一瓶七彩藥水。');gainLoot({magic:1})}
+  else if(r<.70){await n('噴泉把糖果吐了回來。……好像不太喜歡這個口味。');gainLoot({candy:1})}
+  else if(r<.90){await n('騎士雕像抱著的那顆頭，慢慢轉過來，對你眨了眨眼。');ach('h_wish_wink')}
+  else{await n('雕像開口說話了：「……你也覺得，翠的頭比較可愛吧？」');await n('……再看一次，雕像一動也不動。');ach('h_wish_talk')}
+}
+
+/* ---------------- 第四幕：打開最終頭目房間的四盞南瓜燈 ---------------- */
+const LAMPS={chapel:'小教堂的祭壇',maze:'迷宮的騎士雕像',roomL:'小波的臥室',field:'南瓜田'};
+const LAMP_POS={chapel:['chapel',10,1],maze:['maze',15,10],roomL:['roomL',15,3],field:['outside',7,18]};
+const lampsN=()=>(S&&S.flags.lamps||[]).length;
+const lampOn=k=>(S.flags.lamps||[]).includes(k);
+function lightLamp(k){
+  (S.flags.lamps=S.flags.lamps||[]).push(k);shake=6;
+  toast(`南瓜燈點亮了：${LAMPS[k]}（${lampsN()}/4）`);toastT=240;
+  if(lampsN()>=4){setTimeout(()=>{toast('地下墓室深處傳來「喀啦」一聲……封印解開了！');toastT=300},2600);ach('m_seal')}
+  updateHUD();
+}
+async function readSeal(){
+  await n('通往墓室深處的入口，被一道纏滿南瓜藤的封印擋住了。封印上掛著四盞熄滅的南瓜燈。');
+  await n('封印正中間，貼著一張歪歪扭扭的紙條——');
+  await n('「想見我？先把四盞南瓜燈點亮吧！嘻嘻。——南瓜幽靈」');
+  await n('一、睡教的祭壇前，說出唯一的教義。\n二、迷宮裡的騎士，把頭轉向回家的方向。');
+  await n('三、小波床邊的盒子，密碼是那天晚上喝掉的「草莓牛奶」數量。\n四、首領最好的朋友身邊，有一顆會發光的弟弟。');
+  if(!S.flags.riddle){S.flags.riddle=1;addEv('riddle')}
+  await n(`（目前點亮了 ${lampsN()}/4 盞。謎題抄在調查筆記的線索裡了。）`);
+}
+async function lampChapel(){
+  const c=await choose('祭壇上多了一個空空的南瓜燈座。要在祭壇前說出睡教的教義嗎？',['想睡就睡','早睡早起','不准睡覺','先不要']);
+  if(c===3)return;
+  if(c!==0)return n('南瓜燈座沒有反應。……睡教的教義，好像不是這個。');
+  await n('你在祭壇前小聲地說：「想睡就睡。」');
+  await n('教堂裡響起一陣輕輕的打呼聲，南瓜燈「啵」地亮了。');
+  lightLamp('chapel');
+}
+async function lampMaze(){
+  const c=await choose('騎士雕像抱著的頭，好像可以轉動。要轉向哪邊？',['朝北','朝東','朝南','朝西','先不要']);
+  if(c===4)return;
+  if(c!==3)return n('雕像的頭轉了一圈，又轉回原位。……不是這個方向。');
+  await n('你把騎士的頭轉向西邊——宅邸的方向。');
+  await n('雕像的眼睛亮了起來，噴泉旁邊的南瓜燈也跟著亮了。');
+  lightLamp('maze');
+}
+async function lampRoomL(){
+  const c=await choose('床邊有一個上了鎖的小盒子，鎖上是兩位數的密碼。要輸入多少？',['06','10','12','24','先不要']);
+  if(c===4)return;
+  if(c!==2)return n('喀。鎖沒有開。……那天晚上，小波到底喝了幾盒？');
+  await n('喀啦。盒子打開了，裡面躺著一盞小小的南瓜燈。');
+  await n('南瓜燈自己亮了起來。床上的小波翻了個身：「……十二盒……草莓牛奶……」');
+  lightLamp('roomL');
+}
+async function lampField(){
+  await n('你敲了敲第三排最右邊的那顆南瓜。');
+  await n('……咚咚。南瓜「啵」地亮了起來，裡面的燭光一閃一閃的。');
+  await n('遠處的大南瓜，好像滿意地點了點頭。');
+  lightLamp('field');
+}
+function drawLamp(g,X,Y,on){
+  R(g,X+4,Y+6,8,8,K);R(g,X+5,Y+7,6,6,on?'#e2741c':'#5a4a44');R(g,X+7,Y+4,2,3,'#3f6b2a');
+  if(on){const gl=(tick>>3)%5?'#ffd25a':'#ffb03a';R(g,X+6,Y+9,1,1,gl);R(g,X+9,Y+9,1,1,gl);R(g,X+6,Y+11,4,1,gl);g.fillStyle='rgba(255,200,90,.18)';g.beginPath();g.arc(X+8,Y+10,10,0,6.28);g.fill()}
+}
+function drawMazeStuff(cx,cy,key){
+  const g=ctx,F=S.flags;
+  if(key==='maze'){
+    if(F.bossMaze){const X=STRAW.x*T-cx,Y=STRAW.y*T-cy;R(g,X+1,Y+8,14,7,'#d9b860');R(g,X+3,Y+6,10,3,'#c8a24a');for(let i=0;i<5;i++)R(g,X+2+i*3,Y+5+(i%2),1,4,'#e8d090');R(g,X+9,Y+3,6,6,K);R(g,X+10,Y+4,4,4,'#e2741c');
+      if(!F.mazeKey&&(tick>>4)%2){R(g,X+7,Y,1,5,'#fff6c8');R(g,X+5,Y+2,5,1,'#fff6c8')}}
+    if(F.candyOpen){const X=-cx,Y=T-cy;R(g,X+2,Y,12,16,'#120a08');R(g,X+2,Y,12,2,'#6b4026');R(g,X+12,Y+8,2,2,'#ffd25a')}
+    for(const l of LOST){if((F.lostGot||[]).includes(l.id))continue;const X=l.x*T-cx,Y=l.y*T-cy;R(g,X+5,Y+8,6,5,'#efe3c8');R(g,X+6,Y+9,4,3,'#c9a57a');
+      if(((tick+l.x*31)%90)<30){R(g,X+8,Y+2,1,5,'#fff6c8');R(g,X+6,Y+4,5,1,'#fff6c8')}}
+  }
+  if(chOf()===4&&F.riddle)for(const k in LAMP_POS){const[sc,x,y]=LAMP_POS[k];if(sc!==key)continue;drawLamp(g,x*T-cx+(k==='maze'?14:0),y*T-cy-(k==='chapel'?4:0),lampOn(k))}
+  if(key==='crypt'&&chOf()===4&&lampsN()<4){const X=9*T-cx,Y=8*T-cy;
+    for(let i=0;i<8;i++){R(g,X+i*8,Y,2,16,'#3f6b2a');R(g,X+i*8+3,Y+3+(i%3)*4,3,2,'#5a8a3a')}R(g,X,Y+6,64,3,'#2f5a28');
+    for(let i=0;i<4;i++)drawLamp(g,X+i*16,Y-6,i<lampsN())}
 }
 
 /* ---------------- 支線清單（調查筆記） ---------------- */
@@ -3044,6 +3204,12 @@ async function talk4(id){
       }
       return say('shisho','《縫合怪物保養手冊》還剩一半。我留給 IAN。');
     case 'boss':
+      if(F.riddle&&!F.hintBoss){
+        await say('boss','……我最好的朋友，是大南瓜。');
+        await say('boss','……大南瓜說，田裡第三排、最右邊那顆，是牠的弟弟。');
+        await say('boss','……弟弟很害羞。敲一敲，就會亮。');
+        F.hintBoss=1;addEv('hint_boss');return;
+      }
       if(!hasEv('laugh')){
         await say('boss','……IAN 斷掉了？');
         await say('boss','……我讀不到。可是……');
@@ -3052,13 +3218,19 @@ async function talk4(id){
       }
       return say('boss','……地底下還在笑。');
     case 'sui':
+      if(F.riddle&&!F.hintSui){
+        await say('sui','騎士把頭轉向回家的方向？嘿嘿，那個雕像是照著我做的喔！');
+        await say('sui','我每次在迷宮裡迷路，都會把頭轉向「宅邸」的方向，這樣就不會迷路了。');
+        await say('sui','宅邸在迷宮的西邊喔～');
+        F.hintSui=1;addEv('hint_sui');return;
+      }
       if(!hasEv('gate')){
         await say('sui','頭回來真好～剛剛我把頭甩到好高好高的時候……');
         await say('sui','看到 小教堂 裡面，通往地下墓室的柵欄被打開了一條縫！');
         addEv('gate');return;
       }
       return say('sui','地下墓室好像很深喔，小心點！');
-    case 'po':return n('小波睡得很熟。床單上沾著幾顆南瓜籽。');
+    case 'po':return n(F.riddle?'小波在說夢話：「……十二盒……草莓牛奶……好好喝……」':'小波睡得很熟。床單上沾著幾顆南瓜籽。');
     case 'horse':return n('幽靈駱馬一直盯著墓園的地面，耳朵豎得直直的。');
     case 'batk':case 'cone':return talkChase(id);
   }
@@ -3068,6 +3240,7 @@ async function bottleSpot(){
   await n('IAN 旁邊的草地上，躺著一個摔破的玻璃瓶。');
   await n('標籤上畫著一個咧嘴笑的南瓜，寫著：「超級長大藥水（試作品）」。');
   await n('瓶底還剩一點點，聞起來涼涼的、甜甜的。');
+  if(hasEv('stash'))await n('……這個標誌，跟迷宮糖果倉庫裡那排藥水上的一模一樣！');
   addEv('bottle');
 }
 async function deduction4(){
@@ -3263,6 +3436,9 @@ function walkable(x,y){
   if(S.scene==='kitchen'&&ox===0&&oy===3)return chOf()===2&&!!S.flags.disc2;
   if(S.scene==='chapel'&&ox===14&&oy===9)return chOf()===4&&!!S.flags.ded4;
   if(hintSpot(x,y))return false;
+  if(S.scene==='maze'){if(x===0&&y===1)return!!S.flags.candyOpen;if(S.flags.bossMaze&&x===STRAW.x&&y===STRAW.y)return false;if(lostAt(x,y))return false}
+  if(S.scene==='crypt'&&chOf()===4&&y===8&&x>=9&&x<=12&&lampsN()<4)return false;
+  if(S.scene==='roomL'&&chOf()===4&&S.flags.riddle&&x===15&&y===3)return false;
   if(S.scene==='outside'&&chOf()===4&&x===BOTTLE.x&&y===BOTTLE.y)return false;
   const c=tileAt(x,y);if(SOLID.has(c))return false;{const na=npcAt(x,y);if(na&&!(na==='legs'&&legsOn()))return false}
   if(S.scene==='dining'&&ox===8&&oy===6&&chOf()>=1)return false;
@@ -3334,6 +3510,19 @@ function objectAt(nx,ny){
   const pr=propAt(nx,ny);if(pr)return()=>takeProp(pr);
   if(s==='bath'&&tileAt(nx,ny)==='~')return async()=>{const c=await choose('要泡個澡嗎？',['泡澡','不用了']);if(c===0)await takeBath()};
   {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
+  if(s==='maze'){
+    {const l=lostAt(nx,ny);if(l)return()=>takeLost(l)}
+    if(S.flags.bossMaze&&nx===STRAW.x&&ny===STRAW.y)return strawPile;
+    if(nx===0&&ny===1&&S.flags.mazeKey&&!S.flags.candyOpen)return candyDoor;
+    if(nx===MZ.qx&&ny===MZ.qy){if(chOf()===4&&S.flags.riddle&&S.flags.hintSui&&!lampOn('maze'))return lampMaze;return wishWell}
+  }
+  if(s==='candy'&&tileAt(nx,ny)==='}')return potionRack;
+  if(s==='crypt'&&ny===8&&nx>=9&&nx<=12&&chOf()===4&&lampsN()<4)return readSeal;
+  if(chOf()===4&&S.flags.riddle){
+    if(s==='roomL'&&nx===15&&ny===3&&!lampOn('roomL'))return lampRoomL;
+    if(s==='roomL'&&nx===15&&ny===3)return()=>n('打開的小盒子。南瓜燈在裡面亮著。');
+    if(s==='outside'&&nx===7&&ny===18&&S.flags.hintBoss&&!lampOn('field'))return lampField;
+  }
   if(s==='outside'&&chOf()===4&&nx===BOTTLE.x&&ny===BOTTLE.y)return bottleSpot;
   const tc=tileAt(nx,ny),pot=hasItem('potion')&&qOn('ji')&&!CB.lock,tested=k=>qGet('ji').tested.includes(k);
   if(s==='chapel'&&tc==='A')return altar;
@@ -3385,6 +3574,7 @@ function tileText(c,x,y){
     greenhouse:{r:'溫室裡的玫瑰開得又大又紅……\n你一靠近，整排玫瑰「唰」地一起轉過來，盯著你看。\n……發現你是薊的朋友，又慢慢轉了回去。',J:'玻璃外是雨和霧，溫室裡卻暖暖的，像另一個季節。',z:'薊的調藥桌。乾燥的草藥一束束掛著，聞了會想笑。',j:'一張白色鐵椅，上面攤著一本翻開的園藝雜誌。',Q:'小噴泉的水很清，倒映著溫室的玻璃頂。'},
     maze:{h:'高高的樹籬，看不見另一邊。',Q:'迷宮中央的噴泉。噴泉中間站著一座抱著頭的騎士雕像。',r:'樹籬轉角種著一叢紅玫瑰。'},
     roomL:{b:'柔軟的床。床單少了一條，枕頭上有一小撮鬆餅屑。',B:'一個小書櫃。最上層放著一本《如何在任何地方睡著》。'},
+    candy:{'{':'架子上擺滿了糖果罐：草莓、薄荷、南瓜……還有一罐寫著「拉拉的鬆餅口味（偷學的）」。','%':'裝糖果的木箱。',w:'倉庫的小窗戶。'},
     bath:{'^':'大理石的洗手台，水龍頭是金色的。鏡子擦得亮晶晶的，照出一張有點累的臉。',':':'一張小木凳和一個黃銅水桶。水桶裡飄著一隻小鴨子。','!':'毛巾架上掛著好幾條蓬蓬的毛巾，聞起來像剛曬過太陽。',p:'浴室角落的盆栽，被蒸氣養得綠油油的。',w:'窗戶上全是霧氣。有人在上面畫了一顆南瓜。'},
     kitchen:{'(':'磚砌的大烤爐，裡面的火燒得正旺。烤盤上排著一圈小小的鬆餅，邊緣烤得金黃。',')':'調理桌上堆滿了打鬆餅的工具：打蛋器、量杯、篩網、一整盒雞蛋……還有一支被打彎了的打蛋器。',']':'掛滿平底鍋的鍋架。大的、小的、銅的、鐵的……每一個鍋底，都有一圈鬆餅形狀的焦痕。'},
     roomR:{b:'這張床鋪得整整齊齊，好像從來沒人睡過。'},
@@ -3456,6 +3646,10 @@ const SEARCH={
   'roomL@15,10':{loot:{candy:1},t:['床尾的木箱裡，有一顆被壓扁的糖果。']},
   'roomR@8,2':{loot:{candy:1},t:['小斗櫃上擺著一個糖果罐，只剩最後一顆。']},
   'roomR@2,10':{loot:{ammo:2},t:['木箱的夾層裡，藏著兩顆子彈。']},
+  'candy:2,3':{loot:{candy:3},t:['木箱裡塞滿了萬聖節糖果，箱子上寫著「南瓜幽靈的私房糖果・偷吃的人要陪我玩」。']},
+  'candy:8,3':{loot:{pine:2},t:['木箱裡排著整整齊齊的鳳梨酥。']},
+  'candy:2,5':{loot:{rice:2},t:['木箱裡是一大包乘乘米果。']},
+  'candy:9,5':{loot:{magic:1,candy:1},t:['木箱底下藏著一瓶七彩的神奇藥水，和一顆糖果。']},
   'chapel@18,8':{loot:{magic:1},t:['裝蠟燭的木箱裡，混著一瓶七彩的小藥水。標籤寫著「神奇藥水・效果隨機」。']},
   'chapel@1,8':{loot:{ammo:2},t:['裝聖詩本的木箱底部，躺著兩顆子彈。']},
   'greenhouse@2,10':{loot:{ammo:2},t:['裝花盆的木箱裡，有一個寫著「鳳」的小鐵盒，裡面是子彈。']},
@@ -3680,7 +3874,7 @@ function bossDown(){
   const b=CB.foes.find(e=>e.type==='boss');
   if(b){for(let i=0;i<3;i++)CB.drops.push({x:b.x-12+i*12,y:b.y+8,t:0,k:'candy',n:1});CB.drops.push({x:b.x,y:b.y+20,t:0,k:'ammo',n:6})}
   toast('擊退了南瓜稻草人！');
-  setTimeout(()=>run(async()=>{await n('稻草人碎成一地乾草，南瓜頭骨碌碌地滾進了噴泉。');await n('翠的木牌旁邊，好像多了一張紙條。')}),700);
+  setTimeout(()=>run(async()=>{await n('稻草人碎成一地乾草，南瓜頭骨碌碌地滾到了一旁。');await n('稻草堆裡，好像有什麼東西在發光。翠的木牌旁邊，也多了一張紙條。')}),700);
 }
 function playerDown(){
   if(busy)return;
@@ -3942,6 +4136,7 @@ function render(){
     if(h.id==='tea'){R(ctx,X+2,Y+9,12,6,'#3a2214');R(ctx,X+3,Y+10,10,4,'#7a1f24');R(ctx,X+4,Y+3,8,7,K);R(ctx,X+5,Y+4,6,5,'#e2741c');R(ctx,X+7,Y+1,2,3,'#3f6b2a');R(ctx,X+6,Y+6,1,1,'#ffd25a');R(ctx,X+9,Y+6,1,1,'#ffd25a');
       R(ctx,X+12,Y+6,3,3,'#efe8dc');R(ctx,X+12,Y+6,3,1,'#8a4a2a');R(ctx,X+1,Y+7,3,1,'#d9a050')}
     else{for(let i=0;i<4;i++){R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,5,'#efe8dc');R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,1,'#5a3a22')}R(ctx,X+6,Y+2,5,5,'#efe8dc');R(ctx,X+6,Y+2,5,1,'#5a3a22')}}
+  if(S&&mode==='play')drawMazeStuff(cx,cy,key);
   if(key==='outside'&&S&&chOf()===4){const X=BOTTLE.x*T-cx,Y=BOTTLE.y*T-cy;R(ctx,X+4,Y+8,8,5,'#9ad8c8');R(ctx,X+5,Y+9,6,3,'#c8f0e4');R(ctx,X+12,Y+10,2,2,'#9ad8c8');R(ctx,X+2,Y+12,2,1,'#9ad8c8');R(ctx,X+6,Y+9,3,2,'#e2741c');R(ctx,X+6,Y+9,1,1,K);R(ctx,X+8,Y+9,1,1,K);
     if(!hasEv('bottle')&&(tick>>4)%2){R(ctx,X+7,Y+1,1,5,'#fff6c8');R(ctx,X+5,Y+3,5,1,'#fff6c8')}}
   if(key==='crypt'&&mode==='play'){const[ppx,ppy]=pPix();cryptDark(ppx-cx+8,ppy-cy+4)}
@@ -4010,7 +4205,9 @@ function updateHUD(){
     if(!F.disc4)t='第四幕｜<b>墓園</b> 那邊傳來奇怪的聲音……';
     else if(k<REQ4.length)t=`第四幕｜IAN 怎麼會斷成兩半？調查線索 <b>${k}/${REQ4.length}</b>`;
     else if(!F.ded4)t='第四幕｜線索齊了。到 <b>墓園</b> 找 IAN 的上半身，公布推理。';
-    else t='第四幕｜往 <b>小教堂</b> 的地下墓室深處前進！';
+    else if(!F.riddle)t='第四幕｜往 <b>小教堂</b> 的地下墓室深處前進！';
+    else if(lampsN()<4)t=`第四幕｜點亮四盞南瓜燈：<b>小教堂、花園迷宮、小波的臥室、南瓜田</b>（${lampsN()}/4）`;
+    else t='第四幕｜封印解開了！前往 <b>地下墓室深處</b>。';
   }else if(ch===5){t='終幕｜天亮了。';
   }else{
     const k=REQ3.filter(hasEv).length;
