@@ -176,7 +176,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 /* Setup */
 .field{margin-bottom:14px}
 .field label{display:block;color:var(--gold);font-family:var(--f-disp);margin-bottom:4px;letter-spacing:.08em}
-#optGender,#optFaction{display:flex;gap:6px;flex-wrap:wrap}#optGender button,#optFaction button{font:inherit;padding:4px 12px;background:#1a0d0c;color:var(--cream);border:2px solid var(--dim);border-radius:2px;cursor:pointer}#optGender button.on,#optFaction button.on{border-color:var(--cream);background:#5a1e1e}
+#optGender,#optFaction,#optDiff,#mDiff{display:flex;gap:6px;flex-wrap:wrap}.diffNote{margin:4px 0 0;font-size:.85em;color:var(--dim)}
+#optGender button,#optFaction button,#optDiff button,#mDiff button{font:inherit;padding:4px 12px;background:#1a0d0c;color:var(--cream);border:2px solid var(--dim);border-radius:2px;cursor:pointer}#optGender button.on,#optFaction button.on,#optDiff button.on,#mDiff button.on{border-color:var(--cream);background:#5a1e1e}
 .flab{display:block;margin-bottom:4px}
 #nm{width:100%;max-width:280px;box-sizing:border-box;background:#1a0d0c;border:2px solid var(--dim);color:var(--cream);padding:6px 10px;font:inherit;border-radius:2px}
 .opts{display:flex;gap:8px;flex-wrap:wrap}
@@ -265,6 +266,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
         <div class="field"><label for="nm">你的名字</label><input id="nm" maxlength="10" placeholder="輸入角色名稱" autocomplete="off"></div>
         <div class="field"><span class="flab">性別</span><div id="optGender" class="genders" role="radiogroup" aria-label="性別"></div></div>
         <div class="field"><span class="flab">陣營</span><div id="optFaction" class="genders" role="radiogroup" aria-label="陣營"></div></div>
+        <div class="field"><span class="flab">難易度</span><div id="optDiff" class="genders" role="radiogroup" aria-label="難易度"></div><p class="diffNote" id="diffNote"></p></div>
         <button type="button" id="rndBtn" class="btn">🎲 隨機搭配</button>
       </div>
     </div>
@@ -326,6 +328,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
       <kbd>Esc</kbd><span>選單</span>
       <kbd>手機</kbd><span>畫面下方的方向鍵、A 鍵，「砍」「射」攻擊，「糖」吃糖果</span>
     </div>
+    <h3>難易度</h3>
+    <div id="mDiff" role="radiogroup" aria-label="難易度"></div><p class="diffNote" id="mDiffNote"></p>
     <div class="mbtns"><button id="menuAch" type="button">成就</button><button id="menuChap" type="button">章節選擇</button><button id="menuRestart" type="button">從頭開始</button><button id="toTitle" type="button">回到標題</button></div>
   </div>
 </div>
@@ -1771,6 +1775,7 @@ function preCheck(){
   F.preEnd=true;setTimeout(()=>run(preEnd),500);
 }
 async function preEnd(){
+  if(chOf()>=1)return;
   await n('……宅邸裡的每個人，你都問過一輪了。');
   await n('雖然還是搞不清楚這裡是什麼地方，但至少大家看起來都還算平安。');
   await n('聽說會長回 餐廳 喝東西去了。你走回大廳，想整理一下思緒——');
@@ -2067,7 +2072,7 @@ async function llamaStart(){
   const lk=new Set();for(let y=COURT.y0-1;y<=COURT.y1+1;y++)for(let x=COURT.x0-1;x<=COURT.x1+1;x++){if(x>=COURT.x0&&x<=COURT.x1&&y>=COURT.y0&&y<=COURT.y1)continue;lk.add(x+','+y)}
   CB.lock=lk;CB.lockKind='llama';CB.mini='llama';
   const e=spawnFoe('llama',17*T+8,19*T,true);e.sat=0;e.cd=90;e.munch=0;e.noLaunch=1;
-  CB.hay=LL.hay;S.flags.llamaHurt=0;
+  CB.hay=DF().hay;S.flags.llamaHurt=0;
   $('bossbar').querySelector('span').textContent='幽靈羊駝的滿足度';$('bossfill').style.width='0%';$('bossbar').hidden=false;
   toast(isTouch?'按「砍」或「射」丟糧草！':'J／K 丟糧草，對準羊駝的嘴巴！');toastT=300;
 }
@@ -2159,7 +2164,7 @@ function raceTick(){
   if(P.x>=MZ.x0&&P.x<=MZ.x1&&P.y>=MZ.y0&&P.y<=MZ.y1)return raceEnd(true);
   if(R0.stop>0){R0.stop--;return}
   const tg=R0.path[R0.i];if(!tg)return raceEnd(false);
-  const tx=tg[0]*T,ty=tg[1]*T,dx=tx-R0.fx,dy=ty-R0.fy,sp=2.8;
+  const tx=tg[0]*T,ty=tg[1]*T,dx=tx-R0.fx,dy=ty-R0.fy,sp=DF().racer;
   if(Math.abs(dx)+Math.abs(dy)<=sp){R0.fx=tx;R0.fy=ty;R0.i++;
     if(R0.stops.includes(R0.i)){R0.stop=50+((Math.random()*30)|0);toast(['羊駝停下來，啃了一口迷宮的樹籬……','羊駝突然不想跑了，「呸」地噴了翠一臉口水！','羊駝被路邊的花吸引，停下來聞了聞……'][(Math.random()*3)|0])}
     if(R0.i>=R0.path.length)return raceEnd(false);return}
@@ -2228,7 +2233,7 @@ function pitchOne(m,q){
     PITCH={m,ph:'aim',t:0,x:0,w:.055+Math.min(.04,(q.hr||0)*.012),arms:!!S.flags.ianArms,hr:q.hr||0,strikes:q.strikes||0,left:q.sack.length,fin:res,trail:[]};
     dlgRes=()=>{
       const p=PITCH;if(!p||p.ph!=='aim')return;
-      p.x=Math.sin(p.t*p.w);const d=Math.abs(p.x);p.res=(PZ.find(z=>d<z[0])||[0,0])[1];
+      p.x=Math.sin(p.t*p.w);const d=Math.abs(p.x)/DF().pitch;p.res=(PZ.find(z=>d<z[0])||[0,0])[1];
       p.ph='go';p.t=0;p.end=160;dlgRes=null;
     };
   });
@@ -2323,7 +2328,7 @@ function drawPitch(){
   /* 時機條 */
   if(p.ph==='aim'){
     const BX=40,BW=150,BY=14,cx=BX+BW/2;R(g,BX-3,BY-3,BW+6,30,'rgba(14,10,12,.8)');
-    R(g,BX,BY,BW,8,'#4a3a3a');R(g,cx-BW/2*.65,BY,BW*.65,8,'#8a7a5a');R(g,cx-BW/2*.35,BY,BW*.35,8,'#d9a640');R(g,cx-BW/2*.12,BY,BW*.12,8,'#e0213a');
+    const pm=DF().pitch,zw=k=>Math.min(1,k*pm);R(g,BX,BY,BW,8,'#4a3a3a');R(g,cx-BW/2*zw(.65),BY,BW*zw(.65),8,'#8a7a5a');R(g,cx-BW/2*zw(.35),BY,BW*zw(.35),8,'#d9a640');R(g,cx-BW/2*zw(.12),BY,BW*zw(.12),8,'#e0213a');
     const mx=Math.round(cx+Math.sin(t*p.w)*BW/2);R(g,mx-1,BY-3,2,14,'#fff');R(g,mx-3,BY-4,6,2,'#fff');
     g.fillStyle='#efe8dc';g.textAlign='center';g.fillText('紅＝全壘打　黃＝安打　灰＝界外',cx,BY+12);
     g.font='8px DotGothic16, monospace';g.fillStyle='#fff6c8';g.fillText(isTouch?'時機對了就點畫面（或按 A）投球！':'時機對了就按 Z／空白／Enter 投球！',160,196-8);
@@ -3028,7 +3033,7 @@ const GEAR=[
 ITEMS.g_apron={t:'阿鳳姨的鐵圍裙',d:'受到的重擊會減輕，偶爾還能把攻擊整個擋下來。'};
 ITEMS.g_lid={t:'鏡面鍋蓋',d:'飛過來的東西，有機會被彈回去打怪物。用鍋鏟打掉的東西，也會反彈回去。'};
 const gearAt=(x,y)=>S?GEAR.find(g=>g.sc===S.scene&&g.x===x&&g.y===y&&chOf()>=g.ch&&!S.flags['g_'+g.id])||null:null;
-function syncMaxHP(){MAXHP=10+2*((S&&S.flags.hearts)||0)}
+function syncMaxHP(){MAXHP=10+2*((S&&S.flags.hearts)||0)+DF().hp}
 async function openGear(gr){
   const F=S.flags;for(const t of gr.t)await n(t);F['g_'+gr.id]=1;
   if(gr.id==='apron')addItem('g_apron');
@@ -3511,7 +3516,7 @@ const REB1={
   lala:[['lala','我、我嗎！？'],['n','拉拉嚇得把旁邊的大理石雕像整座舉了起來。'],['lala','我只是來送鬆餅的啊！而且我又不是鬼！']],
   shisho:[['shisho','我是惡魔，不是幽靈。……要指認也挑個像樣一點的吧，大偵探。']],
   sui:[['n','翠手上的頭轉了一圈，用很無辜的眼神看著你。'],['sui','我是無頭騎士，不是鬼喔？頭還在啊，你看。']],
-  boss:[['boss','……我是南瓜。南瓜不會作祟。你的推理，比南瓜籽還小。']],
+  boss:[['boss','……我是傑克南瓜，不是幽靈。南瓜不會作祟。你的推理，比南瓜籽還小。']],
   ian:[['ian','我是縫起來的，又不是飄起來的！']],
   ji:[['ji','我是女巫，而且是天才女巫。我的藥水只會讓人快樂，不會讓人死掉～']],
 };
@@ -4032,7 +4037,7 @@ function updGhost(e,pcx,pcy){
   $('bossbar').hidden=false;$('bossfill').style.width=Math.max(0,e.hp/e.max*100)+'%';
 }
 function finalDown(){
-  S.flags.finalDone=true;$('bossbar').hidden=true;
+  if(S.flags.finalDone)return;S.flags.finalDone=true;$('bossbar').hidden=true;
   for(const f of CB.foes)if(f.arena)f.hp=0;CB.eshots=[];
   toast('打倒了南瓜幽靈！');
   setTimeout(()=>run(finalEnding),900);
@@ -4702,7 +4707,17 @@ const FOES={
   book:{name:'書本怪',hp:4,r:5,spd:.75,dmg:1},
   ghost:{name:'南瓜幽靈',hp:44,r:11,spd:.5,dmg:2},
 };
-let MAXHP=10;const GUN_MAG=6,MELEE_DMG=2,GUN_DMG=1;
+let MAXHP=10;
+/* 難易度：簡單（給手殘的人）／普通／困難。開頭選，之後也能在選單裡換 */
+const DIFFS={
+  easy:{name:'簡單',hp:4,foeHp:.6,shot:.7,fire:.6,move:.8,dmgCap:1,inv:120,hay:26,racer:2.2,pitch:1.6},
+  normal:{name:'普通',hp:0,foeHp:1,shot:1,fire:1,move:1,dmgCap:9,inv:70,hay:18,racer:2.8,pitch:1},
+  hard:{name:'困難',hp:-2,foeHp:1.3,shot:1.15,fire:1.25,move:1.1,dmgCap:9,inv:55,hay:15,racer:3.2,pitch:.8},
+};
+const DIFF_NOTE={easy:'怪物比較少血、攻擊比較慢，受到的傷害比較輕，體力多兩顆心。適合想輕鬆看劇情的人。',normal:'原本設計的難度。',hard:'怪物更硬、更快，體力少一顆心。給想挑戰的人。'};
+function diffButtons(box,cur,on){box.innerHTML='';for(const id of['easy','normal','hard']){const b=document.createElement('button');b.type='button';b.textContent=DIFFS[id].name;
+  b.classList.toggle('on',cur===id);b.setAttribute('role','radio');b.setAttribute('aria-checked',cur===id);b.onclick=()=>on(id);box.appendChild(b)}}
+const DF=()=>DIFFS[(S&&S.diff)||'normal']||DIFFS.normal;const GUN_MAG=6,MELEE_DMG=2,GUN_DMG=1;
 /* 武器名稱（都是在宅邸裡撿到的，據說是阿鳳姨的手筆） */
 const WEAPONS={melee:{name:'阿鳳姨的改造鍋鏟'},gun:{name:'阿鳳姨的土製手槍'}};
 /* 可以翻找的地方：「場景:x,y」→ 拿到的東西（candy 糖果、ammo 子彈、melee/gun 武器）與描述。每個地方只能翻一次。 */
@@ -4782,6 +4797,7 @@ function solidPx(x,y,fly){
   return SOLID.has(s.map[ty][tx]);
 }
 function moveE(e,dx,dy){
+  {const m=DF().move;dx*=m;dy*=m}
   const r=e.r,fly=e.type==='bat';
   const ok=(x,y)=>!solidPx(x-r,y-r,fly)&&!solidPx(x+r,y-r,fly)&&!solidPx(x-r,y+r,fly)&&!solidPx(x+r,y+r,fly);
   let hit=false;
@@ -4791,8 +4807,8 @@ function moveE(e,dx,dy){
   return hit;
 }
 function spawnFoe(type,x,y,arena){
-  const d=FOES[type];
-  const e={type,x,y,hp:d.hp,max:d.hp,r:d.r,t:(Math.random()*100)|0,cd:60+((Math.random()*60)|0),st:0,state:'walk',kx:0,ky:0,flash:0,face:1,arena:!!arena};
+  const d=FOES[type],hp=type==='llama'?d.hp:Math.max(1,Math.round(d.hp*DF().foeHp));
+  const e={type,x,y,hp,max:hp,r:d.r,t:(Math.random()*100)|0,cd:60+((Math.random()*60)|0),st:0,state:'walk',kx:0,ky:0,flash:0,face:1,arena:!!arena};
   CB.foes.push(e);return e;
 }
 function freeTile(minD,o={}){
@@ -4836,7 +4852,8 @@ function hurtP(d){
     if(Math.random()<.25){P.inv=40;const[cx,cy]=pCenter();spark(cx,cy,'#c8cad2',8);warn('鐵圍裙擋下了攻擊！');return}
     if(d>=2)d--;
   }
-  P.hp=Math.max(0,P.hp-d);P.inv=S.flags.g_apron?100:70;shake=10;CB.hurt=1;
+  d=Math.min(d,DF().dmgCap);
+  P.hp=Math.max(0,P.hp-d);P.inv=Math.max(S.flags.g_apron?100:70,DF().inv);shake=10;CB.hurt=1;
 }
 let warnT=0;
 function warn(t){if(tick-warnT>90){warnT=tick;toast(t)}}
@@ -4921,7 +4938,7 @@ function doFire(){
   if(P.ammo===0&&S.inv.ammo>0)startReload();
 }
 function updFoe(e,pcx,pcy){
-  e.t++;if(e.flash>0)e.flash--;
+  e.t++;{const fr=DF().fire;if(fr<1&&Math.random()>fr)e.cd++;else if(fr>1&&Math.random()<fr-1)e.cd--}if(e.flash>0)e.flash--;
   if(e.spawn>0){e.spawn--;return}
   if(e.launch){const L=e.launch;e.x+=L.vx;e.y+=L.vy;L.vy+=.1;if(--L.life<=0){e.dead=2;if(e.riot)riotKill();for(let i=0;i<6;i++)CB.fx.push({x:e.x,y:e.y,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,life:16,c:'#fff6c8'})}return}
   if(e.leash&&Math.hypot(pcx-e.x,pcy-e.y)>90){
@@ -5028,7 +5045,9 @@ function playerDown(){
   if(busy)return;
   run(async()=>{
     if(CB.mini){endLlama();applyWorld()}
-    clearCombat();cutDark=true;S.flags.deaths=(S.flags.deaths||0)+1;ach('h_down');
+    const vk=CB.lockKind;
+    clearCombat();cutDark=true;
+    if(vk==='vine'){for(const id of['kaicho','ji'])NPCS[id].wrapped=0;applyWorld()}S.flags.deaths=(S.flags.deaths||0)+1;ach('h_down');
     await n('……眼前一黑。');
     changeScene('hall',10,8,'down');P.hp=MAXHP;P.reload=0;P.inv=0;cutDark=false;
     await n('你在大廳的地毯上醒來。身上蓋著一條毯子，旁邊放著一盤還溫熱的鬆餅。');
@@ -5099,8 +5118,9 @@ function updateCombat(){
   CB.shots=CB.shots.filter(b=>b.life>0);
   if(CB.mini==='llama'&&CB.hay<=0&&!CB.shots.some(b=>b.hay)&&CB.foes.some(f=>f.type==='llama'&&f.sat<LL.goal&&!f.munch))llamaFail();
   updSlimes(pcx,pcy);
+  const bs=DF().shot;
   for(const b of CB.eshots){
-    b.x+=b.vx;b.y+=b.vy;b.life--;
+    b.x+=b.vx*bs;b.y+=b.vy*bs;b.life--;
     if(b.homing&&b.life>70){const a=Math.atan2(pcy-b.y,pcx-b.x),cur=Math.atan2(b.vy,b.vx);let dd=a-cur;dd=Math.atan2(Math.sin(dd),Math.cos(dd));const na=cur+Math.max(-.035,Math.min(.035,dd)),sp=Math.hypot(b.vx,b.vy);b.vx=Math.cos(na)*sp;b.vy=Math.sin(na)*sp}
     if(SOLID.has((s.map[Math.floor(b.y/T)]||'')[Math.floor(b.x/T)])){b.life=0;spark(b.x,b.y,'#ff7a1a',3);continue}
     if(Math.hypot(b.x-pcx,b.y-pcy)<6){
@@ -5111,7 +5131,7 @@ function updateCombat(){
   for(const e of CB.foes)if(e.hp>0&&!e.spawn&&!e.launch&&!e.blink&&Math.hypot(e.x-pcx,e.y-pcy)<e.r+5)hurtP(FOES[e.type].dmg);
   for(const e of CB.foes)if(e.hp<=0&&!e.dead&&!e.launch){
     e.dead=1;killFx(e);achKill(e);catchFoe(e);
-    if((e.by==='melee'||e.by==='fist')&&(e.type==='sprite'||e.type==='bat'))addDirt('pumpkin');
+    if((e.by==='melee'||e.by==='fist')&&['sprite','bat','lantern','pghost','phound'].includes(e.type))addDirt('pumpkin');
     juiceDrop(e);
     if(e.type==='book')bookCaught();
     if(e.riot)riotKill();
@@ -5474,7 +5494,12 @@ function renderNote(){
 document.querySelectorAll('#note .tabs button').forEach(b=>b.onclick=()=>{noteTab=b.dataset.tab;renderNote()});
 $('noteClose').onclick=()=>{$('note').hidden=true};
 $('btnNote').onclick=()=>openNote();$('pB').onclick=()=>openNote();
-$('btnMenu').onclick=()=>{$('menu').hidden=false};
+function openMenu(){
+  const cur=(S&&S.diff)||'normal';
+  diffButtons($('mDiff'),cur,id=>{if(!S)return;S.diff=id;syncMaxHP();P.hp=Math.min(P.hp,MAXHP);save();updateHUD();toast('難易度改成「'+DIFFS[id].name+'」了。');openMenu()});
+  $('mDiffNote').textContent=S?DIFF_NOTE[cur]:'開始遊戲後就能在這裡切換難易度。';$('menu').hidden=false;
+}
+$('btnMenu').onclick=openMenu;
 $('menuClose').onclick=()=>{$('menu').hidden=true};
 $('tAch').onclick=openAch;$('tChap').onclick=openChap;$('menuChap').onclick=()=>{$('menu').hidden=true;openChap()};$('chapClose').onclick=()=>{$('chapOv').hidden=true};$('menuRestart').onclick=restartGame;$('menuAch').onclick=()=>{$('menu').hidden=true;openAch()};$('achClose').onclick=()=>{$('achOv').hidden=true};
 $('toTitle').onclick=()=>{save();$('menu').hidden=true;toTitle()};
@@ -5512,6 +5537,7 @@ function renderSetup(){
     const on=(setupSel.gender||'x')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.gender=id;renderSetup()};box.appendChild(b)}}
   {const box=$('optFaction');box.innerHTML='';for(const[id,lab]of[['assoc','協會'],['yelu','夜鷺'],['wander','流浪者']]){const b=document.createElement('button');b.type='button';b.textContent=lab;b.style.color=FAC_COLOR[id];
     const on=(setupSel.faction||'wander')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.faction=id;renderSetup()};box.appendChild(b)}}
+  diffButtons($('optDiff'),setupSel.diff||'normal',id=>{setupSel.diff=id;renderSetup()});$('diffNote').textContent=DIFF_NOTE[setupSel.diff||'normal'];
   thumbs('optCut',HAIRCUTS,'cut',1);thumbs('optOutfit',OUTFITS,'outfit');thumbs('optEars',EARS,'ears',1);thumbs('optAcc',ACCS,'accs',1);
   const cur={...setupSel};if(!cur.cloth)cur.cloth=(OUTFITS.find(x=>x.id===cur.outfit)||OUTFITS[0]).o.cloth;
   for(const key of['skin','hair','eye','cloth']){const box=$('sw_'+key);box.innerHTML='';
@@ -5535,7 +5561,7 @@ $('goBtn').onclick=()=>{
   const name=$('nm').value.trim()||'新來的你';clearInterval(pvTimer);
   ls.set(LOOK_KEY,JSON.stringify(setupSel));
   const{outfit,ears,look}=selLook();
-  $('setup').hidden=true;S=newState(name,outfit,ears,look);S.gender=setupSel.gender||'x';S.faction=setupSel.faction||'wander';startPlay(true);chapterSave(0);
+  $('setup').hidden=true;S=newState(name,outfit,ears,look);S.gender=setupSel.gender||'x';S.faction=setupSel.faction||'wander';S.diff=setupSel.diff||'normal';startPlay(true);chapterSave(0);
   if(look.accs.length>=3)ach('h_dress');if(outfit==='vamp'&&look.accs.includes('fang'))ach('h_vampfan');
 };
 $('nm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('goBtn').click()}e.stopPropagation()});
@@ -5577,7 +5603,7 @@ window.addEventListener('keydown',e=>{
   if(d){if(!held.includes(d))held.push(d);e.preventDefault();return}
   if(e.key==='z'||e.key==='Z'||e.key===' '||e.key==='Enter'){e.preventDefault();if(e.repeat)return;if(dlgRes)advance();else interact();return}
   if(e.key==='n'||e.key==='N'||e.key==='Tab'){e.preventDefault();if(!busy)openNote();return}
-  if(e.key==='Escape'){$('menu').hidden=false}
+  if(e.key==='Escape'){openMenu()}
 });
 window.addEventListener('keydown',e=>{if(e.key==='Shift')runHeld=true});
 window.addEventListener('keyup',e=>{if(e.key==='Shift')runHeld=false;const lk=e.key.toLowerCase();if(lk==='j'||lk==='x')meleeHeld=false;if(lk==='k'||lk==='c')gunHeld=false;const d=KEYDIR[e.key];if(d){const i=held.indexOf(d);if(i>=0)held.splice(i,1)}});
