@@ -3898,9 +3898,10 @@ async function deduction3(){
     {0:['shisho','……想吃南瓜的，只有拉拉的鍋子。'],1:['boss','……好麻煩。我沒有部下。']});
   await say('me','爪痕旁邊有小蝙蝠的毛。錐齒獸在追小蝙蝠，一頭撞上了翠——所以，首領不是犯人！');
   await say('boss','……早就說了。');
-  await say('ji','哎呀～原來我看錯了嘛。首領，對不起囉～');
+  await say('ji','哎呀～原來是錐齒獸啊。……不過首領長得那麼可疑，會被懷疑也是他自己的問題喔～');
   await say('ian','大叔我也跟著亂猜……抱歉啦，首領！');
-  await say('boss','……好麻煩。原諒你們。……下次懷疑別人之前，先動動腦。');
+  await say('boss','……好麻煩。原諒你們。……薊除外。');
+  await say('ji','我又不需要你原諒～');
   F.ded3=true;F.needLadder=true;
   await n('……接下來，只剩一個問題：要怎麼把翠的頭撈出來？');
   await n('南瓜頂上的洞，比你高了快兩個頭。……得找一把梯子。');
@@ -4223,6 +4224,9 @@ async function finalEnding(){
   await say('sui','還有首領～我們還說他把我的頭藏起來……');
   await say('boss','……好麻煩。早就原諒你們了，只是懶得說。');
   await n('大家一個一個，向被錯怪的人道了歉。');
+  await n('……除了薊。');
+  await say('ji','幹嘛看我？我只是提出「合理懷疑」嘛～天才的直覺，偶爾也是要失手一下的。');
+  await say('lala','明、明明失手了兩次！！');
   await say('boss','……原來，這棟房子在等的人，是我們啊。');
   await say('sui','欸～那明年還可以再來玩嗎？');
   await say('ghost','……真的嗎！？');
