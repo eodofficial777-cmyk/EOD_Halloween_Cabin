@@ -176,7 +176,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 /* Setup */
 .field{margin-bottom:14px}
 .field label{display:block;color:var(--gold);font-family:var(--f-disp);margin-bottom:4px;letter-spacing:.08em}
-#optGender{display:flex;gap:6px;flex-wrap:wrap}#optGender button{font:inherit;padding:4px 12px;background:#1a0d0c;color:var(--cream);border:2px solid var(--dim);border-radius:2px;cursor:pointer}#optGender button.on{border-color:var(--cream);background:#5a1e1e}
+#optGender,#optFaction{display:flex;gap:6px;flex-wrap:wrap}#optGender button,#optFaction button{font:inherit;padding:4px 12px;background:#1a0d0c;color:var(--cream);border:2px solid var(--dim);border-radius:2px;cursor:pointer}#optGender button.on,#optFaction button.on{border-color:var(--cream);background:#5a1e1e}
 .flab{display:block;margin-bottom:4px}
 #nm{width:100%;max-width:280px;box-sizing:border-box;background:#1a0d0c;border:2px solid var(--dim);color:var(--cream);padding:6px 10px;font:inherit;border-radius:2px}
 .opts{display:flex;gap:8px;flex-wrap:wrap}
@@ -264,6 +264,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
       <div style="flex:1;min-width:180px">
         <div class="field"><label for="nm">你的名字</label><input id="nm" maxlength="10" placeholder="輸入角色名稱" autocomplete="off"></div>
         <div class="field"><span class="flab">性別</span><div id="optGender" class="genders" role="radiogroup" aria-label="性別"></div></div>
+        <div class="field"><span class="flab">陣營</span><div id="optFaction" class="genders" role="radiogroup" aria-label="陣營"></div></div>
         <button type="button" id="rndBtn" class="btn">🎲 隨機搭配</button>
       </div>
     </div>
@@ -1500,6 +1501,7 @@ const ACHS=[
   {id:'h_nap',t:'睡教入門',d:'在教堂的長椅上，縮進小被被裡睡了一覺。',hint:'教堂的長椅，看起來好好睡。'},
   {id:'h_dreambox',t:'夢的收藏家',d:'在投夢箱裡投了三顆糖果。',hint:'投一顆糖，換一個好夢。'},
   {id:'h_feng',t:'那一夜的大戰',d:'在教堂裡，找到了那場大戰留下的痕跡。',hint:'教堂的牆上，有不屬於睡教的東西。'},
+  {id:'h_faction',t:'自己人',d:'跟同陣營的每個人都打過招呼。',hint:'選擇一個陣營，認識你的夥伴們。'},
   {id:'h_horse',t:'幽靈羊駝的噴嚏',d:'和幽靈羊駝打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
@@ -1741,6 +1743,8 @@ async function gatherScene(){
   await say('kaicho','……人都到齊了吧。新來的那位，也請坐。');
   await n('坐在長桌最前面的，是一個臉色蒼白的青年。他面前只放著一個空杯子。');
   await say('kaicho','我是協會的會長。先確認一下狀況——大家都是突然來到這裡的？');
+  if(myFac()==='assoc'){await n('會長看了你身上的協會徽章一眼，表情稍微放鬆了一點。');await say('kaicho','……原來是協會的新人。坐我旁邊吧。');}
+  else if(myFac()==='yelu'){await n('桌子另一頭，南瓜頭的首領懶洋洋地抬起一隻手，朝你的位置指了指。');await say('boss','……夜鷺的。坐這邊。');await say('kaicho','……夜鷺的人啊。這種時候，就不分彼此了。');}
   await say('lala','我本來在協會的廚房煎鬆餅！一轉頭，就在這棟房子的廚房裡了！……鬆餅還在鍋子上耶，會不會焦掉啊？');
   await say('ian','我也是一覺醒來就在這裡啦！哈哈，大叔我活了四十五年，什麼場面沒見過，有吃有住就好！');
   await say('ji','我也是～不過你們看，大家的樣子都好有萬聖節的感覺喔！……當然，最好看的是我。');
@@ -1784,7 +1788,9 @@ async function talk0(id){
     if(id==='po'&&NPCS.po.state==='sleep')return say('po','……枕頭……祭壇……Zzz……管他的……');
     const again={kaicho:'我沒事，只是有點貧血。……晚點喝杯番茄汁就好。',shisho:'書的事，拜託你了。……別學那傢伙拿書當枕頭。',sui:'羊駝還是不讓我靠近……糧草就拜託你啦！',
       lala:'史萊姆鬆餅很快喔！用跑的追！',boss:'……嗯。大南瓜很安靜。不像你。',ian:'怪物抓來丟給我，我全部揮出去！',ji:'試完要回來報告喔～別試到一半就逃跑。',po:'最舒服的枕頭……要軟軟的、涼涼的、甜甜的，還要可以抱……Zzz……'};
-    return say(id,again[id]);
+    const againFac={kaicho:'有什麼需要的，跟我說。協會的人，我會照顧。',shisho:'研究部的人，書的事就拜託你了。……別學那傢伙拿書當枕頭。',sui:'自己人就是可靠！糧草就拜託你啦～',lala:'協會的大家都要吃飽飽！史萊姆鬆餅就拜託你了！',
+      boss:'……累了就過來躺。我們家的人，不用客氣。',ian:'自家人有需要，大叔我隨叫隨到！怪物抓來就對了！',ji:'自己人試藥，我會手下留情的～大概。',po:'……我們家的人……幫我找枕頭……謝啦……Zzz……'};
+    return say(id,sameFac(id)&&againFac[id]?againFac[id]:again[id]);
   }
   F['p_'+id]=1;
   {const rc=F.realCh??F.ch??0,PRE={
@@ -3030,6 +3036,40 @@ async function openGear(gr){
   if(GEAR.every(g=>F['g_'+g.id]))ach('h_gear');
   checkWude();
 }
+/* ---------------- 陣營：協會、夜鷺、流浪者 ----------------
+   協會：會長、司書、翠、拉拉。夜鷺：首領、IAN、薊、小波。
+   同陣營的人對你比較親切；另一邊的人會有一些特別的反應；流浪者兩邊都不特別表示。 */
+const FACTION={kaicho:'assoc',shisho:'assoc',sui:'assoc',lala:'assoc',boss:'yelu',ian:'yelu',ji:'yelu',po:'yelu'};
+const FAC_NAME={assoc:'協會',yelu:'夜鷺',wander:'流浪者'};
+const myFac=()=>(S&&S.faction)||'wander';
+const sameFac=id=>myFac()!=='wander'&&FACTION[id]===myFac();
+const FAC_GREET={
+  assoc:{
+    kaicho:['……協會的新人？那就是自己人了。有什麼事，隨時來找我。……我會盡量醒著。'],
+    shisho:['協會的？……那你就是我們研究部的人了。隨時歡迎你來展覽室。','……不過書不分你吃。'],
+    sui:['欸！你也是協會的！太好了，自己人！有什麼事儘管說，要我的頭借你抱也可以喔！'],
+    lala:['你也是協會的人！太好了～！肚子餓的話隨時來廚房，協會的大家都有特製鬆餅！'],
+    boss:['……協會的人啊。……我們家跟你們家，平常沒什麼往來。','……在這裡就先別吵架吧。好麻煩。'],
+    ian:['喲，協會的年輕人！雖然大叔我是夜鷺的，不過怪物不分陣營，照樣揮給你看！'],
+    ji:['協會的人？哎呀～那就來當我的白老鼠吧，反正不是自己人，試壞了也不心疼～','……開玩笑的啦。大概。'],
+    po:['……協會的。……管他的，睡覺不分陣營。']},
+  yelu:{
+    boss:['……你是我們家的。','……過來，站我旁邊。比站在那群吵吵鬧鬧的人旁邊好。'],
+    ian:['喲！自家人！大叔我罩你！在這間屋子裡，誰敢欺負夜鷺的人，大叔我第一個揮出去！'],
+    ji:['哎呀～是夜鷺的小可愛！自己人的話，新藥水給你優先試喝喔～','……這是特權，不是陷阱。'],
+    po:['……夜鷺的。……那你可以睡我旁邊。','……管他的，借你半個枕頭。'],
+    kaicho:['夜鷺的人？……在這裡，大家都一樣被困住了。先合作吧。','……我不會把你當外人。'],
+    shisho:['夜鷺的。……你們首領整天躺著，我們家那傢伙整天倒著。','……半斤八兩。'],
+    sui:['夜鷺的？聽說你們那邊的人都很兇耶……啊，你看起來還好！嘻嘻。'],
+    lala:['是夜鷺的人！……不管哪個陣營，肚子都會餓的！來吃鬆餅吧！']},
+};
+async function facGreet(id){
+  const F=S.flags,L=(FAC_GREET[myFac()]||{})[id];if(!L)return;F.facTalk=F.facTalk||{};if(F.facTalk[id])return;
+  if(['down','sleep','pile','nohead','upper'].includes(NPCS[id].state)&&id!=='ian')return;
+  F.facTalk[id]=1;for(const t of L)await say(id,t);
+  if(sameFac(id)){S.inv.candy=(S.inv.candy||0)+1;updateHUD();toast(`${NAMES[id]}塞了一顆糖果給你：「自己人，拿去。」`)}
+  if(Object.keys(FACTION).filter(k=>FACTION[k]===myFac()).every(k=>F.facTalk[k]))ach('h_faction');
+}
 /* 阿鳳姨的鍋鏟、土製手槍、鐵圍裙、鏡面鍋蓋全部到手 → 稱號「武德豐沛」 */
 const WUDE_LINE={ian:'喲！全副武裝啦！這身武德，大叔我都要敬你三分！',ji:'鍋鏟、手槍、鐵圍裙、鍋蓋……你是要去打仗還是去煎鬆餅？……兩個都很適合你啦～',
   shisho:'……武德豐沛。這四個字，我在一本書裡讀過。那本書很難吃。',lala:'哇！那個鍋鏟跟鍋蓋，好像在哪裡看過……你、你也是煎鬆餅的同好嗎！？',
@@ -3299,6 +3339,7 @@ async function discovery(){
 async function talk(id){
   const F=S.flags;
   if(await morphTalk(id))return;
+  if(FACTION[id]&&(S.flags.gathered||chOf()>0))await facGreet(id);
   if(id==='sui'&&NPCS.sui.state==='ride')return say('sui','呀呼～～！停、停不下來啦～！等我繞完這圈——哇啊啊啊！');
   if(id==='sui'&&NPCS.sui.state==='fall'){await say('sui','……被甩下來了。牠今天又不喜歡我了。嗚……');await n('旁邊的羊駝「呸」地吐了一口口水，看起來一點都不抱歉。');return say('sui','看什麼看！你那是什麼眼神！明天就把你的草料換成青椒！')}
   if(id==='boss'&&S.flags.fengPan&&!S.flags.fengBoss&&!['sleep','down'].includes(NPCS.boss.state)&&chOf()>=1){S.flags.fengBoss=1;
@@ -5447,6 +5488,8 @@ function renderSetup(){
       else{setupSel[key]=o.id;if(key==='outfit')setupSel.cloth=null}renderSetup()};box.appendChild(b)})};
   {const box=$('optGender');box.innerHTML='';for(const[id,lab]of[['m','男生'],['f','女生'],['x','不透露']]){const b=document.createElement('button');b.type='button';b.textContent=lab;
     const on=(setupSel.gender||'x')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.gender=id;renderSetup()};box.appendChild(b)}}
+  {const box=$('optFaction');box.innerHTML='';for(const[id,lab]of[['assoc','協會'],['yelu','夜鷺'],['wander','流浪者']]){const b=document.createElement('button');b.type='button';b.textContent=lab;
+    const on=(setupSel.faction||'wander')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.faction=id;renderSetup()};box.appendChild(b)}}
   thumbs('optCut',HAIRCUTS,'cut',1);thumbs('optOutfit',OUTFITS,'outfit');thumbs('optEars',EARS,'ears',1);thumbs('optAcc',ACCS,'accs',1);
   const cur={...setupSel};if(!cur.cloth)cur.cloth=(OUTFITS.find(x=>x.id===cur.outfit)||OUTFITS[0]).o.cloth;
   for(const key of['skin','hair','eye','cloth']){const box=$('sw_'+key);box.innerHTML='';
@@ -5470,7 +5513,7 @@ $('goBtn').onclick=()=>{
   const name=$('nm').value.trim()||'新來的你';clearInterval(pvTimer);
   ls.set(LOOK_KEY,JSON.stringify(setupSel));
   const{outfit,ears,look}=selLook();
-  $('setup').hidden=true;S=newState(name,outfit,ears,look);S.gender=setupSel.gender||'x';startPlay(true);chapterSave(0);
+  $('setup').hidden=true;S=newState(name,outfit,ears,look);S.gender=setupSel.gender||'x';S.faction=setupSel.faction||'wander';startPlay(true);chapterSave(0);
   if(look.accs.length>=3)ach('h_dress');if(outfit==='vamp'&&look.accs.includes('fang'))ach('h_vampfan');
 };
 $('nm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('goBtn').click()}e.stopPropagation()});
