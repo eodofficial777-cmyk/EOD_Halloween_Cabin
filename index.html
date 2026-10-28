@@ -1359,7 +1359,7 @@ function say(who,text){
   return new Promise(res=>{
     dlg.hidden=false;fitPorts();dlg.classList.toggle('narr',who==='n');showPort(who);
     face.hidden=!!PORTRAITS[who];
-    if(who!=='n'){dname.textContent=who==='me'?myName():NAMES[who];drawFace(who)}
+    if(who!=='n'){dname.textContent=who==='me'?myName():NAMES[who];dname.style.color=who==='me'?FAC_COLOR[myFac()]:FACTION[who]?FAC_COLOR[FACTION[who]]:'';drawFace(who)}
     const full=(who==='lala'?lalaSpeak(text):text).replace(/\{me\}/g,S.name);let i=0;dtext.textContent='';
     clearInterval(typing);
     typing=setInterval(()=>{i+=1;dtext.textContent=full.slice(0,i);if(i>=full.length){clearInterval(typing);typing=null}},22);
@@ -3063,6 +3063,8 @@ const FAC_GREET={
     sui:['夜鷺的？聽說你們那邊的人都很兇耶……啊，你看起來還好！嘻嘻。'],
     lala:['是夜鷺的人！……不管哪個陣營，肚子都會餓的！來吃鬆餅吧！']},
 };
+const FAC_COLOR={assoc:'#7ab8ff',yelu:'#ff6a6a',wander:'#c8e05a'};
+async function facScene(m){const L=m[myFac()];if(L)for(const[w,t]of L)await(w==='n'?n(t):say(w,t))}
 async function facGreet(id){
   const F=S.flags,L=(FAC_GREET[myFac()]||{})[id];if(!L)return;F.facTalk=F.facTalk||{};if(F.facTalk[id])return;
   if(['down','sleep','pile','nohead','upper'].includes(NPCS[id].state)&&id!=='ian')return;
@@ -3332,6 +3334,8 @@ async function discovery(){
   await say('ji','嘖，好濃的味道……先說好，不是我喔。');
   await say('boss','……好麻煩。反正又不是我的事。我回去陪大南瓜了。');
   await say('shisho','我回展覽室。……反正會長倒下又不是第一次。吃點東西比較好思考。');
+  await facScene({assoc:[['sui','會長是我們協會的會長耶……新人，你也是協會的，拜託你查清楚！'],['n','協會的大家都看向你。……你是自己人，這件事得由你來。']],
+    yelu:[['boss','……協會的會長倒下了。……你是我們家的。'],['boss','去幫忙。算夜鷺欠他們一個人情。……好麻煩，但這種事不能欠。']]});
   await n('大家七嘴八舌了一陣，又各自散去。看來要查清楚真相，只能靠你自己了。');
   await say('lala','我、我先回廚房冷靜一下……{LC}有什麼想問的，再來找我。');
   applyWorld();
@@ -3536,9 +3540,12 @@ async function deduction1(){
     await n('……好像不太對。再想想，這棟宅邸裡，誰是「鬼」？');
   }
   if(!S.flags.dedWrong&&!(S.flags.accused||[]).length)ach('h_detective');
+  await facScene({yelu:[['n','……小波是夜鷺的人。要指認自己人，你的喉嚨有點緊。']],assoc:[['n','夜鷺的人們都看著你。協會的新人，要指認夜鷺的小波——空氣變得有點僵。']]});
   await say('me','會作祟的只有幽靈。小波，就是你！');
   await say('po','……啊？作祟？那麼麻煩的事，我才懶得做……我只是喝了草莓牛奶而已。');
   await n('小波的床單抖得像果凍一樣。');
+  await facScene({yelu:[['boss','……你是我們家的，卻指認我們家的人。'],['boss','……嗯。至少很公正。……但如果弄錯了，記得去跟他道歉。']],
+    assoc:[['ji','哎呀～協會的人指認我們家的小波呢。……希望你沒有弄錯喔？']]});
   await say('ian','先關起來吧！放心，我會記得給他送宵夜的。');
   await walkTo('ian',11,8,2);NPCS.ian.dir='left';
   await n('IAN 一把扛起小波，像扛一袋麵粉。');
@@ -3585,6 +3592,8 @@ async function discovery2(){
   await say('ji','欸～鑰匙在你身上，那不就是你放他出去的嗎？拉拉，你該不會連自己做了什麼都忘了吧？');
   await say('lala','才、才不是！！');
   await n('拉拉一激動，把旁邊的冰箱整台舉了起來。……裡面那顆雞蛋滾了出來。');
+  await facScene({assoc:[['sui','拉拉才不會說謊！她是協會的人，我們都知道！……對吧，新人？'],['n','翠看向你。協會的夥伴，正等著你替她說話。']],
+    yelu:[['ji','……你是我們家的，應該也覺得是拉拉吧？……不用回答啦，看你的表情就知道了～'],['n','……其實，你一點也不確定。']]});
   await say('boss','……會長不見了，現在連犯人也不見了。這間屋子是漏斗嗎。好麻煩。');
   await n('大家七嘴八舌了一陣，又各自散去。');
   await n('小波是怎麼離開上鎖的儲藏室的？他現在又在哪裡？看來，得再找一次了。');
@@ -3721,6 +3730,8 @@ async function act3Scene(){
   await say('ji','首領～翠的頭在大南瓜旁邊不見了耶。該不會……是你把它藏進南瓜裡了吧？');
   await n('大家的視線，全落在南瓜頭的首領身上。');
   await say('ian','我看南瓜頭的最可疑！');
+  await facScene({yelu:[['ian','……啊，糟糕，首領是我們家的。大叔我嘴太快了！'],['boss','……連自家人都懷疑我。……算了。'],['boss','……你是我們家的。你去查。……我信你。']],
+    assoc:[['shisho','……協會的新人，給你一個建議：查清楚再說。夜鷺的首領要是被冤枉了，兩邊都會很難看。']]});
   await say('boss','……不是我。用你們那顆跟南瓜差不多的腦袋想一想。');
   await say('boss','……大南瓜也說不是牠。好麻煩。');
   await n('首領一臉不想解釋的樣子。……看來得自己查清楚，翠的頭到底是怎麼掉進去的。');
@@ -3855,6 +3866,8 @@ async function disc4(){
   await say('boss','……拉拉力氣最大。');
   await say('shisho','嗯。很合理。');
   await say('lala','嗚嗚嗚……');
+  await facScene({assoc:[['lala','新、新人！你是協會的，你會相信我吧！？'],['n','拉拉抓著你的袖子，眼睛裡都是淚水。']],
+    yelu:[['ian','喂喂，大叔我可沒說是拉拉幹的！夜鷺跟協會為了這種事吵起來，可不好看！'],['ji','……可是阿北，你是被砍的那個耶。'],['ian','被砍的人說沒關係，就沒關係！'],['n','IAN 偷偷對你眨了眨眼。……好像在說：拜託你查清楚，別讓兩邊吵起來。']]});
   await n('IAN 的下半身走了過來，輕輕踢了踢你的腳。好像有話想說。');
   await n('看來，又得靠你來查清楚了。');
 }
@@ -4076,6 +4089,9 @@ async function finalEnding(){
   else await say('lala','我、我馬上去煎鬆餅！番茄口味的！……番茄要先切還是先打？');
   await n('拉拉用她驚人的力氣，三兩下就把 IAN 的上半身和下半身縫了回去。');
   await say('ian','縫好啦！腳回來了！哈哈，果然還是有腿比較方便，大叔我的老腰終於有地方靠了！');
+  await facScene({assoc:[['kaicho','……協會的大家，回家了。'],['kaicho','……新人。謝謝你。下次的協會會議，你坐我旁邊。'],['sui','好耶～新人升官了！']],
+    yelu:[['boss','……走吧。回家。'],['boss','……我們家的人，一個都不能少。……你也是。'],['ian','大叔我請客！夜鷺的慶功宴，宵夜吃到飽！']],
+    wander:[['n','兩邊的人，都對你揮了揮手。'],['n','……你不屬於任何一邊。可是這一晚之後，兩邊好像都多了一個朋友。']]});
   await n('大家一起走出了宅邸的大門。');
   await say('ghost','明年萬聖節，還要再來玩喔——！');
   await n('……就在這時。');
@@ -5440,11 +5456,11 @@ function renderNote(){
     const groups=[['協會',[['kaicho','吸血鬼。平常不太喝血，要有人逼才肯喝，所以常常貧血發呆。熱愛番茄汁。'],['shisho','長角的惡魔。比起收集靈魂，更喜歡吃書，總是待在有書的地方。'],['sui','無頭騎士杜拉罕。常騎著幽靈羊駝在森林外圍徘徊，抱著自己的腦袋甩來甩去，似乎不會頭暈。'],['lala','德州電鋸殺人魔。能舉起來的不只電鋸，還有古典壁畫和大理石雕像。平常在廚房做好吃的鬆餅。']]],
       ['夜鷺',[['boss','傑克南瓜。失去了讀取資訊的超能力，顯得特別懶洋洋，只想跟外面的大南瓜待在一起。'],['ian','大塊頭科學怪人。豪爽又愛照顧人，是大家可靠的四十五歲大叔。拿鏟子當武器，把怪物當棒球揮出去，同時小心別把自己弄散架。'],['ji','身纏荊棘的花草女巫。玻璃藥劑叮噹作響，藥水會讓人快樂，似乎加了某種葉子有七片尖角的草。問她是什麼，只會笑著說是「個人秘方」。'],['po','披著床單的小幽靈。隨處倒頭就睡，有時從樓梯滾下來變成一坨布，睡飽了又披著床單亂晃。']]]];
     for(const [gname,list] of groups){
-      const h=document.createElement('h3');h.textContent=gname;body.appendChild(h);
+      const h=document.createElement('h3');h.textContent=gname;h.style.color=FAC_COLOR[{'協會':'assoc','夜鷺':'yelu'}[gname]]||'';body.appendChild(h);
       const wrap=document.createElement('div');wrap.className='chars';
       for(const [id,desc] of list){const d=document.createElement('div');d.className='ch';const c=document.createElement('canvas');c.width=24;c.height=24;
         const g=c.getContext('2d');R(g,0,0,24,24,'#1a0d0c');g.save();g.translate(4,id==='ji'?8:id==='ian'?3:5);drawChar(g,id,'down',0,20,id==='po'?'stand':undefined);g.restore();
-        const t=document.createElement('div');t.innerHTML='<b></b><p></p>';t.querySelector('b').textContent=NAMES[id];t.querySelector('p').textContent=desc;d.append(c,t);wrap.appendChild(d)}
+        const t=document.createElement('div');t.innerHTML='<b></b><p></p>';t.querySelector('b').textContent=NAMES[id];t.querySelector('b').style.color=FAC_COLOR[FACTION[id]]||'';t.querySelector('p').textContent=desc;d.append(c,t);wrap.appendChild(d)}
       body.appendChild(wrap);
     }
   }
@@ -5488,7 +5504,7 @@ function renderSetup(){
       else{setupSel[key]=o.id;if(key==='outfit')setupSel.cloth=null}renderSetup()};box.appendChild(b)})};
   {const box=$('optGender');box.innerHTML='';for(const[id,lab]of[['m','男生'],['f','女生'],['x','不透露']]){const b=document.createElement('button');b.type='button';b.textContent=lab;
     const on=(setupSel.gender||'x')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.gender=id;renderSetup()};box.appendChild(b)}}
-  {const box=$('optFaction');box.innerHTML='';for(const[id,lab]of[['assoc','協會'],['yelu','夜鷺'],['wander','流浪者']]){const b=document.createElement('button');b.type='button';b.textContent=lab;
+  {const box=$('optFaction');box.innerHTML='';for(const[id,lab]of[['assoc','協會'],['yelu','夜鷺'],['wander','流浪者']]){const b=document.createElement('button');b.type='button';b.textContent=lab;b.style.color=FAC_COLOR[id];
     const on=(setupSel.faction||'wander')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.faction=id;renderSetup()};box.appendChild(b)}}
   thumbs('optCut',HAIRCUTS,'cut',1);thumbs('optOutfit',OUTFITS,'outfit');thumbs('optEars',EARS,'ears',1);thumbs('optAcc',ACCS,'accs',1);
   const cur={...setupSel};if(!cur.cloth)cur.cloth=(OUTFITS.find(x=>x.id===cur.outfit)||OUTFITS[0]).o.cloth;
