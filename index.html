@@ -4281,7 +4281,7 @@ function useSpecial(){
 }
 const ALLY_POS={lala:[9,10],sui:[10,10],ji:[11,10],shisho:[12,10],boss:[9,12],ian:[10,12],po:[12,12],batk:[11,13]};
 function alliesArrive(){
-  CB.allies=1;CB.assistT=60*5;
+  CB.allies=1;CB.assistT=60*5;CB.sweepT=60;
   for(const [id,[x,y]] of Object.entries(ALLY_POS)){const [nx,ny]=toNew('crypt',x,y);Object.assign(NPCS[id],{scene:'crypt',x:nx,y:ny,dir:'up',queue:[],mv:null,patrol:null,follower:null,state:id==='ian'?'upper':id==='po'?'stand':id==='batk'?'hop':null})}
   toast('柵欄後面傳來腳步聲——大家都追下來了！');toastT=200;shake=6;
 }
@@ -4295,7 +4295,16 @@ const ASSISTS={
   po:e=>{e.slow=Math.max(e.slow||0,300);return'小波打了一個超大的呵欠……南瓜幽靈也跟著睏了，動作變慢了。'},
   batk:e=>{e.reveal=360;return'小蝙蝠發出「吱——」的超音波！隱形的南瓜幽靈現形了！'},
 };
+/* 柵欄外冒出來的一般怪物，由大家負責清掉 */
+const SWEEP={ian:'IAN 的上半身一鏟子把{f}打成了全壘打！',lala:'拉拉的電鋸「唰」地一聲，{f}被切成兩半了！',sui:'翠騎著羊駝衝過去，把{f}撞飛了！',ji:'薊的荊棘一捲，把{f}拖進了地底下～',boss:'首領的大南瓜滾過去，把{f}壓扁了。',shisho:'司書闔上書，「啪」地把{f}夾扁了。',po:'小波翻了個身，正好壓在{f}身上。……{f}也睡著了。'};
+function allySweep(){
+  if(!CB.allies||--CB.sweepT>0)return;CB.sweepT=60*2;
+  const f=CB.foes.find(x=>!x.arena&&x.type!=='ghost'&&x.hp>0&&!x.spawn&&!x.launch);if(!f)return;
+  const ids=Object.keys(SWEEP),id=ids[(Math.random()*ids.length)|0];
+  f.hp=0;spark(f.x,f.y,'#fff6c8',10);if(toastT<30)toast(SWEEP[id].replaceAll('{f}',FOES[f.type]?FOES[f.type].name:'怪物'));toastT=90;
+}
 function assistTick(e){
+  allySweep();
   if(!CB.allies){if(e.hp<e.max*.85)alliesArrive();return}
   if(--CB.assistT>0)return;CB.assistT=60*9;
   let ids=Object.keys(ASSISTS).filter(id=>id!=='batk');
