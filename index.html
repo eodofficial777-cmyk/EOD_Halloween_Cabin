@@ -285,7 +285,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   <div class="panel win">
     <button class="close" id="chapClose" type="button">關閉</button>
     <h2>章節選擇</h2>
-    <p class="empty">每一章開始時都會自動存檔。選一章回到那裡重新玩，可以試試支線的另一種結局。</p>
+    <p class="empty">每一章開始時都會自動存檔。選一章回到那裡重新玩，可以試試支線的另一條路線。</p>
     <div id="chapList"></div>
   </div>
 </div>
@@ -986,7 +986,7 @@ function applyWorld(){
   set('boss','outside',5,11);set('ian','outside',20,5);set('ji','greenhouse',7,2);
   const llamaOk=S&&qDoneP('sui');
   if(!llamaOk)set('horse','outside',33,13);
-  if(S&&qGet('sui')&&qGet('sui').st==='fail')NPCS.horse.scene=null;
+  if(S&&qGet('sui')&&qGet('sui').st==='alt')NPCS.horse.scene=null;
   if(ch===0){
     if(!F.gathered){set('kaicho','dining',1,3);set('lala','dining',4,1);set('ian','dining',7,1);set('ji','dining',10,1);set('boss','dining',12,1);
       set('shisho','dining',4,6);set('sui','dining',7,6);set('po','dining',10,6,'stand');NPCS.kaicho.dir='right'}
@@ -1198,17 +1198,17 @@ const ACHS=[
   {id:'q_kaicho',side:1,t:'番茄罐頭收藏家',d:'幫會長找齊五罐番茄罐頭。'},
   {id:'q_boss',side:1,t:'南瓜邊的發呆大師',d:'陪首領在大南瓜旁邊發呆三輪。'},
 
-  {id:'f_po',side:1,secret:1,t:'失眠之夜',d:'供奉了不對的枕頭，宅邸裡的大家都沒睡好。',hint:'小波的支線，還有另一種結局。'},
-  {id:'f_lala',side:1,secret:1,t:'偷吃',d:'偷吃了一坨史萊姆鬆餅。卡士達口味。',hint:'拉拉的支線，還有另一種結局。'},
-  {id:'f_shisho',side:1,secret:1,t:'被咬了一口',d:'推薦了難吃的書，靈魂被司書咬了一小口。',hint:'司書的支線，還有另一種結局。'},
-  {id:'f_ji',side:1,secret:1,t:'研究筆記一團亂',d:'把藥水的實驗結果報錯了。',hint:'薊的支線，還有另一種結局。'},
-  {id:'f_sui',side:1,secret:1,t:'駱馬跑掉了',d:'餵食失敗三次，駱馬跑進了森林。',hint:'翠的支線，還有另一種結局。'},
-  {id:'f_ian',side:1,secret:1,t:'三振出局',d:'怪物棒球連續三次揮空。',hint:'IAN 的支線，還有另一種結局。'},
-  {id:'f_kaicho',side:1,secret:1,t:'又被喝掉了',d:'會長的番茄罐頭，被小波喝光了。',hint:'會長的支線，還有另一種結局。'},
-  {id:'f_boss',side:1,secret:1,t:'坐不住',d:'發呆失敗五次，首領說你不適合躺。',hint:'首領的支線，還有另一種結局。'},
-  {id:'h_allwin',t:'完美的萬聖夜',d:'在同一次調查中，八條支線全部成功。',hint:'每個人的願望都實現了。'},
-  {id:'h_allfail',t:'什麼都搞砸了',d:'在同一次調查中，八條支線全部失敗。',hint:'……也是一種才能。'},
-  {id:'h_mixed',t:'有好有壞',d:'在同一次調查中完成了八條支線，有成功也有失敗。',hint:'人生就是這樣。'},
+  {id:'f_po',side:1,secret:1,t:'失眠之夜',d:'供奉了另一個枕頭，大家一起熬夜聊到了天亮。',hint:'小波的支線，還有另一條路線。'},
+  {id:'f_lala',side:1,secret:1,t:'偷吃',d:'偷吃了一坨史萊姆鬆餅。卡士達口味。',hint:'拉拉的支線，還有另一條路線。'},
+  {id:'f_shisho',side:1,secret:1,t:'被咬了一口',d:'推薦了別本書，靈魂被司書輕輕咬了一小口。',hint:'司書的支線，還有另一條路線。'},
+  {id:'f_ji',side:1,secret:1,t:'亂報藥水',d:'實驗結果報得一團亂，卻意外發現了全新的藥效。',hint:'薊的支線，還有另一條路線。'},
+  {id:'f_sui',side:1,secret:1,t:'森林裡的駱馬',d:'駱馬跑進了森林，在那裡過得很開心。',hint:'翠的支線，還有另一條路線。'},
+  {id:'f_ian',side:1,secret:1,t:'換你揮棒',d:'三振之後，換你拿起點滴架把怪物打飛。',hint:'IAN的支線，還有另一條路線。'},
+  {id:'f_kaicho',side:1,secret:1,t:'又被喝掉了',d:'會長的番茄罐頭，被小波喝光了。',hint:'會長的支線，還有另一條路線。'},
+  {id:'f_boss',side:1,secret:1,t:'坐著也不錯',d:'躺不住，改成坐著陪首領聊天。',hint:'首領的支線，還有另一條路線。'},
+  {id:'h_allwin',t:'標準答案',d:'在同一次調查中，八條支線都走了第一條路線。',hint:'每個人都得到了他們想要的。'},
+  {id:'h_allfail',t:'我行我素',d:'在同一次調查中，八條支線都走了另一條路線。',hint:'不按照別人的期待走。'},
+  {id:'h_mixed',t:'屬於自己的萬聖夜',d:'在同一次調查中完成了八條支線，兩種路線都有走到。',hint:'有些照著走，有些照自己的意思走。'},
   {id:'h_kaichovine',t:'玫瑰的擁抱',d:'讓玫瑰觸手怪纏住了正在種花的會長。',hint:'在溫室種花的那個人……'},
   {id:'h_pillowfirst',t:'睡教的神諭',d:'收集了全部五個枕頭，比較過後選出了正確的那一個。',hint:'把所有的枕頭都找來比一比。'},
   {id:'h_morph2',t:'變身大師',d:'喝了藥水，變成過蝙蝠也變成過南瓜。',hint:'藥水的效果，每次都不太一樣。'},
@@ -1216,7 +1216,7 @@ const ACHS=[
   {id:'h_pitch3',t:'完美投手',d:'怪物棒球連續三次正中紅心。',hint:'IAN 說，要丟得很準很準。'},
   {id:'h_kaicho_can',t:'晚點喝',d:'在序幕就把番茄罐頭交給了會長本人。',hint:'趁他還醒著的時候……'},
   {id:'h_bat_can',t:'吱！',d:'把番茄罐頭給了那隻飛不起來的小蝙蝠。',hint:'那隻小蝙蝠的眼睛，紅得跟番茄一樣。'},
-  {id:'h_idle_perfect',t:'不動如山',d:'一次都沒失敗，就撐完了三輪發呆。',hint:'連停電都不能讓你動一下。'},
+  {id:'h_idle_perfect',t:'不動如山',d:'一次都沒動，就撐完了三輪發呆。',hint:'連停電都不能讓你動一下。'},
   {id:'h_k10', t:'初次狩獵',d:'累計擊倒 10 隻災獸。',hint:'宅邸裡的災獸，好像怎麼打都打不完……',stat:'kills',goal:10},
   {id:'h_k50', t:'災獸剋星',d:'累計擊倒 50 隻災獸。',hint:'再多打一些。',stat:'kills',goal:50},
   {id:'h_k150',t:'宅邸清道夫',d:'累計擊倒 150 隻災獸。',hint:'多到數不清。',stat:'kills',goal:150},
@@ -1317,7 +1317,7 @@ const qGet=id=>QS()[id];
 const qOn=id=>!!(S&&qGet(id)&&qGet(id).st==='on');
 const qDoneP=id=>!!(S&&qGet(id)&&qGet(id).st==='done');
 function qStart(id,data={}){if(QS()[id])return;QS()[id]={st:'on',...data};toast('接下支線：'+QUESTS[id].t);updateHUD()}
-function qFinish(id,loot){const q=qGet(id);if(!q||q.st==='done')return;q.st='done';toast('完成支線：'+QUESTS[id].t);ach('q_'+id);checkAllQ();if(loot)setTimeout(()=>gainLoot(loot),1800);save()}
+function qFinish(id,loot){const q=qGet(id);if(!q||q.st==='done')return;q.st='done';toast(`完成支線：${QUESTS[id].t}（${ROUTES[id][0]}）`);ach('q_'+id);checkAllQ();if(loot)setTimeout(()=>gainLoot(loot),1800);save()}
 
 /* 散落在各處、可以撿的東西（座標是放大後的新座標）。只有接下對應支線後才會出現 */
 const PROPS=[
@@ -1890,7 +1890,7 @@ function drawIdle(){
 async function altar(){
   const q=qGet('po');
   if(q&&q.st==='done')return n('祭壇正中央供奉著那顆會飄的白色抱枕。一靠近，就忍不住想打哈欠。');
-  if(q&&q.st==='fail')return n('祭壇上供奉著'+PILLOWS[q.offered].t+'。……祭壇上的「好睡」兩個字，好像有點歪掉了。');
+  if(q&&q.st==='alt')return n('祭壇上供奉著'+PILLOWS[q.offered].t+'。坐在這裡，就會很想找人聊天。');
   if(!q)return n('祭壇上鋪著白布，正中央刻著兩個字：「好睡」。這裡似乎是「睡教」的教堂。');
   const have=Object.keys(PILLOWS).filter(k=>hasItem('p_'+k));
   if(!have.length)return n('祭壇正中央刻著「好睡」兩個字，旁邊有一個空空的枕頭座。……小波說要供奉最舒服的枕頭。');
@@ -1906,7 +1906,10 @@ async function altar(){
     await n({feather:'那天晚上，宅邸裡的每個人都熱得翻來覆去，一整晚沒睡好。',lavender:'那天晚上，宅邸裡的每個人都在夢裡一直笑，笑到天亮。',
       flour:'那天晚上，宅邸裡的每個人睡到一半都在打噴嚏。哈啾——',velvet:'那天晚上，宅邸裡的每個人都在找自己的枕頭，誰也抱不住。'}[k]);
     await n('……遠遠的，傳來小波的聲音：「……睡不著……」');
-    qFail('po');return;
+    await n('過了一會兒，小波披著床單飄進了教堂。');
+    await say('po','……睡不著的話……那就……大家一起熬夜吧……');
+    await n('那一晚，宅邸裡的大家第一次聚在一起，聊天聊到了天亮。');
+    qAlt('po',{candy:3});return;
   }
   await n('抱枕輕輕落在枕頭座上，不再飄了。');
   await n('教堂裡的蠟燭一根接一根暗了下來，四周響起了好多人輕輕打呼的聲音。');
@@ -1928,8 +1931,11 @@ async function lalaDone(){
     await say('lala','……你、你嘴角那個是什麼？');
     await say('lala','你把我的麵糊吃掉了啦啊啊啊！！那坨是我打得最用力的一坨！！');
     await n('拉拉氣得把旁邊的冰箱整台舉了起來，又默默放下。');
-    await say('lala','……算了。下次我自己抓。');
-    qFail('lala');return;
+    await say('lala','……');
+    await say('lala','……好吃嗎？');
+    await say('me','卡士達的味道。很好吃。');
+    await say('lala','真、真的？……那我下次做一整盤卡士達口味的！不准偷吃，要正大光明地吃！');
+    qAlt('lala',{candy:3});return;
   }
   await n('你把六坨扭來扭去的麵糊放回攪拌碗裡。');
   await say('lala','太好了！謝謝你～！');
@@ -1957,8 +1963,9 @@ async function shishoDone(){
     await say('shisho','你的眼光，跟這本書的味道一樣。');
     await n('司書湊了過來，在你的頭頂上，輕輕咬了一口。');
     await n('……好像有什麼東西，被吸走了一點點。');
-    await say('shisho','靈魂，只咬一小口。點心時間結束。');
-    qFail('shisho');return;
+    await say('shisho','靈魂，只咬一小口。……嗯，比這本書好吃。');
+    await say('shisho','不過你挑的這本，拿來當書擋剛剛好。這個給你，算是咬你一口的賠禮。');
+    qAlt('shisho',{candy:2,ammo:4});return;
   }
   await say('shisho','……番茄汁的味道。酸酸甜甜的。');
   await say('shisho','……很好吃。你很懂。');
@@ -1992,10 +1999,10 @@ async function jiReport(){
     rmItem('potion');
     if(q.wrong){
       await n('薊翻了翻研究筆記，表情越來越僵硬。');
-      await say('ji','……玫瑰枯萎、南瓜說話、IAN 變粉紅色……');
-      await say('ji','這份筆記拿去發表的話，我會被笑死吧～');
-      await say('ji','沒關係！失敗也是研究的一部分～下次我自己來試！');
-      qFail('ji');return;
+      await say('ji','……跟我預測的，完全不一樣耶。');
+      await say('ji','等等……這該不會是，全新的藥效？');
+      await say('ji','太棒了！我要把它命名為「亂報藥水」！謝謝你啦，研究助理～這是謝禮！');
+      qAlt('ji',{candy:3});return;
     }
     await say('ji','全部都試過了，結果也跟我想的一模一樣！這份研究筆記一定能拿去發表～');
     await say('ji','謝謝你啦，研究助理！這是謝禮～');
@@ -2008,17 +2015,20 @@ function llamaFail(){
   if(CB.mini!=='llama')return;endLlama();
   const q=qGet('sui');q.fails=(q.fails||0)+1;
   if(q.fails>=3){
-    q.st='fail';applyWorld();q.st='on';
+    q.st='alt';applyWorld();q.st='on';
     run(async()=>{
       await n('糧草又丟完了。駱馬氣呼呼地噴了最後一口口水——');
       await n('然後頭也不回地，跑進了森林的濃霧裡。');
       await say('sui','……牠跑掉了。');
-      await say('sui','沒、沒關係……牠肚子餓了就會回來的吧。……大概。');
-      qFail('sui');
+      await say('sui','……沒關係！我就用走的巡邏！');
+      await n('翠把頭夾在腋下，大步走向森林邊緣。');
+      await n('遠遠的濃霧裡，好像有一隻半透明的駱馬，正在跟森林裡的什麼東西玩耍。');
+      await say('sui','……看起來，牠在森林裡過得很開心。那就好！');
+      qAlt('sui',{candy:2,ammo:4});
     });return;
   }
   applyWorld();
-  run(async()=>{await n('糧草都丟完了，駱馬還是氣呼呼的。');await say('sui',`沒關係！我這裡還有備用的糧草……不過牠快要不耐煩了，大概只剩 ${3-q.fails} 次機會。`)});
+  run(async()=>{await n('糧草都丟完了，駱馬還是氣呼呼的。');await say('sui',`沒關係！我這裡還有備用的糧草……不過牠快要不耐煩了，再丟完 ${3-q.fails} 次的話，牠大概會跑掉喔。`)});
 }
 async function pitchSession(){
   const q=qGet('ian');q.strikes=q.strikes||0;
@@ -2033,9 +2043,13 @@ async function pitchSession(){
     if(res===0)q.strikes++;else q.strikes=0;
     if(q.strikes>=3){
       await say('ian','……三振。');
-      await say('ian','不玩了。');
-      await n('IAN 把點滴架扛回肩上，轉身走開了。剩下的怪物也趁機從怪物袋裡溜走了。');
-      q.sack=[];qFail('ian');return;
+      await say('ian','……換你揮。');
+      await n('IAN 把點滴架塞到你手裡，自己抓起一隻怪物，輕輕一拋——');
+      await n('你閉上眼睛，用力一揮。');
+      await n('……鏘！！');
+      await n('怪物飛過宅邸的屋頂，消失在雨裡。');
+      await say('ian','……打得不錯。你比較適合揮棒。');
+      q.sack=[];qAlt('ian',{ammo:8,candy:1});return;
     }
     if(q.st==='on'&&q.hr>=3){
       await say('ian','三支全壘打。……好玩。');
@@ -2049,7 +2063,7 @@ async function pitchSession(){
 async function idleSession(){
   const q=qGet('boss');q.round=q.round||0;q.fails=q.fails||0;
   await say('boss','……躺下來。什麼都不要做。');
-  await n(`（第 ${q.round+1} 輪：撐過 ${IDLE_DUR[q.round]} 秒，什麼按鍵都不要按，也不要點畫面。失敗 5 次首領就會放棄你。）`);
+  await n(`（第 ${q.round+1} 輪：撐過 ${IDLE_DUR[q.round]} 秒，什麼按鍵都不要按，也不要點畫面。動了 5 次的話，首領會換個方式陪你。）`);
   for(;;){
     await n('你在大南瓜旁邊躺了下來。雨聲沙沙的。');
     const ok=await idleRound(q.round);
@@ -2058,11 +2072,14 @@ async function idleSession(){
       if(q.fails>=5){
         await say('boss','……你又動了。');
         await say('boss','……你不適合躺。');
-        await say('boss','……大南瓜說，下次吧。');
-        qFail('boss');return;
+        await say('boss','……那，坐著陪我聊天吧。');
+        await n('你在首領旁邊坐了下來。他用很慢很慢的語速，說了好多跟大南瓜有關的事。');
+        await say('boss','……大南瓜說，牠喜歡有人陪牠說話。');
+        await say('boss','……偶爾這樣，也不錯。');
+        qAlt('boss',{candy:3});return;
       }
       await say('boss',['……你動了。好麻煩。','……再來。','……大南瓜說你太吵了。','……坐不住啊。'][(Math.random()*4)|0]);
-      const c=await choose(`要再躺一次嗎？（還能失敗 ${5-q.fails} 次）`,['再躺一次','先起來']);if(c===1)return;continue;
+      const c=await choose(`要再躺一次嗎？（再動 ${5-q.fails} 次，會走向另一條路線）`,['再躺一次','先起來']);if(c===1)return;continue;
     }
     q.round++;
     if(q.round>=IDLE_DUR.length)break;
@@ -2087,18 +2104,22 @@ async function cansToPo(){
   await n('……全部喝光了。');
   await say('po','……好好喝……可是，是番茄的味道……');
   await n('會長的番茄，又一次被小波喝掉了。');
-  qFail('kaicho');
+  await say('po','……我會跟會長道歉的……還有，謝謝你……');
+  await n('小波打了一個大大的嗝，抱著空罐子，滿足地睡著了。');
+  qAlt('kaicho',{candy:2});
 }
-/* 支線失敗：一樣會結束，並解鎖對應的分支成就 */
-function qFail(id){const q=qGet(id);if(!q||q.st!=='on')return;q.st='fail';toast('支線結束：'+QUESTS[id].t+'（失敗）');ach('f_'+id);checkAllQ();save();updateHUD()}
+/* 每條支線都有兩條路線：done 是第一條、alt 是另一條，兩種都算完成 */
+const ROUTES={po:['好夢路線','失眠路線'],lala:['歸還路線','偷吃路線'],shisho:['美食家路線','點心路線'],ji:['正確報告路線','新發現路線'],
+  sui:['駱馬伙伴路線','森林自由路線'],ian:['全壘打路線','換你揮棒路線'],kaicho:['送達路線','小波路線'],boss:['發呆大師路線','聊天路線']};
+function qAlt(id,loot){const q=qGet(id);if(!q||q.st!=='on')return;q.st='alt';toast(`完成支線：${QUESTS[id].t}（${ROUTES[id][1]}）`);ach('f_'+id);checkAllQ();if(loot)setTimeout(()=>gainLoot(loot),1800);save();updateHUD()}
 function checkAllQ(){
   const ids=Object.keys(QUESTS),st=ids.map(id=>(qGet(id)||{}).st);
   if(st.every(s=>s==='done'))ach('h_allwin');
-  if(st.every(s=>s==='fail'))ach('h_allfail');
-  if(st.every(s=>s==='done'||s==='fail')&&st.includes('done')&&st.includes('fail'))ach('h_mixed');
+  if(st.every(s=>s==='alt'))ach('h_allfail');
+  if(st.every(s=>s==='done'||s==='alt')&&st.includes('done')&&st.includes('alt'))ach('h_mixed');
 }
-const FAIL_NOTE={po:'供奉了不對的枕頭，大家都沒睡好。',lala:'偷吃了一坨史萊姆鬆餅，被拉拉發現了。',shisho:'推薦了難吃的書，靈魂被司書咬了一小口。',
-  ji:'實驗結果亂報，薊的研究筆記一團亂。',sui:'餵食失敗太多次，駱馬跑進森林裡了。',ian:'三振出局，IAN 不玩了。',kaicho:'番茄罐頭被小波喝光了。',boss:'動了太多次，首領說你不適合躺。'};
+const ALT_NOTE={po:'供奉了另一個枕頭，大家一起熬夜聊到了天亮。',lala:'偷吃了一坨，拉拉決定下次做卡士達口味。',shisho:'推薦了別本書，靈魂被輕輕咬了一小口。',
+  ji:'實驗報告亂成一團，卻發現了「亂報藥水」。',sui:'駱馬跑進森林，在那裡過得很開心。',ian:'三振之後，換你揮棒把怪物打飛。',kaicho:'番茄罐頭被小波喝光了，他說會跟會長道歉。',boss:'躺不住，改成坐著陪首領聊天。'};
 
 /* ---------------- 章節存檔 ---------------- */
 /* 每一章開始時自動存一份，可以從標題或選單的「章節選擇」回到那一章重玩 */
@@ -2139,7 +2160,7 @@ function questRows(){
   for(const id in QUESTS){
     const q=qGet(id),Qd=QUESTS[id];if(!q)continue;let d='';
     if(q.st==='done')d='已完成。';
-    else if(q.st==='fail')d='失敗了：'+FAIL_NOTE[id];
+    else if(q.st==='alt')d=ALT_NOTE[id];
     else if(id==='po')d=(q.got.length?`找到的枕頭：${q.got.map(k=>PILLOWS[k].t).join('、')}。`:'')+'找到「軟軟的、涼涼的、甜甜的、可以整個抱住」的枕頭，供奉到屋外 小教堂 的祭壇上。';
     else if(id==='lala')d=`抓回跑掉的史萊姆鬆餅：${q.got.length}/${SLIMES.length}。牠們在廚房、餐廳、大廳。用跑的追（按住 Shift）。`+(q.got.length>=SLIMES.length?'全部抓到了，回去找拉拉！':'');
     else if(id==='shisho')d=`找到的書：${q.got.length}/${Object.keys(BOOKS).length}。宅邸裡到處都有發亮的書堆。`+(q.got.length>=Object.keys(BOOKS).length?'找齊了，拿去 展覽室 給司書！':'');
@@ -2148,7 +2169,7 @@ function questRows(){
     else if(id==='kaicho')d=`找到的番茄罐頭：${q.got.length}/${CANS_N}。`+(q.got.length>=CANS_N?(chOf()===0?'找齊了，拿去溫室給會長！':'找齊了！交給拉拉，或是那隻飛不起來的小蝙蝠。'):'宅邸裡意想不到的地方都找找看。')
     else if(id==='boss')d=`跟首領一起躺在大南瓜旁邊發呆，什麼按鍵都不要按。已撐過 ${q.round||0}/3 輪。`
     else if(id==='ian')d=`全壘打：${q.hr||0}/3。怪物袋：${(q.sack||[]).length}/3。打倒災獸會自動收進怪物袋，抓到後回去找 IAN。`;
-    rows.push([Qd.t+'（'+Qd.who+'）',d,q.st]);
+    rows.push([Qd.t+'（'+Qd.who+'）',d,q.st,q.st==='done'?ROUTES[id][0]:q.st==='alt'?ROUTES[id][1]:'進行中']);
   }
   return rows;
 }
@@ -3414,8 +3435,8 @@ function renderNote(){
     const rows=S?questRows():[];
     if(!rows.length){body.innerHTML='<p class="empty">還沒有接到支線任務。跟宅邸裡的人聊聊看吧。</p>';return}
     const l=document.createElement('div');l.className='evlist';
-    rows.forEach(([t,dd,st])=>{const done=st!=='on';const d=document.createElement('div');d.className='ev'+(done?'':' key');d.innerHTML='<span class="t"></span><span class="tag"></span><span class="d"></span>';
-      d.querySelector('.t').textContent=t;d.querySelector('.tag').textContent=st==='done'?'成功':st==='fail'?'失敗':'進行中';d.querySelector('.d').textContent=dd;l.appendChild(d)});
+    rows.forEach(([t,dd,st,tag])=>{const done=st!=='on';const d=document.createElement('div');d.className='ev'+(done?'':' key');d.innerHTML='<span class="t"></span><span class="tag"></span><span class="d"></span>';
+      d.querySelector('.t').textContent=t;d.querySelector('.tag').textContent=tag;d.querySelector('.d').textContent=dd;l.appendChild(d)});
     body.appendChild(l);
   }else{
     const groups=[['協會',[['kaicho','吸血鬼。平常不太喝血，要有人逼才肯喝，所以常常貧血發呆。熱愛番茄汁。'],['shisho','長角的惡魔。比起收集靈魂，更喜歡吃書，總是待在有書的地方。'],['sui','無頭騎士杜拉罕。常騎著幽靈駱馬在森林外圍徘徊，抱著自己的腦袋甩來甩去，似乎不會頭暈。'],['lala','德州電鋸殺人魔。能舉起來的不只電鋸，還有古典壁畫和大理石雕像。平常在廚房做好吃的鬆餅。']]],
