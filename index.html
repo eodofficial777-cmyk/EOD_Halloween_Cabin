@@ -1206,6 +1206,7 @@ function npcWalkable(o,x,y){
   if(!c||SOLID.has(c))return false;
   if(s.exitsN.some(e=>e[0]===x&&e[1]===y))return false;
   if(o.scene==='dining'){const[ox,oy]=toOld('dining',x,y);if(ox===8&&oy===6)return false}
+  if(hallObj(o.scene,x,y))return false;
   if(S&&o.scene===S.scene&&((P.x===x&&P.y===y)||(P.moving&&P.tx===x&&P.ty===y)))return false;
   for(const q of Object.values(NPCS))if(q!==o&&q.scene===o.scene&&q.x===x&&q.y===y)return false;
   return true;
@@ -1494,6 +1495,8 @@ const ACHS=[
   {id:'h_wude',t:'武德豐沛',d:'集齊阿鳳姨的鍋鏟、土製手槍、鐵圍裙和鏡面鍋蓋，獲得稱號「武德豐沛」。',hint:'宅邸裡到處都是「鳳」的痕跡。把它們全部帶在身上。'},
   {id:'h_garden',t:'園丁的接班人',d:'讓花園迷宮裡的花圃全部開花，連那朵古怪的向日葵也是。',hint:'迷宮入口旁的工具箱，是某個人的。'},
   {id:'h_race',t:'比羊駝還快',d:'在花園迷宮的賽跑中贏過了翠和羊駝。',hint:'有人騎著羊駝，想找人比賽。'},
+  {id:'h_organ',t:'午夜演奏會',d:'用大廳的管風琴，彈完了所有的曲子。',hint:'大廳裡有一座會唱歌的大傢伙。'},
+  {id:'h_candle',t:'借個火',d:'拿著蠟燭去取了火，照亮了周圍。',hint:'燭台上的蠟燭，可以帶走。'},
   {id:'h_horse',t:'幽靈羊駝的噴嚏',d:'和幽靈羊駝打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
@@ -4103,7 +4106,7 @@ function walkable(x,y){
   if(S.scene==='kitchen'&&ox===0&&oy===3)return chOf()===2&&!!S.flags.disc2;
   if(S.scene==='chapel'&&ox===14&&oy===9)return chOf()===4&&!!S.flags.ded4;
   if(hintSpot(x,y))return false;
-  if(lostAt(x,y)||gearAt(x,y)||pfAt(x,y)||bedAt(x,y))return false;
+  if(lostAt(x,y)||gearAt(x,y)||pfAt(x,y)||bedAt(x,y)||hallObj(S.scene,x,y))return false;
   if(S.scene==='maze'&&x===SHED.x&&y===SHED.y)return false;
   if(RACE&&S.scene==='maze'&&Math.round(RACE.fx/T)===x&&Math.round(RACE.fy/T)===y)return false;
   if(pfGate(x,y)&&!pfGateOpen())return false;
@@ -4119,6 +4122,7 @@ function walkable(x,y){
 }
 function changeScene(to,x,y,dir){
   [x,y]=toNew(to,x,y);
+  if(SCENES[to].out&&P.light>0){P.light=0;setTimeout(()=>toast('雨一淋，蠟燭就熄了。'),300)}
   S.scene=to;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(SOKO[to]){sokoInit(to);setTimeout(()=>run(()=>sokoIntro(to)),60)}legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
   if(to==='dining'&&chOf()===0&&!S.flags.gathered)run(gatherScene);
   else if(to==='dining'&&chOf()===1&&!S.flags.discovered)run(discovery);
@@ -4218,12 +4222,142 @@ function drawPField(cx,cy){
     g.restore();
     if(on&&(tick>>5)%2){R(g,X+11,Y-1,3,1,'#b9a58e');R(g,X+13,Y,1,1,'#b9a58e');R(g,X+11,Y+1,3,1,'#b9a58e')}}
 }
+/* ---------------- 大廳：管風琴、巨大南瓜燈、奇怪的裝飾、燭台 ---------------- */
+const HALL_OBJ=[
+  {k:'organ',x:4,y:2,w:4,h:2},{k:'stand',x:9,y:3,w:1,h:1},{k:'gpump',x:12,y:8,w:2,h:2},
+  {k:'rack',x:16,y:2,w:1,h:1},{k:'armor',x:19,y:3,w:1,h:1},{k:'broom',x:22,y:2,w:1,h:1},
+];
+const hallObj=(sc,x,y)=>sc==='hall'?HALL_OBJ.find(o=>x>=o.x&&x<o.x+o.w&&y>=o.y&&y<o.y+o.h)||null:null;
+ITEMS.candle={t:'一支蠟燭',d:'從大廳燭台上拿的蠟燭。到南瓜燈、烤爐或教堂的燭台取火，就能暫時照亮周圍。到屋外淋到雨會熄掉。'};
+/* 管風琴：用 Web Audio 彈出萬聖節的曲子 */
+let AC=null,ORGAN_T=0;
+function noteHz(n){const m=n.match(/^([A-G])(#|b)?(\d)$/),b={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0);return 440*Math.pow(2,(b+12*(+m[3]+1)-69)/12)}
+function organNote(t0,f,d,vol=1){
+  const out=AC.createGain();out.gain.setValueAtTime(0,t0);out.gain.linearRampToValueAtTime(.16*vol,t0+.03);out.gain.setValueAtTime(.16*vol,t0+Math.max(.04,d-.06));out.gain.linearRampToValueAtTime(0,t0+d+.08);out.connect(AC.destination);
+  [[1,.5],[2,.28],[3,.14],[4,.08],[.5,.22]].forEach(([h,gv])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f*h;o.detune.value=(Math.random()-.5)*6;g.gain.value=gv;o.connect(g);g.connect(out);o.start(t0);o.stop(t0+d+.12)});
+}
+const TUNES=[
+  {t:'《觸技曲》（某位老作曲家的 D 小調）',s:[['A5',.13],['G5',.13],['A5',.7],['G5',.12],['F5',.12],['E5',.12],['D5',.12],['C#5',.45],['D5',.9],[0,.3],['A4',.13],['G4',.13],['A4',.7],['E4',.25],['F4',.25],['C#4',.25],['D4',1.1]]},
+  {t:'《月光下的骷髏舞》',s:[['E4',.28],['G4',.28],['B4',.28],['A4',.28],['G4',.28],['E4',.28],['F#4',.28],['A4',.28],['C5',.28],['B4',.28],['A4',.28],['F#4',.28],['E4',.28],['G4',.28],['B4',.28],['E5',.42],['D5',.14],['B4',.28],['C5',.28],['B4',.28],['A4',.28],['E4',.9]]},
+  {t:'《南瓜田的夜曲》',s:[['A3',.45],['E4',.45],['A4',.45],['C5',.6],['B4',.3],['A4',.45],['E4',.9],['F4',.45],['A4',.45],['D5',.6],['C5',.3],['B4',.45],['G#4',.45],['A4',1.2]]},
+  {t:'《不給糖就搗蛋進行曲》',s:[['C4',.2],['C4',.2],['G4',.2],['G4',.2],['Ab4',.2],['G4',.2],['F4',.2],['Eb4',.2],['D4',.2],['D4',.2],['G4',.2],['G4',.2],['C5',.3],[0,.1],['C4',.5]]},
+];
+function playTune(seq){
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){AC=null}
+  let t=0;const t0=AC?AC.currentTime+.05:0;
+  for(const[n,d]of seq){if(n&&AC){const f=noteHz(n);organNote(t0+t,f,d);organNote(t0+t,f/2,d,.5)}t+=d}
+  ORGAN_T=Math.ceil(t*60)+20;return t;
+}
+function playChaos(){
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){AC=null}
+  if(AC){const t0=AC.currentTime+.05;for(let i=0;i<7;i++)organNote(t0+i*.04,110*Math.pow(2,Math.random()*3),1.3,.6)}ORGAN_T=100;return 1.4;
+}
+async function organ(){
+  const F=S.flags;
+  await n('一座蒙著灰塵的管風琴。琴鍵是黃色的，一根根銀色的管子一路伸到天花板。');
+  const opts=[...TUNES.map(x=>x.t),'隨便亂按','算了'];
+  const c=await choose('要彈什麼？',opts);if(c===opts.length-1)return;
+  await n('你坐上琴椅，深吸一口氣——');
+  if(c===TUNES.length){
+    await sleep(playChaos()*1000);shake=10;
+    await n('「轟——咿——嗡——」……一團可怕的和弦在大廳裡炸開。');
+    await n('天花板上掉下一隻倒掛的蝙蝠，暈頭轉向地飛走了。');
+    if(NPCS.po.scene==='hall'&&NPCS.po.state==='stand')await say('po','……好吵。……管他的，我換個地方睡。');
+    return;
+  }
+  const tu=TUNES[c];await sleep(playTune(tu.s)*1000+200);
+  F.organ=F.organ||[];if(!F.organ.includes(c))F.organ.push(c);
+  achSeen('organ',c,TUNES.length,'h_organ');
+  if(blackOn>0&&chOf()<5){await n('……黑暗中，大廳中央的巨大南瓜燈，跟著旋律亮了起來。');await n('你好像聽見它在小聲地跟著哼——「嘻、嘻、嘻……」');F.organDark=1;return}
+  const R0=[['整個大廳的蠟燭，跟著最後一個音一起晃了一下。','……你覺得，牆上肖像畫裡的人好像在鼓掌。'],
+    ['盔甲騎士的南瓜頭盔，跟著三拍子輕輕點頭。','角落的骷髏衣帽架，好像也偷偷踮了一下腳。'],
+    ['窗外的雨聲變小了一點。','……屋外的南瓜田方向，好像有誰打了一個滿足的呵欠。'],
+    ['巨大南瓜燈的臉，好像笑得更開了。','……「不給糖就搗蛋」，這首曲子到底是誰寫的？']][c];
+  for(const t of R0)await n(t);
+  if(NPCS.po.scene==='hall'&&NPCS.po.state==='stand')await say('po','……還滿好聽的。……管他的，再彈一首，我要睡了。');
+}
+async function hallThing(o){
+  const F=S.flags;
+  switch(o.k){
+    case 'organ':return organ();
+    case 'stand':
+      if(!hasItem('candle')){await n('一座高高的黃銅燭台，插著好幾支還沒點燃的蠟燭。');await n('你拿了一支。……說不定停電的時候用得上。');addItem('candle');
+        return n(`（帶著蠟燭，到巨大南瓜燈、廚房的烤爐或教堂的燭台取火，就能暫時照亮周圍。）`)}
+      return n('一座高高的黃銅燭台。你已經拿了一支蠟燭了。');
+    case 'gpump':
+      if(hasItem('candle')&&!(P.light>0))return lightCandle('巨大南瓜燈');
+      await n('一顆比人還大的南瓜燈，擺在大廳正中央。裡面的火光一閃一閃，把整個大廳照得橘橘的。');
+      return n(chOf()>=5?'……它的笑容好像柔和了一點。大概是因為主人終於交到朋友了吧。':'……你越看越覺得，那張刻出來的笑臉，跟某個地方的標誌好像。');
+    case 'armor':
+      if(chOf()>=5)return n('盔甲騎士的南瓜頭盔裡空空的。……它好像搬家了。');
+      await n('一副生鏽的盔甲騎士。頭盔被換成了一顆南瓜。');
+      await n('你敲了敲南瓜頭盔——「咚、咚」。');
+      return n((F.armorK=(F.armorK||0)+1)>=3?'……裡面傳來一聲很小的：「嘻嘻，好癢。」':'……裡面好像有回音。');
+    case 'broom':
+      F.broomK=(F.broomK||0)+1;
+      if(F.broomK%3===0){await n('其中一支掃帚「咻」地跳了出來，在大廳裡繞了一大圈——');BROOM_T=150;await sleep(2200);return n('……然後若無其事地插回傘架。')}
+      return n('一個插滿掃帚的傘架。其中一支掃帚的尾巴在微微發抖……好像很想飛。');
+    case 'rack':
+      F.rackPose=((F.rackPose||0)+1)%3;
+      return n(['一個骷髏造型的衣帽架。帽子掛在它的頭上。','骷髏衣帽架……剛剛它的手是舉著的嗎？','你一轉頭，骷髏衣帽架就換了一個姿勢。……它在跟你玩一二三木頭人？'][F.rackPose]);
+  }
+}
+let BROOM_T=0;
+/* 拿蠟燭取火：暫時照亮周圍（停電時不容易被玫瑰絆倒、被麵糰偷襲） */
+async function lightCandle(src){
+  await n(`你把蠟燭湊近${src}——`);
+  P.light=60*60;ach('h_candle');toast('蠟燭點燃了！周圍亮了起來。（大約一分鐘）');toastT=200;
+}
+function fireSource(sc,x,y){
+  const c=tileAt(x,y);
+  if(sc==='kitchen'&&c==='(')return'烤爐的火';
+  if((sc==='chapel'||sc==='crypt')&&c==='l')return'燭台的火';
+  const d=decorAt(x,y);if(d&&(d.k==='candles'||d.k==='candle'||d.k==='phead'))return'燭火';
+  return null;
+}
+function drawHallStuff(cx,cy){
+  const g=ctx,F=S.flags;
+  for(const o of HALL_OBJ){const X=o.x*T-cx,Y=o.y*T-cy;
+    if(o.k==='organ'){
+      R(g,X-2,Y-14,68,46,K);R(g,X,Y-12,64,10,'#3a2418');
+      for(let i=0;i<12;i++){const h=10+Math.round(Math.abs(Math.sin(i*.9))*14)+(i===5||i===6?6:0),px=X+3+i*5;R(g,px,Y-4-h,4,h+6,K);R(g,px+1,Y-3-h,2,h+4,'#c9a54a');R(g,px+1,Y-3-h,1,h+4,'#efd890')}
+      R(g,X,Y+2,64,30,'#4a2a1a');R(g,X+2,Y+4,60,12,'#5e3a24');R(g,X+4,Y+16,56,6,'#efe8dc');for(let i=0;i<14;i++)R(g,X+5+i*4,Y+16,1,6,K);
+      for(let i=0;i<13;i++)if(i%7!==2&&i%7!==6)R(g,X+7+i*4,Y+16,2,3,K);
+      R(g,X+28,Y-20,8,7,K);R(g,X+29,Y-19,6,5,'#e2741c');R(g,X+31,Y-17,1,1,'#ffd25a');R(g,X+33,Y-17,1,1,'#ffd25a');
+      R(g,X+18,Y+26,28,6,'#2a1810');
+      if(ORGAN_T>0)for(let i=0;i<4;i++){const k=((ORGAN_T+i*25)%100)/100,nx=X+10+i*14+Math.sin(k*6+i)*6,ny=Y-10-k*40;g.globalAlpha=1-k;R(g,nx,ny,2,4,'#fff6c8');R(g,nx+2,ny-2,1,4,'#fff6c8');R(g,nx+2,ny-2,3,1,'#fff6c8');R(g,nx-1,ny+3,3,2,'#fff6c8');g.globalAlpha=1}
+    }else if(o.k==='stand'){
+      R(g,X+7,Y-6,2,20,'#c9a54a');R(g,X+4,Y+13,8,2,'#a8843a');R(g,X+2,Y-6,12,2,'#c9a54a');
+      const n0=hasItem('candle')?2:3;for(let i=0;i<3;i++){if(i===1&&n0===2)continue;const cx2=X+2+i*5;R(g,cx2,Y-13,3,7,'#efe3c8');R(g,cx2+1,Y-15-((tick>>3)+i)%2,1,2,'#ffcc55')}
+    }else if(o.k==='gpump'){
+      g.fillStyle=`rgba(255,170,60,${.12+Math.sin(tick/14)*.04+(F.organDark&&blackOn>0?.1:0)})`;g.beginPath();g.arc(X+16,Y+16,30,0,6.28);g.fill();drawPumpkin(X,Y);
+    }else if(o.k==='armor'){
+      R(g,X+3,Y-10,10,24,K);R(g,X+4,Y-9,8,10,'#8a8f96');R(g,X+5,Y-8,2,8,'#b8bec4');R(g,X+4,Y+1,8,12,'#6a6e72');R(g,X+5,Y+2,2,10,'#8a8f96');R(g,X+1,Y-8,2,12,'#6a6e72');R(g,X+13,Y-8,2,12,'#6a6e72');
+      R(g,X+14,Y-14,1,26,'#9aa0a6');R(g,X+13,Y-16,3,3,'#c9ced4');
+      R(g,X+2,Y-20,12,11,K);R(g,X+3,Y-19,10,9,'#e2741c');R(g,X+7,Y-22,2,3,'#3f6b2a');R(g,X+5,Y-16,2,2,'#ffd25a');R(g,X+9,Y-16,2,2,'#ffd25a');R(g,X+5,Y-12,6,1,'#ffd25a');
+    }else if(o.k==='broom'){
+      R(g,X+3,Y+4,10,11,K);R(g,X+4,Y+5,8,9,'#4a2d5e');R(g,X+4,Y+8,8,1,'#7a4a9a');
+      const out=BROOM_T>0;for(let i=0;i<3;i++){if(out&&i===1)continue;const bx=X+5+i*3,sh=i===1?Math.round(Math.sin(tick/3)):0;R(g,bx+sh,Y-12,1,18,'#8a6a3a');R(g,bx-1+sh,Y-15,3,4,'#d9b860')}
+    }else if(o.k==='rack'){
+      const pose=F.rackPose||0;R(g,X+7,Y-8,2,22,'#e8e4d4');R(g,X+4,Y+13,8,2,'#c8c4b4');
+      R(g,X+5,Y-14,6,6,'#e8e4d4');R(g,X+6,Y-12,1,1,K);R(g,X+9,Y-12,1,1,K);R(g,X+6,Y-10,4,1,K);R(g,X+4,Y-17,8,3,'#2a2228');R(g,X+3,Y-15,10,1,'#2a2228');
+      if(pose===0){R(g,X+3,Y-6,4,1,'#e8e4d4');R(g,X+9,Y-6,4,1,'#e8e4d4');R(g,X+2,Y-6,1,5,'#e8e4d4');R(g,X+13,Y-6,1,5,'#e8e4d4')}
+      else if(pose===1){R(g,X+3,Y-6,4,1,'#e8e4d4');R(g,X+9,Y-6,4,1,'#e8e4d4');R(g,X+2,Y-12,1,6,'#e8e4d4');R(g,X+13,Y-12,1,6,'#e8e4d4')}
+      else{R(g,X+3,Y-6,4,1,'#e8e4d4');R(g,X+9,Y-6,4,1,'#e8e4d4');R(g,X+2,Y-12,1,6,'#e8e4d4');R(g,X+13,Y-6,1,5,'#e8e4d4');R(g,X+12,Y+2,3,1,'#e8e4d4')}
+    }}
+  if(BROOM_T>0){const k=1-BROOM_T/150,a=k*6.28,X=(12.5+Math.cos(a)*7)*T-cx,Y=(7+Math.sin(a)*3.5)*T-cy;R(g,X-8,Y,16,1,'#8a6a3a');R(g,X+6,Y-2,5,5,'#d9b860');R(g,X-12,Y+1,3,1,'rgba(255,246,200,.5)')}
+}
+function drawCandleGlow(px,py,cx,cy){
+  if(!(P.light>0)||mode!=='play')return;const g=ctx,X=px-cx+13,Y=py-cy+5,fl=(tick>>2)%2;
+  g.fillStyle=`rgba(255,190,90,${.08+fl*.02})`;g.beginPath();g.arc(X,Y,34,0,6.28);g.fill();
+  R(g,X-1,Y,3,6,'#efe3c8');R(g,X,Y-3-fl,1,3,'#ffcc55');R(g,X-1,Y-2,3,1,'rgba(255,200,90,.6)');
+}
 /* 宅邸裡的小意外：黑暗中被調皮的玫瑰絆倒、廚房的麵糰趁機偷襲、展覽室的書掉下來 */
 function nearTile(ch){for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(tileAt(P.x+dx,P.y+dy)===ch)return true;return false}
 function stepHazard(){
   if(!S||busy||CB.lock||CB.mini||P.hazCd>0)return;
   if(chOf()<1||chOf()>=5)return;
-  const F=S.flags,dark=blackOn>0,r=Math.random();
+  const F=S.flags,dark=blackOn>0&&!(P.light>0),r=Math.random();
   if(S.scene==='greenhouse'&&nearTile('r')&&r<(dark?.35:.03)){P.hazCd=60*20;return run(()=>roseTrip(dark))}
   if(S.scene==='kitchen'&&!(P.morph)){const lq=qGet('lala'),mad=lq&&lq.st==='alt',calm=lq&&lq.st==='done';
     if(r<(dark?.12:.025)*(mad?2:calm?.4:1)){P.hazCd=60*25;return run(()=>doughAmbush(mad,calm))}}
@@ -4262,6 +4396,8 @@ function update(){
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
   if(mode==='play'){pfTick();raceTick();suiAmbient()}
   sokoBarSync();
+  if(ORGAN_T>0)ORGAN_T--;if(BROOM_T>0)BROOM_T--;
+  if(mode==='play'&&!busy&&P.light>0&&--P.light===0)toast('蠟燭燒完了。（可以再去取火）');
   if(mode==='play'&&!busy){if(P.stun>0)P.stun--;if(P.sticky>0)P.sticky--;if(P.hazCd>0)P.hazCd--}
   if(P.morph&&mode==='play'&&!busy&&--P.morph.t<=0){P.morph=null;toast('藥效退了，你變回原樣了。')}
   if(toastT>0&&--toastT===0)$('toast').hidden=true;
@@ -4305,6 +4441,8 @@ const TOMBS=['這裡長眠著：說了「我去去就回」的人。','這裡長
 function objectAt(nx,ny){
   const s=S.scene,[x,y]=toOld(s,nx,ny),sk=SEARCH[s+'@'+nx+','+ny]?s+'@'+nx+','+ny:s+':'+x+','+y;
   const pr=propAt(nx,ny);if(pr)return()=>takeProp(pr);
+  {const ho=hallObj(s,nx,ny);if(ho)return()=>hallThing(ho)}
+  if(hasItem('candle')&&!(P.light>0)){const fs=fireSource(s,nx,ny);if(fs)return()=>lightCandle(fs)}
   if(s==='bath'&&tileAt(nx,ny)==='~')return async()=>{const c=await choose('要泡個澡嗎？',['泡澡','不用了']);if(c===0)await takeBath()};
   {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
   {const l=lostAt(nx,ny);if(l)return()=>takeLost(l)}
@@ -5051,6 +5189,7 @@ function render(){
       R(ctx,X+12,Y+6,3,3,'#efe8dc');R(ctx,X+12,Y+6,3,1,'#8a4a2a');R(ctx,X+1,Y+7,3,1,'#d9a050')}
     else{for(let i=0;i<4;i++){R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,5,'#efe8dc');R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,1,'#5a3a22')}R(ctx,X+6,Y+2,5,5,'#efe8dc');R(ctx,X+6,Y+2,5,1,'#5a3a22')}}
   if(S&&mode==='play')drawMazeStuff(cx,cy,key);
+  if(S&&mode==='play'&&key==='hall')drawHallStuff(cx,cy);
   if(S&&mode==='play'&&SOKO[key])drawPField(cx,cy);
   if(key==='outside'&&S&&chOf()===4){const X=BOTTLE.x*T-cx,Y=BOTTLE.y*T-cy;R(ctx,X+4,Y+8,8,5,'#9ad8c8');R(ctx,X+5,Y+9,6,3,'#c8f0e4');R(ctx,X+12,Y+10,2,2,'#9ad8c8');R(ctx,X+2,Y+12,2,1,'#9ad8c8');R(ctx,X+6,Y+9,3,2,'#e2741c');R(ctx,X+6,Y+9,1,1,K);R(ctx,X+8,Y+9,1,1,K);
     if(!hasEv('bottle')&&(tick>>4)%2){R(ctx,X+7,Y+1,1,5,'#fff6c8');R(ctx,X+5,Y+3,5,1,'#fff6c8')}}
@@ -5065,9 +5204,10 @@ function render(){
     const a=Math.min(1,(BLACK_LEN-blackOn)/30,blackOn/30)*.86;
     dctx.globalCompositeOperation='source-over';dctx.clearRect(0,0,320,208);dctx.fillStyle=`rgba(4,2,8,${a})`;dctx.fillRect(0,0,320,208);
     dctx.globalCompositeOperation='destination-out';const lx=px-cx+8,ly=py-cy+4;
-    const gr=dctx.createRadialGradient(lx,ly,6,lx,ly,54);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,0)');dctx.fillStyle=gr;dctx.fillRect(0,0,320,208);
+    const lr=P.light>0?118:54,gr=dctx.createRadialGradient(lx,ly,P.light>0?30:6,lx,ly,lr);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,0)');dctx.fillStyle=gr;dctx.fillRect(0,0,320,208);
     ctx.drawImage(dark,0,0);
   }
+  if(S)drawCandleGlow(px,py,cx,cy);
   if(flash>0){ctx.fillStyle=`rgba(230,235,255,${flash*(s.out?.35:.15)})`;ctx.fillRect(0,0,320,208)}
   if(cutDark){ctx.fillStyle='rgba(2,1,4,.95)';ctx.fillRect(0,0,320,208)}
   if(fade>0){ctx.fillStyle=`rgba(0,0,0,${fade})`;ctx.fillRect(0,0,320,208)}
@@ -5258,7 +5398,7 @@ function startPlay(isNew){
   mode='play';$('title').hidden=true;$('hud').style.visibility='visible';
   if(S.v!==2){[S.x,S.y]=toNew(S.scene,S.x,S.y);S.v=2}
   syncMaxHP();
-  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
+  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,light:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
   clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
   applyWorld();spawnSlimes();if(SOKO[S.scene])sokoInit(S.scene);fade=1;nextBlack=60*45;blackOn=0;updateHUD();
