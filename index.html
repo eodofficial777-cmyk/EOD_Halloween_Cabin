@@ -701,15 +701,6 @@ function drawEntity(g,id,X,Y,dir,f,t,st,blink){
 
 /* ---------------- 地圖 ---------------- */
 const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&()]~^:!{}'.split(''));
-/* 南瓜田深處：蛇行的田埂，南瓜會故意滾過來擋路 */
-function buildPField(){
-  const W=30,H=16,m=[];
-  for(let y=0;y<H;y++){const r=[];for(let x=0;x<W;x++)r.push(x===0||x===W-1||y===0||y===H-1?'h':'a');m.push(r)}
-  const row=(y,a,b)=>{for(let x=a;x<=b;x++)m[y][x]='e'};
-  row(3,1,24);row(6,5,28);row(9,1,24);row(12,5,28);
-  m[1][0]='d';m[2][0]='d';
-  return m.map(r=>r.join(''));
-}
 function buildOutside(){
   const W=46,H=29,m=[];
   for(let y=0;y<H;y++){const r=[];for(let x=0;x<W;x++)r.push((x<3||x>42||y<2||y>26)?'f':'g');m.push(r)}
@@ -941,10 +932,45 @@ const SCENES={
     '##########DD##########'],
     exits:[[10,15,'chapel',14,8,'down'],[11,15,'chapel',14,8,'down']]},
   outside:{name:'屋外',out:1,map:buildOutside(),
-    exits:[[11,11,'hall',1,6,'right'],[16,15,'hall',9,11,'up'],[17,15,'hall',10,11,'up'],[6,5,'chapel',7,10,'up'],[28,12,'greenhouse',7,10,'up'],[33,18,'maze',1,10,'right'],[3,20,'pfield',1,1,'right']]},
-  pfield:{name:'南瓜田深處',out:1,map:buildPField(),
-    exits:[[0,1,'outside',4,20,'right'],[0,2,'outside',4,20,'right']]},
+    exits:[[11,11,'hall',1,6,'right'],[16,15,'hall',9,11,'up'],[17,15,'hall',10,11,'up'],[6,5,'chapel',7,10,'up'],[28,12,'greenhouse',7,10,'up'],[33,18,'maze',1,10,'right'],[3,20,'pf1',1,1,'right']]},
 };
+/* ---------------- 南瓜田深處：推南瓜（倉庫番） ----------------
+   h 樹籬、e 南瓜藤（牆）、. 田埂、S 入口站的位置、B 南瓜寶寶、T 發光的苗床、G 出口（解開才會打開）、d 回去的路
+   三塊田都用求解程式驗證過可以解開：第一塊 6 推、第二塊 14 推、第三塊 27 推 */
+const SOKO={
+  pf1:{name:'南瓜田深處・一',prev:['outside',4,20,'right'],next:'pf2',reward:{candy:1},L:[
+    'hhhhhhhhhh',
+    'dS..e....h',
+    'h..B..T..h',
+    'h.eeB.e..G',
+    'h.....T..h',
+    'hhhhhhhhhh']},
+  pf2:{name:'南瓜田深處・二',prev:['pf1',8,3,'left'],next:'pf3',reward:{rice:1},L:[
+    'hhhhhhhhhhh',
+    'dS...e....h',
+    'h.B..e.T..h',
+    'h..eBB..e.h',
+    'h.e...e...G',
+    'h.T...T...h',
+    'hhhhhhhhhhh']},
+  pf3:{name:'南瓜田深處・三',prev:['pf2',9,4,'left'],next:null,L:[
+    'hhhhhhhhhhh',
+    'dS..Tee...h',
+    'd.eBe.e...h',
+    'h..B......h',
+    'h.Be.ee.e.h',
+    'he...T..T.G',
+    'hhhhhhhhhhh']},
+};
+for(const[k,v]of Object.entries(SOKO)){
+  v.boxes=[];v.tg=[];const ex=[];
+  v.map=v.L.map((r,y)=>[...r].map((c,x)=>{
+    if(c==='B')v.boxes.push([x,y]);if(c==='T')v.tg.push([x,y]);if(c==='S')v.start=[x,y];if(c==='G')v.gate=[x,y];
+    if(c==='d')ex.push([x,y,v.prev[0],v.prev[1],v.prev[2],v.prev[3]]);
+    return c==='h'||c==='e'||c==='d'?c:'a'}).join(''));
+  if(v.next)ex.push([v.gate[0],v.gate[1],v.next,1,1,'right']);
+  SCENES[k]={name:v.name,out:1,map:v.map,exits:ex};
+}
 
 /* 木箱／斗櫃上的萬聖節裝飾（top = 家具頂端的 y） */
 function decoHW(g,X,Y,v,top){
@@ -1310,7 +1336,7 @@ function say(who,text){
   return new Promise(res=>{
     dlg.hidden=false;fitPorts();dlg.classList.toggle('narr',who==='n');showPort(who);
     face.hidden=!!PORTRAITS[who];
-    if(who!=='n'){dname.textContent=who==='me'?S.name:NAMES[who];drawFace(who)}
+    if(who!=='n'){dname.textContent=who==='me'?myName():NAMES[who];drawFace(who)}
     const full=text.replace(/\{me\}/g,S.name);let i=0;dtext.textContent='';
     clearInterval(typing);
     typing=setInterval(()=>{i+=1;dtext.textContent=full.slice(0,i);if(i>=full.length){clearInterval(typing);typing=null}},22);
@@ -1441,8 +1467,10 @@ const ACHS=[
   {id:'h_trip',t:'玫瑰的惡作劇',d:'在溫室裡被調皮的玫瑰絆倒了。',hint:'溫室的花，在黑暗裡特別有精神。'},
   {id:'h_ambush',t:'麵糰伏擊',d:'在廚房被史萊姆麵糰偷襲了。',hint:'廚房的碗裡，有東西在等你經過。'},
   {id:'h_bookhit',t:'知識砸進腦袋',d:'在展覽室被掉下來的書砸到頭。',hint:'書架很高，書很重。'},
-  {id:'h_pfield',t:'南瓜田之王',d:'突破調皮南瓜的包圍，走到了南瓜田的盡頭。',hint:'田埂的盡頭，有誰在等你。'},
+  {id:'h_pfield',t:'南瓜田之王',d:'把三塊田的南瓜寶寶都推回苗床，見到了南瓜田之王。',hint:'田埂的盡頭，有誰在等你。'},
+  {id:'h_pfclean',t:'一次到位',d:'第三塊田一次都沒重來就解開了。',hint:'最難的那塊田，不靠重來。'},
   {id:'h_pfpush',t:'南瓜推推樂',d:'在南瓜田裡推了 15 次南瓜。',hint:'擋路的南瓜，也可以推回去。'},
+  {id:'h_wude',t:'武德豐沛',d:'集齊阿鳳姨的鍋鏟、土製手槍、鐵圍裙和鏡面鍋蓋，獲得稱號「武德豐沛」。',hint:'宅邸裡到處都是「鳳」的痕跡。把它們全部帶在身上。'},
   {id:'h_horse',t:'幽靈駱馬的噴嚏',d:'和幽靈駱馬打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
@@ -1730,6 +1758,12 @@ async function talk0(id){
     return say(id,again[id]);
   }
   F['p_'+id]=1;
+  {const rc=F.realCh??F.ch??0,PRE={
+    shisho:[0,'會長倒下的事，我聽說了。……他倒下又不是第一次。','小波不見了？……大概躲在哪裡睡覺吧。','首領被懷疑了？……他懶到連作案都嫌麻煩。','IAN 斷成兩半？……縫起來就好了。','要走了？……走之前，總得把這裡的書吃完。'],
+    ji:[0,'會長倒下了？……該不會是聞到我的玫瑰香，興奮過頭吧～開玩笑的。','小波不見了？我的玫瑰可沒有吃掉他喔～','首領被懷疑？哈，他要是有那個力氣作案，我就把溫室送給你～','說拉拉把 IAN 弄斷的？……我看是有人亂倒藥水吧。先說，不是我喔～','要走了？走之前，再幫我做一次實驗嘛～'],
+    boss:[0,'……會長倒了？……他本來就一副隨時會倒的樣子。','……小波不見了？……睡在哪都一樣。','……大家都在懷疑我。……懶得解釋。','……拉拉被冤枉了？……這間屋子的人，真的很愛冤枉別人。','……要走了。……大南瓜也要一起走嗎。'],
+    sui:[0,'會長倒下了？好可怕……可是駱馬更可怕，牠一直對我吐口水！','小波不見了？我騎駱馬去找！……如果牠肯讓我騎的話。',0,'IAN 斷了？我的頭也常常掉，習慣就好啦！','要走了？在那之前，我想再騎一次駱馬！']}[id];
+   if(PRE&&PRE[rc])await say(id,PRE[rc])}
   switch(id){
     case 'kaicho':
       await n('會長蹲在玫瑰花叢旁，正把一株小小的番茄苗種進土裡。');
@@ -2044,7 +2078,13 @@ function llamaWin(){
     qGet('sui').st='done';applyWorld();
     await n('翠一走近，駱馬就把頭靠在她的肩膀上蹭了蹭。');
     await say('sui','牠、牠讓我摸了！！嗚嗚……謝謝你！');
-    await say('sui','以後我騎著牠到處巡邏，有怪物就交給我們！');
+    await say('sui',[
+      '以後我騎著牠到處巡邏，有怪物就交給我們！',
+      '會長倒下了……我騎著牠到處巡邏，幫你找出犯人！',
+      '小波不見了……我騎著牠去找！牠的鼻子說不定很靈！',
+      chOf()===3&&S.flags.suiBack?'頭回來了，駱馬也願意讓我摸了！今天是我的幸運日！':'以後我騎著牠到處巡邏，有怪物就交給我們！',
+      'IAN 斷掉的那晚，牠一直在墓園附近徘徊……牠大概也很擔心吧。我們一起去巡邏！',
+      '要走了……牠會跟我們一起走嗎？……牠說會！大概！'][chOf()]||'以後我騎著牠到處巡邏，有怪物就交給我們！');
     if(!S.flags.llamaHurt)ach('h_llama_nohit');
     qGet('sui').st='on';qFinish('sui',{candy:2,ammo:4});
   });
@@ -2337,6 +2377,8 @@ async function altar(){
   await n('蠟燭重新亮起時，祭壇上的「好睡」兩個字，正在發著柔和的光。');
   await n('你覺得今晚，宅邸裡的每個人都會睡得很好。');
   if(chOf()===2&&!S.flags.poFell2)await n('……閣樓的方向，傳來一聲滿足的打呼。');
+  else if(chOf()===1)await n('……就連那個整天睡不飽的小波，今晚大概也能睡個好覺吧。');
+  else if(chOf()===4)await n('……就連墓園裡只剩上半身的 IAN，好像也打起了呼。');
   if((q.tried||[]).length>=5)ach('h_pillowfirst');
   qFinish('po',{candy:3});
 }
@@ -2374,6 +2416,11 @@ async function shishoDone(){
   await n('司書把書一本一本攤開，用指尖輕輕撫過書頁。');
   await say('shisho','《荒中小屋施工日誌》……「這棟小屋，會自己把需要它的人請進來」。');
   await say('shisho','所以，我們是被這棟房子「請」來的。……有意思。後面幾頁被撕掉了，可惜。');
+  {const L=[0,'……會長倒下，也是這棟房子「請」來的一部分？……不，那應該只是他太餓。',
+    '書上還寫：「這棟房子裡，沒有東西是真正消失的，只是被藏起來了。」……小波的事，你去高的地方找過了嗎？',
+    '……首領的事，你也覺得奇怪吧。書上說，暴動的南瓜旁邊，總會有誰在偷笑。',
+    '……拉拉不是會把人弄斷的人，她只會把冰箱舉起來。書上寫：「突然長大的東西，最先撐不住的是縫線。」',
+    '要走了。……這些書，我能帶走嗎？……開玩笑的。已經吃掉一半了。'][chOf()];if(L)await say('shisho',L)}
   const qs=BOOK_QUIZ.filter(x=>qGet('shisho').got.includes(x[0]));
   if(qs.length){
     const[,qq,opts,right]=qs[(Math.random()*qs.length)|0];
@@ -2434,6 +2481,9 @@ async function jiReport(){
       qAlt('ji',{candy:3});return;
     }
     await say('ji','全部都跟我預測的一模一樣！果然，天才調的藥水是不會出錯的～');
+    {const L=[0,'……順便一提，會長倒下跟我的藥水沒關係喔。我的「一覺到天亮」少了一瓶……不是我給的。',0,
+      '說到首領——那顆大南瓜好像被什麼東西撞過，凹了一塊。……可不是我的藥水害的喔～',
+      '還有啊，害 IAN 斷掉的那瓶不是我做的喔。我的瓶子上是荊棘，那麼醜的南瓜，我才不畫。',0][chOf()];if(L)await say('ji',L)}
     await say('ji','謝謝你啦，研究助理！這是謝禮～');
     qFinish('ji',{candy:3});return;
   }
@@ -2484,6 +2534,8 @@ async function pitchSession(){
     if(q.st==='on'&&q.hr>=3){
       await say('ian','三支全壘打！好久沒這麼痛快了！');
       await say('ian','這個給你，打怪物的時候用！受傷了就喊我一聲！');
+      if(NPCS.ian.state==='upper')await n('本壘後面的下半身跳起來慶祝，差點把旁邊的墓碑踢倒。');
+      else if(NPCS.ian.scene==='kitchen')await say('ian','打完球，鬆餅更好吃了！拉拉，再來十片！');
       qFinish('ian',{ammo:8,candy:1});
     }
     if(q.sack.length){const c=await choose('還要繼續丟嗎？',['繼續',`先停一下（怪物袋還有 ${q.sack.length} 隻）`]);if(c===1)break}
@@ -2524,6 +2576,11 @@ async function idleSession(){
   await say('boss','……以前，我碰一下就能讀到東西……');
   await say('boss','……剛剛，好像讀到了一點點。');
   await say('boss','……這棟房子……好像在等某個人回來。');
+  {const L=[0,'……還讀到了……冰箱前面，有誰在換標籤。……嘻嘻嘻地笑著。',
+    '……還讀到了……閣樓上，有誰在陪睡著的小波玩捉迷藏。',
+    '……還讀到了……暴動那晚，南瓜旁邊有個咧嘴笑的東西。……不是我。',
+    '……還讀到了……一個瓶子。上面畫著南瓜。……誰的？',
+    '……還讀到了……一個人在這裡，等了很久很久。……現在，不用等了。'][chOf()];if(L)await say('boss',L)}
   await say('boss','……大概吧。好麻煩。');
   await say('boss','……你是第一個，懶得跟我一樣徹底的人。……這是在誇你。這個給你。');
   if(!q.fails)ach('h_idle_perfect');
@@ -2856,7 +2913,20 @@ async function openGear(gr){
   else if(gr.id==='lid')addItem('g_lid');
   else{F.hearts=(F.hearts||0)+1;syncMaxHP();P.hp=MAXHP;toast('體力上限 +1 顆心！');updateHUD()}
   if(GEAR.every(g=>F['g_'+g.id]))ach('h_gear');
+  checkWude();
 }
+/* 阿鳳姨的鍋鏟、土製手槍、鐵圍裙、鏡面鍋蓋全部到手 → 稱號「武德豐沛」 */
+const WUDE_LINE={ian:'喲！全副武裝啦！這身武德，大哥都要敬你三分！',ji:'鍋鏟、手槍、鐵圍裙、鍋蓋……你是要去打仗還是去煎鬆餅？……兩個都很適合你啦～',
+  shisho:'……武德豐沛。這四個字，我在一本書裡讀過。那本書很難吃。',lala:'哇！那是阿鳳姨的鍋鏟跟鍋蓋！你、你也是煎鬆餅的同好嗎！？',
+  boss:'……全身叮叮噹噹的。好吵。……不過，看起來很可靠。',sui:'好帥！借我那個鍋蓋！我要拿來當盾牌，保護我的頭！',
+  po:'……好重的樣子。……管他的，看起來很強。',kaicho:'……阿鳳姨的裝備。她要是知道有人全部找齊，一定會很高興。'};
+function checkWude(){
+  const F=S.flags;if(F.wude||!(F.melee&&F.gun&&F.g_apron&&F.g_lid))return;
+  F.wude=1;F.wudeTalk={};ach('h_wude');
+  setTimeout(()=>run(async()=>{shake=6;await n('阿鳳姨的鍋鏟、手槍、鐵圍裙、鏡面鍋蓋——全部到手了。');
+    await n('一股豐沛的武德，從鍋鏟一路流向全身。');await n('獲得稱號：「武德豐沛」');}),400);
+}
+const myName=()=>S.flags&&S.flags.wude?'【武德豐沛】'+S.name:S.name;
 async function takeLost(l){
   await n(l.d);(S.flags.lostGot=S.flags.lostGot||[]).push(l.id);addItem('lost_'+l.id);
   await n(`這應該是${NAMES[l.owner]}的東西。`);
@@ -3049,6 +3119,7 @@ async function discovery(){
 async function talk(id){
   const F=S.flags;
   if(await morphTalk(id))return;
+  {const F=S.flags;if(F.wude&&WUDE_LINE[id]&&!(F.wudeTalk||{})[id]&&!['down','sleep','pile','nohead'].includes(NPCS[id].state)){(F.wudeTalk=F.wudeTalk||{})[id]=1;await say(id,WUDE_LINE[id])}}
   await noseTalk(id);
   if(chOf()===0)return talk0(id);
   if(await sideTalk(id))return;
@@ -3853,7 +3924,7 @@ function walkable(x,y){
   if(S.scene==='chapel'&&ox===14&&oy===9)return chOf()===4&&!!S.flags.ded4;
   if(hintSpot(x,y))return false;
   if(lostAt(x,y)||gearAt(x,y)||pfAt(x,y))return false;
-  if(S.scene==='pfield'&&x===PF_END.x&&y===PF_END.y)return false;
+  if(pfGate(x,y)&&!pfGateOpen())return false;
   if(S.scene==='maze'){if(x===0&&y===1)return!!S.flags.candyOpen;if(S.flags.bossMaze&&x===STRAW.x&&y===STRAW.y)return false}
   if(S.scene==='crypt'&&chOf()===4&&y===8&&x>=9&&x<=12&&lampsN()<4)return false;
   if(S.scene==='roomL'&&chOf()===4&&S.flags.riddle&&x===15&&y===3)return false;
@@ -3866,7 +3937,7 @@ function walkable(x,y){
 }
 function changeScene(to,x,y,dir){
   [x,y]=toNew(to,x,y);
-  S.scene=to;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(to==='pfield')pfInit();legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
+  S.scene=to;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(SOKO[to]){sokoInit(to);setTimeout(()=>run(()=>sokoIntro(to)),60)}legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
   if(to==='dining'&&chOf()===0&&!S.flags.gathered)run(gatherScene);
   else if(to==='dining'&&chOf()===1&&!S.flags.discovered)run(discovery);
   if(to==='kitchen'&&chOf()===2&&!S.flags.disc2)run(discovery2);
@@ -3881,72 +3952,88 @@ function onArrive(){
   if(tileAt(P.x,P.y)==='X')return run(async()=>{await n('濃霧裡傳來不明生物的嚎叫。');await n('……現在還不能離開這裡。');P.y-=1;P.dir='up'});
   stepHazard();
 }
-/* ---------------- 南瓜田深處：調皮的南瓜 ---------------- */
-const PF_HOME=[[8,1],[15,2],[21,4],[12,5],[3,7],[18,8],[10,10],[22,11],[7,13],[16,14],[24,13]];
-const PF_END={x:28,y:14};
-let PFP=[],pfCd=0;
-function pfInit(){PFP=PF_HOME.map(([x,y])=>({x,y,hx:x,hy:y,fx:x*T,fy:y*T,rot:0,cd:0}))}
-const pfAt=(x,y)=>S&&S.scene==='pfield'?PFP.find(k=>k.x===x&&k.y===y)||null:null;
-function pfFree(x,y){const c=tileAt(x,y);return c==='a'&&!pfAt(x,y)&&!(x===PF_END.x&&y===PF_END.y)&&!(P.x===x&&P.y===y)&&!(P.moving&&P.tx===x&&P.ty===y)}
-function pfPush(k,dx,dy){
-  const nx=k.x+dx,ny=k.y+dy;
-  if(pfFree(nx,ny)){k.x=nx;k.y=ny;S.flags.pfPush=(S.flags.pfPush||0)+1;if(S.flags.pfPush>=15)ach('h_pfpush')}
-  else warn('南瓜不肯讓路……（從另一邊繞過去，或是對它按調查鍵）');
+/* ---------------- 南瓜田深處：推南瓜寶寶回苗床 ---------------- */
+let PFB=[];
+const sokoOf=()=>S?SOKO[S.scene]||null:null;
+const sokoSt=k=>{const F=S.flags;F.soko=F.soko||{};return F.soko[k]=F.soko[k]||{}};
+function sokoInit(k){const v=SOKO[k],st=sokoSt(k);PFB=(st.solved?v.tg:v.boxes).map(([x,y])=>({x,y,fx:x*T,fy:y*T,rot:0}))}
+const pfAt=(x,y)=>sokoOf()?PFB.find(b=>b.x===x&&b.y===y)||null:null;
+const pfOnT=b=>sokoOf().tg.some(([x,y])=>x===b.x&&y===b.y);
+const pfGate=(x,y)=>{const v=sokoOf();return v&&v.gate[0]===x&&v.gate[1]===y};
+function pfGateOpen(){const v=sokoOf();return v&&v.next&&sokoSt(S.scene).solved}
+function pfPush(b,dx,dy){
+  const v=sokoOf(),st=sokoSt(S.scene);if(st.solved)return warn('南瓜寶寶已經睡在苗床上了，別吵醒它們。');
+  const nx=b.x+dx,ny=b.y+dy;
+  if(tileAt(nx,ny)!=='a'||pfAt(nx,ny)||pfGate(nx,ny))return warn('推不動……後面卡住了。（卡關的話，對南瓜按調查鍵可以重來）');
+  b.x=nx;b.y=ny;S.flags.pfPush=(S.flags.pfPush||0)+1;if(S.flags.pfPush>=15)ach('h_pfpush');
+  if(v.tg.every(([x,y])=>PFB.some(q=>q.x===x&&q.y===y)))setTimeout(()=>run(sokoSolved),350);
 }
-function pfTick(){
-  if(!S||S.scene!=='pfield')return;if(pfCd>0)pfCd--;
-  for(const k of PFP){if(k.cd>0)k.cd--;const tx=k.x*T,ty=k.y*T,dx=tx-k.fx,dy=ty-k.fy;
-    if(dx||dy){const m=2.5;k.fx+=Math.max(-m,Math.min(m,dx));k.fy+=Math.max(-m,Math.min(m,dy));k.rot+=(Math.abs(dx)>Math.abs(dy)?Math.sign(dx):Math.sign(dy))*.25}}
+async function sokoSolved(){
+  const k=S.scene,v=SOKO[k],st=sokoSt(k);if(st.solved)return;st.solved=1;shake=8;
+  await n('最後一顆南瓜寶寶滾進了苗床，打了個小小的呵欠。');
+  if(v.next){await n('田埂盡頭的南瓜藤「沙沙沙」地退開，讓出了一條路。');gainLoot(v.reward)}
+  else{await n('田埂盡頭的南瓜藤退開了。後面，坐著一顆比你還大的南瓜。');if(!st.resets)ach('h_pfclean')}
 }
-/* 走在田埂上時，附近的南瓜會咕嚕咕嚕地滾到你面前 */
-function pfMischief(){
-  if(pfCd>0||Math.random()>.35)return;
-  const[dx,dy]=DV[P.dir],fx=P.x+dx,fy=P.y+dy;if(!pfFree(fx,fy))return;
-  const k=PFP.filter(k=>k.cd<=0&&Math.abs(k.x-fx)+Math.abs(k.y-fy)<=4&&Math.abs(k.x-fx)+Math.abs(k.y-fy)>0).sort((a,b)=>(Math.abs(a.x-fx)+Math.abs(a.y-fy))-(Math.abs(b.x-fx)+Math.abs(b.y-fy)))[0];
-  if(!k)return;k.x=fx;k.y=fy;k.cd=60*5;pfCd=60*2.5;
-  warn(['咕嚕咕嚕——一顆南瓜滾過來擋住了你的路！','南瓜「嘻嘻」地笑著，擋在你面前。','又是南瓜！它們好像是故意的……'][(Math.random()*3)|0]);
-}
-async function pfPoke(k){
-  if(k.x===k.hx&&k.y===k.hy)return n('一顆刻著賊笑表情的南瓜。……你一轉頭，它好像就會動。');
-  if(pfAt(k.hx,k.hy)||(P.x===k.hx&&P.y===k.hy))return n('南瓜「嘻嘻」地笑了一聲，可是它的位置被別的東西佔住了，滾不回去。');
-  await n('南瓜「嘻嘻」地笑了一聲，咕嚕咕嚕地滾回了原位。');k.x=k.hx;k.y=k.hy;k.cd=60*4;
+async function pfPoke(){
+  const k=S.scene,st=sokoSt(k);
+  if(st.solved)return n('南瓜寶寶睡在苗床上，發出咕嚕、咕嚕的聲音。');
+  const c=await choose('南瓜寶寶歪著頭看你。要重來這塊田嗎？（南瓜和你都會回到原位）',['重來','不用']);if(c===1)return;
+  st.resets=(st.resets||0)+1;sokoInit(k);const v=SOKO[k];Object.assign(P,{x:v.start[0],y:v.start[1],dir:'right',moving:false,prog:0});fade=.6;
 }
 async function pfEnd(){
   const F=S.flags;
-  if(F.pfEnd)return n('南瓜田之王睡著了，發出咕嚕、咕嚕的聲音。……旁邊的小南瓜們，也安靜了下來。');
+  if(!sokoSt('pf3').solved)return n('南瓜藤纏得緊緊的，後面好像有什麼東西在發光。……把南瓜寶寶都推回苗床，也許就會打開。');
+  if(F.pfEnd)return n('南瓜田之王睡著了，發出咕嚕、咕嚕的聲音。');
   F.pfEnd=1;
-  await n('南瓜田的盡頭，坐著一顆比你還大的南瓜。臉上刻著一個大大的賊笑。');
-  await n('四周的小南瓜，全都一起轉過來看著你。');
-  await n('大南瓜的蒂頭上，綁著一個小布包。……還掛著一張紙條：「恭喜你沒被南瓜擋死。——南瓜田全體」');
+  await n('南瓜田之王的臉上，刻著一個大大的賊笑。蒂頭上綁著一個小布包，還掛著一張紙條：');
+  await n('「謝謝你把孩子們哄去睡覺。——南瓜田全體」');
   if(NPCS.boss.scene==='outside')await n('……不知道為什麼，你覺得首領聽到這件事，會很不甘心自己沒來。');
   gainLoot({pine:1,candy:2,magic:1});ach('h_pfield');
 }
+async function sokoIntro(k){
+  const F=S.flags,i={pf1:1,pf2:2,pf3:3}[k];
+  if(k==='pf1'&&!F.pfIntro){F.pfIntro=1;
+    await n('田埂上立著一塊歪歪的木牌：');
+    await n('「南瓜寶寶們又到處亂滾了。請把它們推回發光的苗床上，睡飽了，路就會打開。」');
+    await n('「注意：南瓜只能推，不能拉。卡住的話，對南瓜寶寶說一聲，就能重來。——南瓜田管理員」');
+  }
+  if(!sokoSt(k).solved)toast(`第 ${i}／3 塊田：把南瓜寶寶推回發光的苗床`);
+}
+function pfTick(){
+  if(!sokoOf())return;
+  for(const b of PFB){const dx=b.x*T-b.fx,dy=b.y*T-b.fy;if(dx||dy){const m=2;b.fx+=Math.max(-m,Math.min(m,dx));b.fy+=Math.max(-m,Math.min(m,dy));b.rot+=(Math.abs(dx)>Math.abs(dy)?Math.sign(dx):Math.sign(dy))*.3}else b.rot*=.8}
+}
 function drawPField(cx,cy){
-  const g=ctx;
-  {const X=PF_END.x*T-cx,Y=PF_END.y*T-cy,gl=(tick>>3)%5?'#ffd25a':'#ffb03a';
-    g.fillStyle='rgba(255,180,60,.15)';g.beginPath();g.arc(X+8,Y+6,14,0,6.28);g.fill();
-    R(g,X-3,Y-6,22,20,K);R(g,X-2,Y-5,20,18,'#e2741c');R(g,X+3,Y-5,1,18,'#b8560f');R(g,X+8,Y-5,1,18,'#b8560f');R(g,X+13,Y-5,1,18,'#b8560f');R(g,X+6,Y-10,4,5,'#3f6b2a');
-    R(g,X+1,Y,4,3,gl);R(g,X+11,Y,4,3,gl);R(g,X+1,Y+6,14,2,gl);R(g,X+3,Y+5,1,1,gl);R(g,X+12,Y+5,1,1,gl);
-    if(!S.flags.pfEnd){R(g,X+9,Y-9,5,4,'#c9a57a');R(g,X+10,Y-8,3,2,'#e8dfc8')}}
-  for(const k of PFP){const X=Math.round(k.fx-cx),Y=Math.round(k.fy-cy),gl=(tick>>3)%6?'#ffd25a':'#ffb03a';
+  const g=ctx,v=sokoOf();if(!v)return;const st=sokoSt(S.scene);
+  for(const[x,y]of v.tg){const X=x*T-cx,Y=y*T-cy,on=PFB.some(b=>b.x===x&&b.y===y);
+    g.fillStyle=on?'rgba(255,210,90,.22)':`rgba(160,255,140,${.16+Math.sin(tick/12)*.08})`;g.beginPath();g.arc(X+8,Y+9,9,0,6.28);g.fill();
+    R(g,X+2,Y+9,12,5,'#2a1c10');R(g,X+3,Y+10,10,3,'#4a3420');if(!on){R(g,X+7,Y+6,2,4,'#5fae3a');R(g,X+5,Y+6,2,2,'#7ad05a');R(g,X+9,Y+5,2,2,'#7ad05a')}}
+  {const[x,y]=v.gate,X=x*T-cx,Y=y*T-cy;
+    if(!v.next){/* 第三塊田的盡頭：南瓜田之王 */
+      if(st.solved){const gl=(tick>>3)%5?'#ffd25a':'#ffb03a';g.fillStyle='rgba(255,180,60,.15)';g.beginPath();g.arc(X+8,Y+6,14,0,6.28);g.fill();
+        R(g,X-3,Y-6,22,20,K);R(g,X-2,Y-5,20,18,'#e2741c');R(g,X+3,Y-5,1,18,'#b8560f');R(g,X+8,Y-5,1,18,'#b8560f');R(g,X+13,Y-5,1,18,'#b8560f');R(g,X+6,Y-10,4,5,'#3f6b2a');
+        R(g,X+1,Y,4,3,gl);R(g,X+11,Y,4,3,gl);R(g,X+1,Y+6,14,2,gl);if(!S.flags.pfEnd){R(g,X+9,Y-9,5,4,'#c9a57a');R(g,X+10,Y-8,3,2,'#e8dfc8')}}
+      else{R(g,X,Y,16,16,'#1f3a1c');for(let i=0;i<4;i++){R(g,X+i*4,Y,2,16,'#3f6b2a');R(g,X+i*4+1,Y+3+(i%2)*6,3,2,'#5a8a3a')}R(g,X+5,Y+6,6,4,'#e2741c')}}
+    else if(!st.solved){R(g,X,Y,16,16,'#1f3a1c');for(let i=0;i<4;i++){R(g,X+i*4,Y,2,16,'#3f6b2a');R(g,X+i*4+1,Y+3+(i%2)*6,3,2,'#5a8a3a')}}
+    else{R(g,X+1,Y+12,14,3,'#5a4a2a');R(g,X+6,Y+2,4,3,'#fff6c8')}}
+  for(const b of PFB){const X=Math.round(b.fx-cx),Y=Math.round(b.fy-cy),on=pfOnT(b)&&b.fx===b.x*T&&b.fy===b.y*T,gl=on?'#ffd25a':'#7a3a0a';
     R(g,X+2,Y+13,12,2,'rgba(0,0,0,.3)');
-    g.save();g.translate(X+8,Y+9);g.rotate(k.rot);
-    R(g,-6,-5,12,11,K);R(g,-5,-4,10,9,'#e2741c');R(g,-2,-4,1,9,'#b8560f');R(g,2,-4,1,9,'#b8560f');R(g,-1,-8,2,4,'#3f6b2a');
-    R(g,-4,-2,2,1,gl);R(g,2,-2,2,1,gl);R(g,-3,1,6,1,gl);R(g,-4,0,1,1,gl);R(g,3,0,1,1,gl);
-    g.restore()}
+    g.save();g.translate(X+8,Y+9);g.rotate(b.rot);
+    R(g,-6,-5,12,11,K);R(g,-5,-4,10,9,on?'#f08a2c':'#e2741c');R(g,-2,-4,1,9,'#b8560f');R(g,2,-4,1,9,'#b8560f');R(g,-1,-8,2,4,'#3f6b2a');
+    if(on){R(g,-4,-1,2,1,K);R(g,2,-1,2,1,K);R(g,-2,2,4,1,K)}else{R(g,-4,-2,2,2,'#ffd25a');R(g,2,-2,2,2,'#ffd25a');R(g,-3,1,6,1,'#ffd25a');R(g,-4,0,1,1,'#ffd25a');R(g,3,0,1,1,'#ffd25a')}
+    g.restore();
+    if(on&&(tick>>5)%2){R(g,X+11,Y-1,3,1,'#b9a58e');R(g,X+13,Y,1,1,'#b9a58e');R(g,X+11,Y+1,3,1,'#b9a58e')}}
 }
 /* 宅邸裡的小意外：黑暗中被調皮的玫瑰絆倒、廚房的麵糰趁機偷襲、展覽室的書掉下來 */
 function nearTile(ch){for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(tileAt(P.x+dx,P.y+dy)===ch)return true;return false}
 function stepHazard(){
   if(!S||busy||CB.lock||CB.mini||P.hazCd>0)return;
-  if(S.scene==='pfield')return pfMischief();
   if(chOf()<1||chOf()>=5)return;
   const F=S.flags,dark=blackOn>0,r=Math.random();
   if(S.scene==='greenhouse'&&nearTile('r')&&r<(dark?.35:.03)){P.hazCd=60*20;return run(()=>roseTrip(dark))}
   if(S.scene==='kitchen'&&!(P.morph)){const lq=qGet('lala'),mad=lq&&lq.st==='alt',calm=lq&&lq.st==='done';
     if(r<(dark?.12:.025)*(mad?2:calm?.4:1)){P.hazCd=60*25;return run(()=>doughAmbush(mad,calm))}}
   if(S.scene==='exhibit'&&nearTile('B')&&r<(dark?.25:.02)){P.hazCd=60*25;return run(bookFall)}
-  if(S.scene==='pfield')pfMischief();
 }
 async function roseTrip(dark){
   const F=S.flags;F.trips=(F.trips||0)+1;shake=6;P.stun=40;P.moving=false;
@@ -4003,7 +4090,7 @@ function update(){
     if(!d)P.guard=false;
     if(d&&!(P.morph&&P.morph.k==='roll')&&!(P.stun>0)){P.dir=d;const[dx,dy]=DV[d];const nx=P.x+dx,ny=P.y+dy;
       const back=P.guard&&sc().exitsN.some(e=>e[0]===nx&&e[1]===ny);
-      {const pk=pfAt(nx,ny);if(pk&&!P.pushCd){pfPush(pk,dx,dy);P.pushCd=14}}if(P.pushCd>0)P.pushCd--;
+      {const pk=pfAt(nx,ny);if(pk&&!back)pfPush(pk,dx,dy)}
       if(walkable(nx,ny)&&!back){P.moving=true;P.tx=nx;P.ty=ny;P.prog=0;P.guard=false}}
   }
   if(P.moving){const sp=P.sticky>0?1:runHeld?4:2;P.prog+=sp;P.wc+=sp/2;if(P.prog>=16){const ox=P.x,oy=P.y;P.x=P.tx;P.y=P.ty;P.moving=false;P.prog=0;legsStep(ox,oy);onArrive()}}
@@ -4027,7 +4114,7 @@ function objectAt(nx,ny){
   {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
   {const l=lostAt(nx,ny);if(l)return()=>takeLost(l)}
   {const gr=gearAt(nx,ny);if(gr)return()=>openGear(gr)}
-  if(s==='pfield'){const pk=pfAt(nx,ny);if(pk)return()=>pfPoke(pk);if(nx===PF_END.x&&ny===PF_END.y)return pfEnd}
+  if(SOKO[s]){if(pfAt(nx,ny))return pfPoke;if(pfGate(nx,ny)&&!SOKO[s].next)return pfEnd}
   if(s==='maze'){
     if(S.flags.bossMaze&&nx===STRAW.x&&ny===STRAW.y)return strawPile;
     if(nx===0&&ny===1&&S.flags.mazeKey&&!S.flags.candyOpen)return candyDoor;
@@ -4097,11 +4184,12 @@ function tileText(c,x,y){
     kitchen:{'(':'磚砌的大烤爐，裡面的火燒得正旺。烤盤上排著一圈小小的鬆餅，邊緣烤得金黃。',')':'調理桌上堆滿了打鬆餅的工具：打蛋器、量杯、篩網、一整盒雞蛋……還有一支被打彎了的打蛋器。',']':'掛滿平底鍋的鍋架。大的、小的、銅的、鐵的……每一個鍋底，都有一圈鬆餅形狀的焦痕。'},
     roomR:{b:'這張床鋪得整整齊齊，好像從來沒人睡過。'},
     f2:{u:'走廊的花瓶裡插著乾燥的南瓜藤。'},
-    pfield:{e:'一排排長得密密麻麻的南瓜藤，鑽不過去。……藤蔓之間，好像有好幾雙眼睛在看你。',h:'高高的樹籬。另一邊是濃霧。',d:'回到屋外的缺口。'},
+    soko:{e:'一排排長得密密麻麻的南瓜藤，鑽不過去。……藤蔓之間，好像有好幾雙眼睛在看你。',h:'高高的樹籬。另一邊是濃霧。',d:'回去的路。'},
     storage:{x:'架上放著麵粉、果醬，還有一排空空的番茄汁備貨箱。',y:'一袋麵粉。拉拉說這是鬆餅的命。'},
     attic:{x:'堆滿舊玩具的架子。最上層有一隻少了一隻耳朵的兔子布偶。',y:'蓋著白布的舊家具。……這塊白布不會動。應該。',w:'閣樓的小窗戶。從這裡看得到屋外的大南瓜。'}};
   if(s==='greenhouse'&&c==='r')hintSeen('rose');
   if(s==='outside'&&c==='O'){hintSeen('pumpkin');return'一顆比人還大的南瓜。首領說，這是他最好的朋友。\n……大南瓜的表情好像有點兇，一直死死地盯著墓園的地底下。'}
+  if(SOKO[s]&&ST.soko[c])return ST.soko[c];
   if(ST[s]&&ST[s][c])return ST[s][c];
   if(c==='C'&&s==='outside')return'一棟白色的小教堂。門口的牌子寫著：「睡教・歡迎打瞌睡」。門在正下方。';
   if(c==='v'&&s==='exhibit')return y===2&&x<=3?'展示櫃：一把生鏽的老電鋸。標籤寫著「拉拉的初代愛機」。':y===2?'展示櫃：一排風乾的南瓜燈，表情都有點累。':'展示櫃：各式各樣的玻璃藥瓶，標籤全被撕掉了。';
@@ -4322,6 +4410,7 @@ function gainLoot(L){
   for(const k of['candy','rice','pine','magic'])if(L[k]){S.inv[k]=(S.inv[k]||0)+L[k];got.push(ITEM_NAME[k]+' ×'+L[k])}
   toast('獲得：'+got.join('、'));
   if(S.flags.melee&&S.flags.gun)ach('h_arsenal');
+  checkWude();
   if((L.melee||L.gun)&&!S.flags.tut){S.flags.tut=1;setTimeout(()=>{toast(isTouch?'按「砍」近戰、「射」開槍、「糖」吃東西補血':'J／X 近戰・K／C 開槍・R 換彈・H 吃東西・V 神奇藥水');toastT=360},2600)}
 }
 /* 近戰：沒撿到武器時是空手（傷害 1、距離短、不能打掉鬼火） */
@@ -4765,7 +4854,7 @@ function render(){
       R(ctx,X+12,Y+6,3,3,'#efe8dc');R(ctx,X+12,Y+6,3,1,'#8a4a2a');R(ctx,X+1,Y+7,3,1,'#d9a050')}
     else{for(let i=0;i<4;i++){R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,5,'#efe8dc');R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,1,'#5a3a22')}R(ctx,X+6,Y+2,5,5,'#efe8dc');R(ctx,X+6,Y+2,5,1,'#5a3a22')}}
   if(S&&mode==='play')drawMazeStuff(cx,cy,key);
-  if(S&&mode==='play'&&key==='pfield')drawPField(cx,cy);
+  if(S&&mode==='play'&&SOKO[key])drawPField(cx,cy);
   if(key==='outside'&&S&&chOf()===4){const X=BOTTLE.x*T-cx,Y=BOTTLE.y*T-cy;R(ctx,X+4,Y+8,8,5,'#9ad8c8');R(ctx,X+5,Y+9,6,3,'#c8f0e4');R(ctx,X+12,Y+10,2,2,'#9ad8c8');R(ctx,X+2,Y+12,2,1,'#9ad8c8');R(ctx,X+6,Y+9,3,2,'#e2741c');R(ctx,X+6,Y+9,1,1,K);R(ctx,X+8,Y+9,1,1,K);
     if(!hasEv('bottle')&&(tick>>4)%2){R(ctx,X+7,Y+1,1,5,'#fff6c8');R(ctx,X+5,Y+3,5,1,'#fff6c8')}}
   if(key==='crypt'&&mode==='play'){const[ppx,ppy]=pPix();cryptDark(ppx-cx+8,ppy-cy+4)}
@@ -4973,7 +5062,7 @@ function startPlay(isNew){
   Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
   clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
-  applyWorld();spawnSlimes();fade=1;nextBlack=60*45;blackOn=0;updateHUD();
+  applyWorld();spawnSlimes();if(SOKO[S.scene])sokoInit(S.scene);fade=1;nextBlack=60*45;blackOn=0;updateHUD();
   if(isNew)run(intro);
 }
 
