@@ -1497,6 +1497,9 @@ const ACHS=[
   {id:'h_race',t:'比羊駝還快',d:'在花園迷宮的賽跑中贏過了翠和羊駝。',hint:'有人騎著羊駝，想找人比賽。'},
   {id:'h_organ',t:'午夜演奏會',d:'用大廳的管風琴，彈完了所有的曲子。',hint:'大廳裡有一座會唱歌的大傢伙。'},
   {id:'h_candle',t:'借個火',d:'拿著蠟燭去取了火，照亮了周圍。',hint:'燭台上的蠟燭，可以帶走。'},
+  {id:'h_nap',t:'睡教入門',d:'在教堂的長椅上，縮進小被被裡睡了一覺。',hint:'教堂的長椅，看起來好好睡。'},
+  {id:'h_dreambox',t:'夢的收藏家',d:'在投夢箱裡投了三顆糖果。',hint:'投一顆糖，換一個好夢。'},
+  {id:'h_feng',t:'鳳的傳說',d:'看過了阿鳳姨的平底鍋和照片。',hint:'「鳳」的主人，長什麼樣子？'},
   {id:'h_horse',t:'幽靈羊駝的噴嚏',d:'和幽靈羊駝打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
@@ -4227,7 +4230,79 @@ const HALL_OBJ=[
   {k:'organ',x:4,y:2,w:4,h:2},{k:'stand',x:9,y:3,w:1,h:1},{k:'gpump',x:12,y:8,w:2,h:2},
   {k:'rack',x:16,y:2,w:1,h:1},{k:'armor',x:19,y:3,w:1,h:1},{k:'broom',x:22,y:2,w:1,h:1},
 ];
-const hallObj=(sc,x,y)=>sc==='hall'?HALL_OBJ.find(o=>x>=o.x&&x<o.x+o.w&&y>=o.y&&y<o.y+o.h)||null:null;
+/* 教堂：睡教的東西、阿鳳姨的紀念角 */
+const CHAPEL_OBJ=[
+  {k:'scripture',x:14,y:2,w:1,h:1},{k:'dreambox',x:6,y:2,w:1,h:1},{k:'saint',x:16,y:8,w:1,h:1},
+  {k:'fengpan',x:2,y:9,w:1,h:1},{k:'fengphoto',x:3,y:9,w:1,h:1},
+];
+const SCENE_OBJ={hall:HALL_OBJ,chapel:CHAPEL_OBJ};
+const hallObj=(sc,x,y)=>SCENE_OBJ[sc]?SCENE_OBJ[sc].find(o=>x>=o.x&&x<o.x+o.w&&y>=o.y&&y<o.y+o.h)||null:null;
+const DREAMS=['夢見自己變成一片鬆餅，被拉拉打了四百下。','夢見阿北在月亮上揮棒，把星星一顆一顆打下來。','夢見一朵向日葵對著你笑，笑了好久、好久。',
+  '夢見會長在花園裡澆水，旁邊跟著一隻小蝙蝠。','夢見司書在吃一本很大很大的書，吃著吃著就睡著了。','夢見翠追著羊駝跑，羊駝回頭吐了她一臉口水。','什麼夢都沒做。睡得好香。'];
+async function chapelThing(o){
+  const F=S.flags,ch=chOf();
+  switch(o.k){
+    case 'scripture':
+      await n('講台上攤著一本厚厚的經書，封面用歪歪扭扭的字寫著：《睡教經典》。');
+      await n('「睡教十誡（只寫到第五條，因為作者睡著了）」');
+      await n('「一、想睡就睡。　二、不准吵醒睡著的人。　三、枕頭是神聖的。　四、起床不是義務，是選擇。　五、管他的。」');
+      await n('作者欄寫著：小波。……旁邊還有一行小字：「代筆：枕頭」。');
+      if(NPCS.po.scene==='chapel'||(NPCS.po.state==='stand'&&Math.random()<.01))await say('po','……別唸出來。好麻煩。');
+      return;
+    case 'dreambox':{
+      await n('一個木頭做的小箱子，上面刻著：「投夢箱——投一顆糖，換一個好夢」。');
+      if(!(S.inv.candy>0))return n('……身上沒有糖果。箱子好像有點失望。');
+      const c=await choose('要投一顆糖果嗎？',['投一顆','算了']);if(c===1)return;
+      S.inv.candy--;updateHUD();F.dreams=(F.dreams||0)+1;
+      await n('「咚」。糖果掉進箱子裡，箱子底下吐出一張小紙條：');
+      await n('「今晚的夢：'+DREAMS[(Math.random()*DREAMS.length)|0]+'」');
+      if(Math.random()<.35){await n('……紙條背面還黏著一片乘乘米果。');S.inv.rice=(S.inv.rice||0)+1;updateHUD()}
+      if(F.dreams>=3)ach('h_dreambox');return}
+    case 'saint':
+      await n('一尊小小的木雕像：一隻披著床單的小幽靈，抱著枕頭，睡得正香。底座刻著：「睡教創始人」。');
+      await n('……長得跟小波一模一樣。雕像的臉上，還刻了一道口水。');
+      if(ch>=3&&ch<5)await n('雕像前面多了好幾個枕頭。……大家好像開始偷偷信睡教了。');
+      return;
+    case 'fengpan':
+      await n('牆邊的木架上，掛著一把被打得凹凹凸凸的平底鍋。鍋底嵌著三顆子彈。');
+      await n('旁邊的小牌子寫著：「這把鍋，擋過三發子彈，煎過一萬片鬆餅。——鳳」');
+      if(F.melee)await n('……鍋柄上纏的膠帶，跟你那把改造鍋鏟上的一模一樣。');
+      F.fengPan=1;if(F.fengPhoto)ach('h_feng');return;
+    case 'fengphoto':
+      await n('一張裝在木框裡的舊照片。照片裡的阿姨綁著頭巾，一手拿鍋鏟、一手拿土製手槍，笑得超級開心。');
+      await n('照片下面寫著：「阿鳳姨。這間宅邸的前任廚師、保鑣、修繕工，還有睡教的榮譽信徒。」');
+      if(F.wude)await n('……照片裡的阿鳳姨，好像對你比了一個讚。');
+      else if(F.melee||F.gun)await n('……你身上的裝備，好像讓照片裡的她笑得更開心了。');
+      F.fengPhoto=1;if(F.fengPan)ach('h_feng');return;
+  }
+}
+/* 教堂的長椅鋪了小被被，可以躺下來睡一下 */
+async function pewNap(){
+  const F=S.flags;
+  if(P.napCd>0)return n('長椅上的小被被軟綿綿的。……不過你現在還不睏。');
+  const c=await choose('長椅上鋪著軟綿綿的小被被和枕頭。要躺下來睡一下嗎？',['睡一下','不了']);if(c===1)return;
+  fade=1;await n('你縮進小被被裡。好溫暖……眼皮越來越重……');
+  await n('Zzz……'+DREAMS[(Math.random()*DREAMS.length)|0]);
+  P.hp=Math.min(MAXHP,P.hp+2);P.napCd=60*40;updateHUD();F.naps=(F.naps||0)+1;
+  await n('……你醒過來，精神好多了。（回復一顆心）');ach('h_nap');
+}
+function drawChapelStuff(cx,cy){
+  const g=ctx,F=S.flags;
+  /* 長椅上的小被被和枕頭 */
+  const BL=['#c8b4e8','#f2b8c6','#a8d8c8','#ffe0a0'];let i=0;
+  for(const y of[4,6,11])for(const[x0,x1]of[[2,7],[12,17]]){const c=BL[i%4],X=x0*T-cx,Y=y*T-cy,w=(x1-x0+1)*T;
+    if(i%3!==2){R(g,X+8,Y+3,w-20,9,c);R(g,X+8,Y+3,w-20,1,'rgba(255,255,255,.4)');for(let k=0;k<(w-20)/8;k++)R(g,X+12+k*8,Y+6,2,2,'rgba(255,255,255,.35)')}
+    R(g,(i%2?X+w-16:X+2),Y+3,10,7,'#f4f6fb');R(g,(i%2?X+w-15:X+3),Y+4,8,1,'#cdd2e0');i++}
+  for(const o of CHAPEL_OBJ){const X=o.x*T-cx,Y=o.y*T-cy;
+    if(o.k==='scripture'){R(g,X+7,Y+4,2,11,'#6b4a2a');R(g,X+3,Y+13,10,2,'#5a3a20');R(g,X+2,Y,12,6,K);R(g,X+3,Y+1,5,4,'#efe8dc');R(g,X+8,Y+1,5,4,'#efe8dc');R(g,X+4,Y+2,3,1,'#8a7a6a');R(g,X+9,Y+2,3,1,'#8a7a6a');R(g,X+7,Y,2,6,'#7a2b2b')}
+    else if(o.k==='dreambox'){R(g,X+3,Y+5,10,10,K);R(g,X+4,Y+6,8,8,'#8a6a3a');R(g,X+6,Y+6,4,1,K);R(g,X+5,Y+9,6,1,'#c9a54a');const z=(tick>>4)%3;R(g,X+10,Y-z,3,1,'#b9a58e');R(g,X+12,Y+1-z,1,1,'#b9a58e');R(g,X+10,Y+2-z,3,1,'#b9a58e')}
+    else if(o.k==='saint'){R(g,X+3,Y+11,10,4,'#6a6e72');R(g,X+4,Y+2,8,10,'#d8cfc0');R(g,X+3,Y+5,10,6,'#d8cfc0');R(g,X+5,Y+5,1,1,K);R(g,X+9,Y+5,1,1,K);R(g,X+6,Y+8,3,1,'#a89e8e');R(g,X+10,Y+7,4,4,'#efe8dc');
+      const z=(tick>>4)%3;R(g,X+11,Y-2-z,3,1,'#b9a58e');R(g,X+13,Y-1-z,1,1,'#b9a58e');R(g,X+11,Y-z,3,1,'#b9a58e')}
+    else if(o.k==='fengpan'){R(g,X+2,Y+12,12,3,'#5a3a20');R(g,X+7,Y+2,2,11,'#6b4a2a');R(g,X+2,Y,10,9,K);R(g,X+3,Y+1,8,7,'#3a3a42');R(g,X+4,Y+2,6,5,'#4a4a54');R(g,X+11,Y+3,4,2,'#2a2a30');
+      for(const[bx,by]of[[5,3],[8,4],[6,6]]){R(g,X+bx,Y+by,1,1,'#d9a640');R(g,X+bx-1,Y+by,1,1,'#2a2a30')}}
+    else if(o.k==='fengphoto'){R(g,X+2,Y+12,12,3,'#5a3a20');R(g,X+3,Y+1,10,11,'#c9a54a');R(g,X+4,Y+2,8,9,'#e8dfc8');R(g,X+6,Y+3,4,4,'#d8a888');R(g,X+5,Y+3,6,2,'#a8232b');R(g,X+6,Y+7,4,4,'#5a7a9a');R(g,X+4,Y+6,2,1,'#9aa0a6');R(g,X+10,Y+6,2,1,'#6b4a2a')}
+  }
+}
 ITEMS.candle={t:'一支蠟燭',d:'從大廳燭台上拿的蠟燭。到南瓜燈、烤爐或教堂的燭台取火，就能暫時照亮周圍。到屋外淋到雨會熄掉。'};
 /* 管風琴：用 Web Audio 彈出萬聖節的曲子 */
 let AC=null,ORGAN_T=0;
@@ -4398,7 +4473,7 @@ function update(){
   sokoBarSync();
   if(ORGAN_T>0)ORGAN_T--;if(BROOM_T>0)BROOM_T--;
   if(mode==='play'&&!busy&&P.light>0&&--P.light===0)toast('蠟燭燒完了。（可以再去取火）');
-  if(mode==='play'&&!busy){if(P.stun>0)P.stun--;if(P.sticky>0)P.sticky--;if(P.hazCd>0)P.hazCd--}
+  if(mode==='play'&&!busy){if(P.napCd>0)P.napCd--;if(P.stun>0)P.stun--;if(P.sticky>0)P.sticky--;if(P.hazCd>0)P.hazCd--}
   if(P.morph&&mode==='play'&&!busy&&--P.morph.t<=0){P.morph=null;toast('藥效退了，你變回原樣了。')}
   if(toastT>0&&--toastT===0)$('toast').hidden=true;
   if(fade>0)fade=Math.max(0,fade-.06);
@@ -4441,8 +4516,9 @@ const TOMBS=['這裡長眠著：說了「我去去就回」的人。','這裡長
 function objectAt(nx,ny){
   const s=S.scene,[x,y]=toOld(s,nx,ny),sk=SEARCH[s+'@'+nx+','+ny]?s+'@'+nx+','+ny:s+':'+x+','+y;
   const pr=propAt(nx,ny);if(pr)return()=>takeProp(pr);
-  {const ho=hallObj(s,nx,ny);if(ho)return()=>hallThing(ho)}
+  {const ho=hallObj(s,nx,ny);if(ho)return()=>s==='chapel'?chapelThing(ho):hallThing(ho)}
   if(hasItem('candle')&&!(P.light>0)){const fs=fireSource(s,nx,ny);if(fs)return()=>lightCandle(fs)}
+  if(s==='chapel'&&tileAt(nx,ny)==='q'&&!decorAt(nx,ny))return pewNap;
   if(s==='bath'&&tileAt(nx,ny)==='~')return async()=>{const c=await choose('要泡個澡嗎？',['泡澡','不用了']);if(c===0)await takeBath()};
   {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
   {const l=lostAt(nx,ny);if(l)return()=>takeLost(l)}
@@ -4510,7 +4586,7 @@ function tileText(c,x,y){
     if(s==='roomR'&&c==='M'&&blackOn>0){ach('h_mirror');return'停電了。鏡子裡一片漆黑，只剩一雙眼睛還亮著。\n你眨了眨眼——鏡子裡那雙眼睛，晚了一拍才眨。'}
     return LOCKED[s+':'+c];
   }
-  const ST={chapel:{Z:'告解室。簾子後面空無一人……應該吧。',A:'祭壇上鋪著白布，十字架擦得發亮。這裡的空氣特別乾淨。',q:'木頭長椅。椅背上刻著好幾道指甲抓痕。',l:'燭台上的蠟燭燒得很慢，好像永遠不會燒完。',W:'彩繪玻璃上畫著一個舉燈的人。雷光閃過時，他好像在看你。'},
+  const ST={chapel:{Z:'告解室。簾子後面空無一人……應該吧。',A:'祭壇上鋪著白布，十字架擦得發亮。這裡的空氣特別乾淨。',q:'木頭長椅。鋪著軟綿綿的小被被。',l:'燭台上的蠟燭燒得很慢，好像永遠不會燒完。',W:'彩繪玻璃上畫著一個舉燈的人。雷光閃過時，他好像在看你。'},
     greenhouse:{r:'溫室裡的玫瑰開得又大又紅……\n你一靠近，整排玫瑰「唰」地一起轉過來，盯著你看。\n……發現你是薊的朋友，又慢慢轉了回去。',J:'玻璃外是雨和霧，溫室裡卻暖暖的，像另一個季節。',z:'薊的調藥桌。一束束乾燥的、葉子有七片尖尖分岔的草倒掛著，聞了會想笑。桌角的標籤寫著：「個人秘方・請勿外流」。',j:'一張白色鐵椅，上面攤著一本翻開的園藝雜誌。',Q:'小噴泉的水很清，倒映著溫室的玻璃頂。'},
     maze:{h:'高高的樹籬，看不見另一邊。',Q:'迷宮中央的噴泉。噴泉中間站著一座抱著頭的騎士雕像。',r:'樹籬轉角種著一叢紅玫瑰。'},
     roomL:{b:'柔軟的床。床單少了一條，枕頭上有一小撮鬆餅屑。',B:'一個小書櫃。最上層放著一本《如何在任何地方睡著》。'},
@@ -5190,6 +5266,7 @@ function render(){
     else{for(let i=0;i<4;i++){R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,5,'#efe8dc');R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,1,'#5a3a22')}R(ctx,X+6,Y+2,5,5,'#efe8dc');R(ctx,X+6,Y+2,5,1,'#5a3a22')}}
   if(S&&mode==='play')drawMazeStuff(cx,cy,key);
   if(S&&mode==='play'&&key==='hall')drawHallStuff(cx,cy);
+  if(S&&mode==='play'&&key==='chapel')drawChapelStuff(cx,cy);
   if(S&&mode==='play'&&SOKO[key])drawPField(cx,cy);
   if(key==='outside'&&S&&chOf()===4){const X=BOTTLE.x*T-cx,Y=BOTTLE.y*T-cy;R(ctx,X+4,Y+8,8,5,'#9ad8c8');R(ctx,X+5,Y+9,6,3,'#c8f0e4');R(ctx,X+12,Y+10,2,2,'#9ad8c8');R(ctx,X+2,Y+12,2,1,'#9ad8c8');R(ctx,X+6,Y+9,3,2,'#e2741c');R(ctx,X+6,Y+9,1,1,K);R(ctx,X+8,Y+9,1,1,K);
     if(!hasEv('bottle')&&(tick>>4)%2){R(ctx,X+7,Y+1,1,5,'#fff6c8');R(ctx,X+5,Y+3,5,1,'#fff6c8')}}
@@ -5398,7 +5475,7 @@ function startPlay(isNew){
   mode='play';$('title').hidden=true;$('hud').style.visibility='visible';
   if(S.v!==2){[S.x,S.y]=toNew(S.scene,S.x,S.y);S.v=2}
   syncMaxHP();
-  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,light:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
+  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,light:0,napCd:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
   clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
   applyWorld();spawnSlimes();if(SOKO[S.scene])sokoInit(S.scene);fade=1;nextBlack=60*45;blackOn=0;updateHUD();
