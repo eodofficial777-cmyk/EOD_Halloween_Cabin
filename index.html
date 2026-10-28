@@ -2036,12 +2036,36 @@ function pitchBall(p){
   if(p.res===1)return{x:x0+k*110,y:y0-Math.sin(k*Math.PI*.6)*120,s:1.4*(1-k*.5),r:t*.4};
   return{x:x0+k*130,y:Math.min(178,y0+k*60),s:1.4,r:k<.4?t*.3:0};
 }
+/* 觀眾席：墓園，墳墓之間有手臂鑽出來揮手；全壘打的時候會鼓掌 */
+function drawPitchStands(g,p){
+  const t=p.t,go=p.ph==='go'&&t>=52,mood=go?p.res:-1,cheer=mood===3,boo=mood===0;
+  R(g,0,74,320,22,'#1a1420');R(g,0,74,320,2,'#2a2030');
+  for(let i=0;i<10;i++){const x=6+i*32,h=14+(i%3)*2,y=76-h,c=i%2?'#5a5a66':'#4a4a56';
+    R(g,x,y+2,14,h,K);R(g,x+1,y+1,12,2,K);R(g,x+1,y+3,12,h-2,c);R(g,x+2,y+2,10,1,c);R(g,x+2,y+3,2,h-3,'#6a6a76');
+    if(i%3===0){R(g,x+6,y+5,2,7,'#3a3a44');R(g,x+4,y+7,6,2,'#3a3a44')}else{R(g,x+4,y+6,6,1,'#3a3a44');R(g,x+4,y+9,5,1,'#3a3a44')}
+    if(i%4===1){const gl=(tick>>4)%5?'#ffd25a':'#ffb03a';R(g,x+3,y-5,8,6,K);R(g,x+4,y-4,6,4,'#e2741c');R(g,x+5,y-3,1,1,gl);R(g,x+8,y-3,1,1,gl);R(g,x+5,y-1,4,1,gl)}}
+  const arm=(bx,by,ang,len,skin)=>{g.save();g.translate(bx,by);g.rotate(ang);R(g,-2,-len,4,len,K);R(g,-1,-len,2,len,skin);R(g,-3,-len-4,6,5,K);R(g,-2,-len-3,4,3,skin);R(g,-2,-len-5,1,2,skin);R(g,0,-len-6,1,3,skin);R(g,2,-len-5,1,2,skin);g.restore()};
+  for(let i=0;i<9;i++){
+    const bx=29+i*32,by=90,skin=i%3===1?'#e8e4d4':i%3===2?'#c9b8d8':'#8fa58a';
+    /* 揮空的時候，手臂會沮喪地縮回土裡 */
+    const sink=boo?Math.min(10,(t-52)/3):0,rise=go&&mood>=2?Math.min(4,(t-52)/3):0,len=12-sink+rise;
+    R(g,bx-5,by-1,10,3,'#2a2030');
+    if(len<=1)continue;
+    if(cheer){const clap=((tick>>2)+i)%2,a=clap?.12:.45;arm(bx-3,by,a,len,skin);arm(bx+3,by,-a,len,skin);
+      if(clap&&i%2===0){R(g,bx-1,by-len-9,1,2,'#fff6c8');R(g,bx-4,by-len-8,2,1,'#fff6c8');R(g,bx+3,by-len-8,2,1,'#fff6c8')}}
+    else{const sp=mood===2?5:10,amp=mood===2?.6:.35;arm(bx,by,Math.sin(tick/sp+i*1.3)*amp,len,skin)}
+  }
+  if(cheer){
+    for(let i=0;i<14;i++){const x=(i*53+t*0)%320,y=((t-52)*1.2+i*17)%110,c=['#ff5fa2','#ffd25a','#5fd0ff','#a8ff6a'][i%4];R(g,x+Math.sin((t+i*9)/8)*4,y,3,2,c)}
+    if(((tick>>3)%2)===0){g.font='8px DotGothic16, monospace';g.textAlign='center';g.textBaseline='top';g.fillStyle='#fff6c8';for(const x of[34,286])g.fillText('啪啪啪！',x+((tick>>3)%3)*2,56)}
+  }
+}
 function drawPitch(){
   if(!PITCH)return;const g=ctx,p=PITCH,t=p.t;
   /* 夜晚的球場 */
   const sky=g.createLinearGradient(0,0,0,96);sky.addColorStop(0,'#0c0814');sky.addColorStop(1,'#2a1a2e');g.fillStyle=sky;g.fillRect(0,0,320,96);
   g.fillStyle='rgba(255,246,200,.85)';g.beginPath();g.arc(298,52,9,0,6.28);g.fill();g.fillStyle='#0c0814';g.beginPath();g.arc(303,49,8,0,6.28);g.fill();
-  R(g,0,70,320,26,'#140e18');for(let i=0;i<16;i++){R(g,4+i*20,64+(i%3)*2,14,8,'#1c1420');const gl=((tick>>4)+i)%7?'#e2741c':'#ffd25a';R(g,9+i*20,74,4,3,gl)}
+  drawPitchStands(g,p);
   R(g,0,92,320,116,'#1f3a22');for(let i=0;i<8;i++)R(g,0,96+i*14,320,7,'#234226');
   g.fillStyle='#6b4a2a';g.beginPath();g.ellipse(160,150,120,26,0,0,6.28);g.fill();
   g.fillStyle='#7a5532';g.beginPath();g.ellipse(70,152,26,8,0,0,6.28);g.fill();
