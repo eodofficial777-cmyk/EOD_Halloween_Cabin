@@ -1660,14 +1660,14 @@ async function gatherScene(){
   await say('kaicho','……人都到齊了吧。新來的那位，也請坐。');
   await n('坐在長桌最前面的，是一個臉色蒼白的青年。他面前只放著一個空杯子。');
   await say('kaicho','我是協會的會長。先確認一下狀況——大家都是突然來到這裡的？');
-  await say('lala','我本來在協會的廚房煎鬆餅！一轉頭，就在這棟房子的廚房裡了！');
+  await say('lala','我本來在協會的廚房煎鬆餅！一轉頭，就在這棟房子的廚房裡了！……鬆餅還在鍋子上耶，會不會焦掉啊？');
   await say('ian','睡醒就在這裡。');
-  await say('ji','我也是～而且你們看，大家的樣子都變得好有萬聖節的感覺喔！');
+  await say('ji','我也是～不過你們看，大家的樣子都好有萬聖節的感覺喔！……當然，最好看的是我。');
   await n('你環顧桌邊：長角的惡魔、抱著自己腦袋的騎士、南瓜頭、渾身縫線的大塊頭、身纏荊棘的女巫，還有一團披著床單的……幽靈？');
-  await say('shisho','我的角長出來了。順帶一提，書的味道也變好了。');
+  await say('shisho','我的角長出來了。順帶一提，書的味道也變好了。……會長倒是沒什麼變，一樣蒼白。');
   await say('sui','我的頭可以拿下來了喔～你看你看！');
   await n('翠把自己的頭往上一拋，又穩穩接住。');
-  await say('boss','……我的能力不見了。碰什麼都讀不到。好麻煩。');
+  await say('boss','……能力不見了。碰什麼都讀不到。……跟某些人的腦袋一樣，空空的。好麻煩。');
   await say('kaicho','看來大家的超能力都被抽走了。外面全是濃霧，森林裡有東西在叫，天也一直不亮。');
   await say('po','……所以，今天可以一直睡覺嗎……？');
   await say('kaicho','……不行。');
@@ -1700,8 +1700,8 @@ async function talk0(id){
   if(!F.gathered){return say(id,'大家都在 餐廳 集合喔，快過去吧！')}
   if(!first){
     if(await sideTalk(id))return;
-    const again={kaicho:'我沒事，只是有點貧血。……晚點喝杯番茄汁就好。',shisho:'書的事，拜託你了。',sui:'駱馬還是不讓我靠近……糧草就拜託你啦！',
-      lala:'史萊姆鬆餅很快喔！用跑的追！',boss:'……嗯。大南瓜很安靜。',ian:'怪物抓來，我揮。',ji:'試完要回來報告喔～',po:'最舒服的枕頭……要軟軟的、涼涼的、甜甜的，還要可以抱……Zzz……'};
+    const again={kaicho:'我沒事，只是有點貧血。……晚點喝杯番茄汁就好。',shisho:'書的事，拜託你了。……別學會長拿書當枕頭。',sui:'駱馬還是不讓我靠近……糧草就拜託你啦！',
+      lala:'史萊姆鬆餅很快喔！用跑的追！',boss:'……嗯。大南瓜很安靜。不像你。',ian:'怪物抓來，我揮。',ji:'試完要回來報告喔～別試到一半就逃跑。',po:'最舒服的枕頭……要軟軟的、涼涼的、甜甜的，還要可以抱……Zzz……'};
     return say(id,again[id]);
   }
   F['p_'+id]=1;
@@ -1745,16 +1745,16 @@ async function talk0(id){
       await say('lala','那是史萊姆鬆餅的麵糊……明明都打過四百次了，還是不安分，真是太調皮了！');
       await say('lala','總共跑掉了六坨，好像都溜到 廚房、餐廳 跟 大廳 去了。可以幫我抓回來嗎？');
       await say('lala','牠們很快喔，要用跑的追！');
-      await say('lala','啊，對了！廚房角落那位小客人，是我剛剛請來喝下午茶的喔。好安靜、好有禮貌～');
+      await say('lala','啊，對了！廚房角落那位小客人，是我剛剛請來喝下午茶的喔。是誰我也不知道，可是好安靜、好有禮貌～');
       qStart('lala',{got:[]});break;
     case 'boss':
       await n('首領靠在屋外的大南瓜旁邊，一動也不動。');
       await say('boss','……我的能力不見了。以前碰一下就能讀出這附近發生過的所有事。');
-      await say('boss','現在什麼都讀不到。好麻煩。');
-      await say('boss','不過這顆大南瓜……很安靜。我喜歡。');
+      await say('boss','現在什麼都讀不到。……我現在跟你一樣普通了。好麻煩。');
+      await say('boss','不過這顆大南瓜……很安靜。比屋子裡那群吵死人的傢伙好多了。');
       await say('boss','……剛剛有個東西想偷偷靠近我。大南瓜「咚」地把它彈開了。');
       await say('boss','……好南瓜。');
-      await say('boss','……你要不要也一起躺？什麼都不要做。很舒服。');
+      await say('boss','……你要不要也一起躺？反正你站著，也幫不上什麼忙。');
       await say('boss','……想躺的時候，再來找我。');
       qStart('boss',{round:0,fails:0});break;
     case 'ian':
@@ -1766,14 +1766,14 @@ async function talk0(id){
       await n('（打倒災獸時，會自動收進怪物袋。抓到之後回來找 IAN。）');
       qStart('ian',{sack:[],hr:0});break;
     case 'ji':
-      await say('ji','歡迎來到我的溫室～這裡的玫瑰長得超好，連我都嚇一跳！');
-      await say('ji','這裡的花，我都把它們訓練成守衛了喔～有誰亂碰，它們會自己追上去！');
+      await say('ji','歡迎來到我的溫室～這些玫瑰全是我養的，漂亮吧？才一個晚上就長成這樣，我果然是天才。');
+      await say('ji','而且我把它們都訓練成守衛了喔～有誰亂碰，它們會自己追上去。……某個臉色蒼白的人已經被追過三次了。');
       await n('薊身後的玫瑰，好像「唰」地一起轉過來看了你一眼。');
-      await say('ji','對了對了！我剛調好一批新藥水，可是還沒找人試過……');
+      await say('ji','對了對了！我剛調好一批新藥水，傑作喔！可是還沒找到夠勇敢的白老鼠……');
       await n('薊塞給你一瓶冒著粉紅色泡泡的藥水。');
       addItem('potion');
-      await say('ji','幫我找測試對象嘛～玫瑰、南瓜田、首領的大南瓜、IAN……或是你自己也可以！');
-      await say('ji','試完要回來跟我報告喔，我要寫進研究筆記裡～');
+      await say('ji','……就是你了！幫我找測試對象嘛～玫瑰、南瓜田、首領的大南瓜、IAN……或是你自己也行，反正看起來很耐操。');
+      await say('ji','試完要回來報告喔～我的研究筆記，可是要流傳千古的。');
       qStart('ji',{tested:[],rep:[]});break;
     case 'po':
       await say('po','……好睏……大家都好吵……');
@@ -1815,7 +1815,7 @@ function sideOption(id){
   if(id==='lala'&&(q.got||[]).length>=SLIMES.length)return['史萊姆鬆餅都抓回來了',lalaDone];
   if(id==='shisho'&&(q.got||[]).length>=BOOK_N)return['把書交給司書',shishoDone];
   if(id==='ji'&&q.tested.some(k=>!q.rep.includes(k)))return['報告藥水的實驗結果',jiReport];
-  if(id==='ji'&&!hasItem('potion'))return['再要一瓶藥水',async()=>{await say('ji','弄丟了？真拿你沒辦法～這瓶給你！');addItem('potion')}];
+  if(id==='ji'&&!hasItem('potion'))return['再要一瓶藥水',async()=>{await say('ji','弄丟了？……你的手是裝飾品嗎？真拿你沒辦法，這瓶給你。');addItem('potion')}];
   if(id==='ian'&&(q.sack||[]).length)return[`怪物棒球（怪物袋 ${q.sack.length} 隻）`,pitchSession];
   if(id==='sui'&&(q.got||[]).length>=Object.keys(FEEDS).length)return['去中庭餵駱馬',llamaStart];
   return null;
@@ -1902,7 +1902,7 @@ async function vineFreed(){
     await say('kaicho','……得救了。謝謝。');
     await n('會長拍掉身上的花瓣。被勒了一陣子，他的臉色好像更白了。');
     await say('kaicho','……我先回去喝杯番茄汁。');ach('h_kaichovine');
-  }else await say('ji','呼～研究筆記又多了一頁！你剛剛有看到嗎？它抱我抱得好緊喔～');
+  }else await say('ji','呼～你剛剛有看到嗎？那麼有力的藤蔓！不愧是我的作品～');
   applyWorld();
 }
 async function fieldEvent(){
@@ -1918,7 +1918,7 @@ async function pumpkinEvent(){
   await n('藥水順著南瓜皮流了下去……');shake=14;
   await n('大南瓜「咕嚕、咕嚕」地膨脹起來，變得比剛才大了一倍！');
   S.flags.bigPumpkin=1;potionUsed('pumpkin');
-  if(NPCS.boss.scene==='outside'){await say('boss','……大南瓜變大了。');await say('boss','……很好。我喜歡。')}
+  if(NPCS.boss.scene==='outside'){await say('boss','……大南瓜變大了。');await say('boss','……很好。總算有人做了一件有用的事。')}
 }
 
 /* ---------------- 翠：駱馬的糧草（中庭彈幕） ---------------- */
@@ -2074,7 +2074,7 @@ async function lalaOfferCans(){
   await say('lala','對了……會長最喜歡番茄了。番茄汁、番茄醬、番茄湯……');
   await say('lala','他之前拜託大家幫忙找番茄汁，說宅邸裡好像藏了好幾瓶。');
   await say('lala','你如果看到的話，就幫他找回來吧！找到五瓶再拿來給我，我幫他冰起來。');
-  await say('lala','啊，聽說有人把草莓牛奶貼上番茄汁的標籤……要分清楚喔！');
+  await say('lala','啊，聽說有人把草莓牛奶貼上番茄汁的標籤……要分清楚喔！……雖然我自己也分不出來就是了！');
   qStart('kaicho',{got:[],unk:[],real:0,fake:0});
 }
 async function cansToKaicho(){
@@ -2228,7 +2228,7 @@ async function shishoDone(){
     const[,qq,opts,right]=qs[(Math.random()*qs.length)|0];
     await say('shisho','……先考你一題。你有好好讀過嗎？');
     const c0=await choose(qq,opts);
-    if(c0===right){await say('shisho','……嗯。你是懂書的人。');ach('h_bookquiz')}else await say('shisho','……你只是撿，沒有讀。');
+    if(c0===right){await say('shisho','……嗯。你是懂書的人。');ach('h_bookquiz')}else await say('shisho','……你只是撿，沒有讀。跟會長一樣，翻兩頁就睡著。');
   }
   await say('shisho','那麼——你覺得哪一本最好吃？');
   const ks=Object.keys(BOOKS).filter(k=>!BOOKS[k].secret&&qGet('shisho').got.includes(k));
@@ -2265,12 +2265,12 @@ async function jiReport(){
     await say('ji',`${POTION_T[k]}的實驗結果呢？`);
     const[qq,opts]=POTION_Q[k],right=k==='self'?(F.morphLast==='pumpkin'?1:0):{rose:1,field:2,pumpkin:1,ian:2}[k];
     const c=await choose(qq,opts);
-    if(c!==right){q.wrong++;await say('ji','咦？跟我預測的不一樣耶……好吧，我先照你說的寫囉～');continue}
+    if(c!==right){q.wrong++;await say('ji','咦？跟我預測的不一樣耶……你眼睛沒問題吧？好吧，我先照你說的寫囉～');continue}
     if(k==='self')await say('ji',F.morphLast==='pumpkin'?'變成南瓜？首領會很高興的喔～':'變成蝙蝠？跟某人一樣嘛～……咦，我說了什麼嗎？');
     else if(k==='rose')await say('ji',F.vineT==='kaicho'?'還纏住了會長？呀～他應該很開心有人抱他吧？':'原來它那麼喜歡我呀～筆記筆記～');
-    else if(k==='field')await say('ji','好有活力～下次加一點安眠草好了。');
-    else if(k==='pumpkin')await say('ji','首領應該開心到睡著了吧？');
-    else if(k==='ian')await say('ji','四隻手！那以後搬花盆就靠他啦～');
+    else if(k==='field')await say('ji','好有活力～不愧是我調的藥。下次加一點安眠草好了。');
+    else if(k==='pumpkin')await say('ji','首領應該開心到睡著了吧？……反正他本來就一直在睡。');
+    else if(k==='ian')await say('ji','四隻手！我的藥水果然完美。以後搬花盆就靠他啦～');
   }
   const left=Object.keys(POTION_T).filter(k=>!q.tested.includes(k));
   if(!left.length){
@@ -2279,10 +2279,10 @@ async function jiReport(){
       await n('薊翻了翻研究筆記，表情越來越僵硬。');
       await say('ji','……跟我預測的，完全不一樣耶。');
       await say('ji','等等……這該不會是，全新的藥效？');
-      await say('ji','太棒了！我要把它命名為「亂報藥水」！謝謝你啦，研究助理～這是謝禮！');
+      await say('ji','太棒了！我要把它命名為「亂報藥水」！……靈感來自你的爛記性。謝謝你啦，研究助理～這是謝禮！');
       qAlt('ji',{candy:3});return;
     }
-    await say('ji','全部都試過了，結果也跟我想的一模一樣！這份研究筆記一定能拿去發表～');
+    await say('ji','全部都跟我預測的一模一樣！果然，天才調的藥水是不會出錯的～');
     await say('ji','謝謝你啦，研究助理！這是謝禮～');
     qFinish('ji',{candy:3});return;
   }
@@ -2340,7 +2340,7 @@ async function pitchSession(){
 }
 async function idleSession(){
   const q=qGet('boss');q.round=q.round||0;q.fails=q.fails||0;
-  await say('boss','……躺下來。什麼都不要做。');
+  await say('boss','……躺下來。什麼都不要做。……這你應該很擅長吧。');
   await n(`（第 ${q.round+1} 輪：撐過 ${IDLE_DUR[q.round]} 秒，什麼按鍵都不要按，也不要點畫面。動了 5 次的話，首領會換個方式陪你。）`);
   for(;;){
     await n('你在大南瓜旁邊躺了下來。雨聲沙沙的。');
@@ -2349,7 +2349,7 @@ async function idleSession(){
       q.fails++;
       if(q.fails>=5){
         await say('boss','……你又動了。');
-        await say('boss','……你不適合躺。');
+        await say('boss','……你不適合躺。你連發呆都不及格。');
         await say('boss','……那，坐著陪我聊天吧。');
         await n('你在首領旁邊坐了下來。他用很慢很慢的語速，說了好多跟大南瓜有關的事。');
         await say('boss','……大南瓜說，牠喜歡有人陪牠說話。');
@@ -2369,7 +2369,7 @@ async function idleSession(){
   await say('boss','……剛剛，好像讀到了一點點。');
   await say('boss','……這棟房子……好像在等某個人回來。');
   await say('boss','……大概吧。好麻煩。');
-  await say('boss','……你是第一個，跟我一樣懶的人。這個給你。');
+  await say('boss','……你是第一個，懶得跟我一樣徹底的人。……這是在誇你。這個給你。');
   if(!q.fails)ach('h_idle_perfect');
   qFinish('boss',{candy:3});
 }
@@ -2587,7 +2587,7 @@ async function returnLost(l){
     ian:[['ian','……我的小指。'],['ian','找了好久。謝謝。'],['n','IAN 把小指按回左手，用點滴架的管子咻咻咻地纏了幾圈。']],
     sui:[['sui','我的耳環！！甩頭甩到不知道掉哪去了～謝謝你！'],['n','翠把耳環戴回去，又開心地甩了一下頭。耳環又飛出去了。'],['sui','……啊。']],
     lala:[['lala','我的食譜！第 401 下……我還寫了這個？'],['lala','「第 401 下：再打一下，它就會乖了。」……才怪！！']],
-    shisho:[['shisho','……我的書籤。上面的咬痕，是我的。'],['shisho','這本書我還沒吃完。謝謝。']],
+    shisho:[['shisho','……我的書籤。上面的咬痕，是我的。'],['shisho','這本書我還沒吃完。謝謝。……你比會長可靠多了。']],
     ji:[['ji','我的小花鏟！沒有它，花花們都不太聽話呢～謝謝你！'],['n','薊身後的玫瑰，好像一起對你點了點頭。']],
   }[l.owner];
   for(const[w,t]of L)await(w==='n'?n(t):say(w,t));
@@ -2751,8 +2751,8 @@ async function discovery(){
   await n('聽見尖叫的其他人陸續趕到餐廳門口。');
   await say('ian','誰幹的？說出來，我把他揮出去。');
   await say('ji','嘖，好濃的味道……先說好，不是我喔。');
-  await say('boss','……好麻煩。我要回去陪大南瓜了。');
-  await say('shisho','我回展覽室。吃點東西比較好思考。');
+  await say('boss','……好麻煩。反正又不是我的事。我回去陪大南瓜了。');
+  await say('shisho','我回展覽室。……反正會長倒下又不是第一次。吃點東西比較好思考。');
   await n('大家七嘴八舌了一陣，又各自散去。看來要查清楚真相，只能靠你自己了。');
   await say('lala','我、我先回廚房冷靜一下……你有什麼想問的，再來找我。');
   applyWorld();
@@ -2767,7 +2767,7 @@ async function talk(id){
   if(chOf()===3)return talk3(id);
   if(chOf()===4)return talk4(id);
   if(!F.discovered){
-    const pre={shisho:'……剛剛那是尖叫聲？好像是從餐廳傳來的。我在用餐，你去看。',sui:'喲，新面孔？剛才宅邸裡好像有人在叫，我的頭聽得很清楚喔。',boss:'……好吵。你要去看就去，別叫我。',ian:'餐廳那邊有動靜。如果是怪物，叫我，我幫你揮出去。',ji:'哎呀，好像有誰在尖叫？快樂藥水要不要來一瓶～',po:'Zzz……',horse:'幽靈駱馬噴了一口白霧，好像在叫你快去餐廳。'};
+    const pre={shisho:'……剛剛那是尖叫聲？大概是會長又貧血昏倒了吧。我在用餐，你去看。',sui:'喲，新面孔？剛才宅邸裡好像有人在叫，我的頭聽得很清楚喔。',boss:'……好吵。要看就去，別拖我下水。',ian:'餐廳那邊有動靜。如果是怪物，叫我，我幫你揮出去。',ji:'哎呀，好像有誰在尖叫？……反正一定是拉拉。快樂藥水要不要來一瓶～',po:'Zzz……',horse:'幽靈駱馬噴了一口白霧，好像在叫你快去餐廳。'};
     if(!pre[id])return;
     return id==='horse'||id==='po'?n(pre[id]):say(id,pre[id]);
   }
@@ -2820,16 +2820,16 @@ async function talk(id){
     case 'boss':
       if(!hasEv('boss')){
         await n('首領整個人攤在巨大南瓜旁邊，南瓜頭裡的火光有氣無力地閃著。');
-        await say('boss','……嗯？是你啊。');
+        await say('boss','……嗯？是你啊。問題很多的那個。');
         await say('boss','以前我只要碰一下，就能讀出這附近發生過的所有事。現在嘛……');
         await n('首領象徵性地拍了拍南瓜。什麼事都沒發生。');
-        await say('boss','……看吧。好麻煩。');
+        await say('boss','……看吧，什麼都讀不到。別用那種期待的眼神看我，好麻煩。');
         await say('me','那你自己有看到什麼嗎？');
         await say('boss','半夜的時候，有個白白的、軟軟的東西，抱著一疊紅色的盒子，從廚房那邊飄出來……往樓梯的方向去了。');
-        await say('boss','就這樣。我要繼續跟大南瓜躺著了。');
+        await say('boss','就這樣。剩下的你自己想，腦袋是拿來用的。');
         addEv('boss');return;
       }
-      return say('boss','……大南瓜今天也很安靜。我喜歡安靜。');
+      return say('boss','……大南瓜今天也很安靜。你可以學學。');
     case 'ian':
       if(!hasEv('ian')){
         await say('ian','等一下，這隻快打完了。');
@@ -2847,7 +2847,7 @@ async function talk(id){
     case 'ji':
       if(!hasEv('potion')){
         await n('薊身上的玻璃藥瓶叮叮噹噹地響，空氣裡有股讓人想笑的香味。');
-        await say('ji','聞到了嗎？這是讓人快樂的味道～加了一點……特別的草。');
+        await say('ji','聞到了嗎？這是讓人快樂的味道～我的獨家配方，加了一點……特別的草。');
         await say('me','會長倒在餐廳了，你知道些什麼嗎？');
         await say('ji','先說好，不是我。我的藥水只會讓人快樂，不會讓人死掉。');
         await n('薊一邊說，一邊清點腰上的藥瓶。數到一半，她停住了。');
@@ -2912,21 +2912,21 @@ async function ask(q,opts,ok,wrong){
 }
 const REB1={
   lala:[['lala','我、我嗎！？'],['n','拉拉嚇得把旁邊的大理石雕像整座舉了起來。'],['lala','我只是來送鬆餅的啊！而且我又不是鬼！']],
-  shisho:[['shisho','我是惡魔，不是幽靈。而且我只吃書。']],
+  shisho:[['shisho','我是惡魔，不是幽靈。……要指認也挑個像樣一點的吧，大偵探。']],
   sui:[['n','翠手上的頭轉了一圈，用很無辜的眼神看著你。'],['sui','我是無頭騎士，不是鬼喔？頭還在啊，你看。']],
-  boss:[['boss','……我是南瓜。南瓜不會作祟。']],
+  boss:[['boss','……我是南瓜。南瓜不會作祟。你的推理，比南瓜籽還小。']],
   ian:[['ian','我是縫起來的，不是飄起來的。']],
-  ji:[['ji','我是女巫。我的藥水只會讓人快樂，不會讓人死掉。']],
+  ji:[['ji','我是女巫，而且是天才女巫。我的藥水只會讓人快樂，不會讓人死掉～']],
 };
 async function deduction1(){
   clearCombat();
   Object.assign(P,{x:toNew('dining',7,7)[0],y:toNew('dining',7,7)[1],dir:'up',moving:false});fade=1;const gg=gather();
   await n('你把宅邸裡的所有人都叫到了餐廳。窗外的雨下得更大了。');await gg;
   await say('ian','找到兇手了？');
-  await say('ji','快說快說～');
+  await say('ji','快說快說～別讓我失望喔，大偵探～');
   await ask('會長身下那灘紅色液體是什麼？',['會長的血','番茄汁','薊的快樂藥水'],1,{0:['ian','血的味道我很熟。這不是。'],2:['ji','我的藥水是粉紅色的，而且聞起來是快樂的味道好嗎？']});
   await say('me','那灘不是血，是番茄汁。聞起來甜甜的。');
-  await ask('會長身上是什麼狀態？',['有電鋸造成的傷口','有荊棘的刺傷','有咬痕','沒有外傷，全身冰冷又蒼白'],3,{0:['lala','我、我的電鋸今天只切過鬆餅啦！'],1:['ji','我的荊棘可沒碰過他喔。'],2:['shisho','我只咬書。']});
+  await ask('會長身上是什麼狀態？',['有電鋸造成的傷口','有荊棘的刺傷','有咬痕','沒有外傷，全身冰冷又蒼白'],3,{0:['lala','我、我的電鋸今天只切過鬆餅啦！'],1:['ji','我的荊棘可沒碰過他喔。'],2:['shisho','我只咬書。……而且你看會長那麼瘦，咬下去只有骨頭。']});
   await say('me','會長身上一點傷都沒有，只是全身冰冷、臉色蒼白，一動也不動。');
   await say('shisho','跟《幽靈作祟入門》寫的一模一樣。');
   await ask('會長倒下前畫的棒棒糖圖案，看起來像什麼？',['真的棒棒糖','圓圓的頭，下面垂著一塊床單','一顆番茄'],1,{0:['ji','都什麼時候了，誰會畫糖果啊？'],2:['lala','番茄是圓的沒錯……可是下面那根棍子呢？']});
@@ -2952,7 +2952,7 @@ async function deduction1(){
   await walkTo('ian',11,8,2);NPCS.ian.dir='left';
   await n('IAN 一把扛起小波，像扛一袋麵粉。');
   const carry=Promise.all([walkTo('ian',8,8,1.4).then(()=>walkTo('ian',8,9,1.4)),sleep(250).then(()=>walkTo('po',9,8,1.4)).then(()=>walkTo('po',8,9,1.4))]).then(()=>{NPCS.ian.scene=null;NPCS.po.scene=null});
-  await say('lala','廚房的儲藏室有鎖……先、先讓他在裡面待一晚吧。');
+  await say('lala','廚房的儲藏室有鎖……先、先讓他在裡面待一晚吧。我會記得放鬆餅進去給他的！');
   await say('boss','等天亮再說。……啊，這裡不會天亮。');await carry;
   await n('喀嚓。拉拉用腰上的鑰匙，把儲藏室的門鎖上了。');
   await say('po','……好黑喔……');
@@ -2991,10 +2991,10 @@ async function discovery2(){
   await say('ian','門本來是鎖著的？');
   await say('lala','鎖得好好的！鑰匙一直都掛在我身上！');
   await n('聽見尖叫的其他人，又一次陸續趕到。');
-  await say('ji','欸～鑰匙在你身上，那不就是你放他出去的嗎？');
+  await say('ji','欸～鑰匙在你身上，那不就是你放他出去的嗎？拉拉，你該不會連自己做了什麼都忘了吧？');
   await say('lala','才、才不是！！');
   await n('拉拉一激動，把旁邊的冰箱整台舉了起來。……裡面那顆雞蛋滾了出來。');
-  await say('boss','……會長不見了，現在連犯人也不見了。好麻煩。');
+  await say('boss','……會長不見了，現在連犯人也不見了。這間屋子是漏斗嗎。好麻煩。');
   await n('大家七嘴八舌了一陣，又各自散去。');
   await n('小波是怎麼離開上鎖的儲藏室的？他現在又在哪裡？看來，得再找一次了。');
 }
@@ -3015,7 +3015,7 @@ async function talk2(id){
   if(id==='batk'||id==='cone')return talkChase(id);
   if(id==='po')return po2();
   if(!F.disc2){
-    const pre={shisho:'……又是尖叫？從廚房那邊傳來的。',sui:'剛剛那聲好大喔，是廚房吧？',boss:'……又怎麼了。你去看。',ji:'今晚真熱鬧耶～廚房那邊是不是又出事了？'};
+    const pre={shisho:'……又是尖叫？這間屋子的人，肺活量都很好。從廚房那邊傳來的。',sui:'剛剛那聲好大喔，是廚房吧？',boss:'……又怎麼了。你去看，反正你閒著也是閒著。',ji:'今晚真熱鬧耶～廚房那邊是不是又出事了？'};
     return pre[id]?say(id,pre[id]):undefined;
   }
   switch(id){
@@ -3023,7 +3023,7 @@ async function talk2(id){
       if(hasItem('atticKey')||F.atticOpen)return say('lala','小波……你一定要把他找回來喔。我會煎一大盤鬆餅等他。');
       if(hasEv('sight')){
         await say('me','翠說，閣樓的窗戶裡有一塊白布在飄。');
-        await say('lala','閣樓！？那裡平常都鎖著……');
+        await say('lala','閣樓！？那裡平常都鎖著……咦，鑰匙是哪一把？是這把嗎？還是這把？');
         await n('拉拉從腰上解下一大串鑰匙，叮叮噹噹地翻找。');
         await say('lala','這把！我不敢上去，上面好黑……拜託你了！');
         addItem('atticKey');return;
@@ -3050,7 +3050,7 @@ async function talk2(id){
         await n('司書遞來一本被啃掉一角的書——《床單幽靈生態圖鑑》。');
         await n('「床單幽靈睡著時會失去形體，只留下一塊布，連牆壁也擋不住。醒來時，會出現在牠『最想待的地方』。」');
         addEv('ghost2');
-        await say('shisho','另外，書架角落有一本《吸血鬼生理學》。我不吃那本，太腥了。');
+        await say('shisho','另外，書架角落有一本《吸血鬼生理學》。我不吃那本，太腥了。……跟會長一樣。');
         await say('shisho','……會長不見的事，你也許該翻翻看。');return;
       }
       return say('shisho','《宅邸修繕指南》還剩半本。有木頭的香味。');
@@ -3074,7 +3074,7 @@ async function talk2(id){
       return say('boss','……大南瓜說牠什麼都沒看到。牠是南瓜。');
     case 'ji':
       if(!hasEv('potion2')){
-        await say('ji','欸～我可沒有放他出去喔，我整晚都在這裡顧我的玫瑰。');
+        await say('ji','欸～我可沒有放他出去喔，我整晚都在顧我的玫瑰。我的玫瑰可比小波可愛多了。');
         await say('ji','不過啊，我那瓶「一覺到天亮」藥效很強的。');
         await say('ji','喝下去的人，一整晚都會一直打瞌睡。睡著、醒來、又睡著……');
         addEv('potion2');return;
@@ -3130,7 +3130,7 @@ async function act3Scene(){
   await say('ji','首領～翠的頭在大南瓜旁邊不見了耶。該不會……是你把它藏進南瓜裡了吧？');
   await n('大家的視線，全落在南瓜頭的首領身上。');
   await say('ian','南瓜頭的，最可疑。');
-  await say('boss','……不是我。');
+  await say('boss','……不是我。用你們那顆跟南瓜差不多的腦袋想一想。');
   await say('boss','……大南瓜也說不是牠。好麻煩。');
   await n('首領一臉不想解釋的樣子。……看來得自己查清楚，翠的頭到底是怎麼掉進去的。');
 }
@@ -3154,16 +3154,16 @@ async function talk3(id){
       return say('boss','……大南瓜沒事就好。');
     case 'ji':
       if(!hasEv('witness')){
-        await say('ji','你在找翠的頭嗎？我剛剛從溫室全部都看到了喔～');
+        await say('ji','你在找翠的頭嗎？我的溫室視野可是最好的，全部都看到了喔～');
         await say('ji','那隻錐齒獸追著一隻不會飛的小蝙蝠，一路衝過去——「碰」！撞到翠。');
         await say('ji','她的頭就「咻——」地飛起來，剛好掉進大南瓜頂上那個洞裡。');
         await say('ji','很漂亮的拋物線呢。');
         addEv('witness');return;
       }
-      return say('ji','要把南瓜打開的話，小心首領喔～他很寶貝那顆南瓜。');
+      return say('ji','要把南瓜打開的話，小心首領喔～他對那顆南瓜，比對我們好多了。');
     case 'ian':await say('ian','要把南瓜劈開嗎？我可以。');return say('ian','……首領會生氣。算了。');
-    case 'lala':return say('lala','翠的頭在南瓜裡？要不要我把整顆南瓜舉起來倒一倒？');
-    case 'shisho':return say('shisho','頭在南瓜裡？……南瓜不好吃，我不幫忙。');
+    case 'lala':return say('lala','翠的頭在南瓜裡？那我把整顆南瓜舉起來倒一倒就好啦！……咦？大家為什麼都在搖頭？');
+    case 'shisho':return say('shisho','頭在南瓜裡？……翠的頭本來就常常不在該在的地方。南瓜不好吃，我不幫忙。');
     case 'po':return n('小波睡得很熟，床單一起一伏。');
   }
 }
@@ -3220,8 +3220,8 @@ async function riotEnd(){
   await say('boss','……大南瓜沒事吧。');
   const away=Promise.all([walkTo('batk',10,22,1.8,true),sleep(300).then(()=>walkTo('cone',10,22,1.8,true))]);
   await n('錐齒獸晃了晃腦袋，又追著那隻不會飛的小蝙蝠跑走了。');
-  await say('ji','原來是錐齒獸撞的啊～首領，剛剛懷疑你，對不起嘛～');
-  await say('boss','……好麻煩。原諒你們。');
+  await say('ji','原來是錐齒獸撞的啊～首領，剛剛懷疑你，對不起嘛～……誰叫你長得一副很可疑的樣子。');
+  await say('boss','……好麻煩。原諒你們。下次懷疑別人之前，先動動腦。');
   await n('錐齒獸跑過的泥地上，掉著一排南瓜籽。……牠到底是從哪裡跑進宅邸的？');
   addEv('seed3');
   await away;
@@ -3302,7 +3302,7 @@ async function talk4(id){
       return say('lala','拜託你了……幫我洗清冤屈！');
     case 'ji':
       if(!hasEv('notji')&&hasEv('bottle')){
-        await say('ji','這個瓶子？不是我的喔！我的藥水瓶上，都畫著荊棘的標誌～');
+        await say('ji','這個瓶子？不是我的喔！我的作品都會畫上漂亮的荊棘標誌，才不會用這種俗氣的南瓜。');
         await say('ji','這個咧嘴笑的南瓜……我從來沒看過。');
         addEv('notji');return;
       }
@@ -3323,7 +3323,7 @@ async function talk4(id){
         F.hintBoss=1;addEv('hint_boss');return;
       }
       if(!hasEv('laugh')){
-        await say('boss','……IAN 斷掉了？');
+        await say('boss','……IAN 斷掉了？……縫線的品質真差。');
         await say('boss','……我讀不到。可是……');
         await say('boss','墓園的地底下，好像有東西一直在笑。嘻嘻嘻的。好吵。');
         addEv('laugh');return;
@@ -3361,12 +3361,12 @@ async function deduction4(){
   await say('me','IAN 不是被切開的。斷口的縫線是被撐斷的，線頭都拉得長長的。');
   await ask('縫線為什麼會被撐斷？',['揮棒太用力','身體突然長大','吃了太多鬆餅'],1,{0:['ian','揮棒，不會斷。'],2:['lala','我的鬆餅不會讓人斷掉啦！']});
   await say('me','《縫合怪物保養手冊》寫著：身體突然長大時，最先撐不住的就是腰部的縫線。');
-  await ask('讓 IAN 突然長大的是？',['薊的藥水','畫著南瓜標誌的「超級長大藥水」','拉拉的鬆餅'],1,{0:['ji','我的藥水瓶上，是荊棘的標誌喔～'],2:['lala','鬆餅不會讓人長大……應該吧？']});
+  await ask('讓 IAN 突然長大的是？',['薊的藥水','畫著南瓜標誌的「超級長大藥水」','拉拉的鬆餅'],1,{0:['ji','我的藥水瓶上，是荊棘的標誌喔～那麼醜的南瓜，我才不畫。'],2:['lala','鬆餅不會讓人長大……應該吧？']});
   await say('me','有人趁 IAN 睡著的時候，把「超級長大藥水」淋在他身上。所以——拉拉不是犯人！');
   await say('lala','嗚哇啊啊……謝謝你！！');
   await n('拉拉激動地抱住你。你的骨頭發出了「喀啦」一聲。');
   await say('ian','……那，南瓜標誌是誰的？');
-  await say('boss','……不是我。我的南瓜沒有畫標誌。');
+  await say('boss','……不是我。我的南瓜，才不需要那種俗氣的標誌。');
   await say('sui','我剛剛看到 小教堂 的地下墓室，柵欄開了一條縫！地上還掉了一排南瓜籽！');
   await say('ji','南瓜籽？……幕後黑手，就躲在地底下吧～');
   await n('IAN 的下半身「咚」地跺了一下地面，跑到你旁邊——好像在說：我跟你去。');
@@ -3450,7 +3450,7 @@ async function finalEnding(){
   await say('ghost','首領的話——我每次一靠近，大南瓜就瞪我！還把我「咚」地彈開！你們感情太好了，我根本下不了手……');
   await say('boss','……大南瓜。好南瓜。');
   await say('ghost','司書一直在看書，從來不睡覺、也不休息！眼睛一直睜得大大的，我找不到一點空隙……');
-  await say('shisho','書還沒吃完，怎麼能睡。');
+  await say('shisho','書還沒吃完，怎麼能睡。……會長倒是隨時都能睡，還能睡到變成蝙蝠。');
   await say('ghost','薊的溫室更可怕！每一朵花都被她做成了全自動守衛，我一靠近就被荊棘追著跑……');
   await say('ji','嘿嘿～我的寶貝們很能幹吧？');
   await say('ghost','還有拉拉……拉拉請我喝過下午茶。');
@@ -3464,7 +3464,7 @@ async function finalEnding(){
   await say('ji','拉拉被懷疑了兩次呢～放走小波一次，砍斷 IAN 一次。');
   await say('lala','兩次！！整整兩次！！');
   await say('sui','還有首領～我們還說他把我的頭藏起來……');
-  await say('boss','……好麻煩。已經原諒你們了。');
+  await say('boss','……好麻煩。早就原諒你們了，只是懶得說。');
   await n('大家一個一個，向被錯怪的人道了歉。');
   await say('boss','……原來，這棟房子在等的人，是我們啊。');
   await say('sui','欸～那明年還可以再來玩嗎？');
@@ -3482,7 +3482,7 @@ async function finalEnding(){
   await say('po','……會長……那天的番茄汁，是我喝掉的……對不起……');
   await say('kaicho','……不是你的錯。是標籤的錯。');
   if(qDoneP('kaicho'))await say('lala','有！我幫你冰了五瓶番茄汁！');
-  else await say('lala','我、我馬上去煎鬆餅！番茄口味的！');
+  else await say('lala','我、我馬上去煎鬆餅！番茄口味的！……番茄要先切還是先打？');
   await n('拉拉用她驚人的力氣，三兩下就把 IAN 的上半身和下半身縫了回去。');
   await say('ian','……縫好了。腳，回來了。');
   await n('大家一起走出了宅邸的大門。');
