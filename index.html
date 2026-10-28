@@ -692,7 +692,7 @@ function drawEntity(g,id,X,Y,dir,f,t,st,blink){
 }
 
 /* ---------------- 地圖 ---------------- */
-const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&'.split(''));
+const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&()]'.split(''));
 function buildOutside(){
   const W=46,H=29,m=[];
   for(let y=0;y<H;y++){const r=[];for(let x=0;x<W;x++)r.push((x<3||x>42||y<2||y>26)?'f':'g');m.push(r)}
@@ -933,6 +933,27 @@ function drawTile(g,c,X,Y,tx,ty,sc){
     case '#':wall();break;
     case 'w':wall();R(g,X+3,Y+1,10,11,'#6b4a3a');R(g,X+4,Y+2,8,9,'#16202e');R(g,X+7,Y+2,2,9,'#6b4a3a');R(g,X+4,Y+6,8,1,'#6b4a3a');R(g,X+5,Y+3,1,2,'#2a3a50');R(g,X+10,Y+7,1,2,'#2a3a50');break;
     case 'P':wall();R(g,X+2,Y+2,12,9,'#b08a3a');R(g,X+3,Y+3,10,7,['#3a4a3a','#4a3040','#2e3e52'][h%3]);R(g,X+6,Y+5,4,4,['#c9b38a','#8a6a50','#d8c8a0'][h%3]);R(g,X+5,Y+9,6,1,'#1d1420');break;
+    case '(':{floor();const L=at(-1,0)!=='(',Tp=at(0,-1)!=='(';
+      R(g,X,Y+(Tp?2:0),16,Tp?14:16,'#6a3426');for(let i=0;i<4;i++){R(g,X,Y+(Tp?5:3)+i*4,16,1,'#4a2218');R(g,X+((i%2)?3:9),Y+(Tp?2:0)+i*4,1,4,'#4a2218')}
+      if(Tp){R(g,X,Y+2,16,2,'#8a4a32');if(!L){R(g,X+2,Y-3,6,6,'#5a2e22');R(g,X+3,Y-4,4,2,'#3a1a12')}else{R(g,X+4,Y+6,8,4,'#c8ccd2');R(g,X+5,Y+5,6,1,'#d9a050');R(g,X+6,Y+4,4,1,'#d9a050')}}
+      else{const mx=L?X+4:X;R(g,mx,Y+2,12,11,'#1a0e0a');R(g,mx,Y+2,12,1,'#3a1a12');R(g,mx+(L?2:0),Y+8,10,4,'#e2741c');R(g,mx+(L?4:2),Y+9,6,3,'#ffd25a');R(g,mx+(L?3:1),Y+6,2,2,'#d9a050');R(g,mx+(L?7:5),Y+6,2,2,'#d9a050')}
+      break}
+    case ')':{floor();const L=at(-1,0)!==')',Rr=at(1,0)!==')',Tp=at(0,-1)!==')',Bt=at(0,1)!==')';
+      R(g,X+(L?1:0),Y+(Tp?2:0),16-(L?1:0)-(Rr?1:0),Bt?12:16,'#8a6038');if(Tp)R(g,X+(L?1:0),Y+2,16-(L?1:0)-(Rr?1:0),1,'#a87a4a');
+      if(Bt){R(g,X+(L?1:0),Y+13,16-(L?1:0)-(Rr?1:0),1,'#5a3a20');if(L)R(g,X+2,Y+14,2,2,'#5a3a20');if(Rr)R(g,X+12,Y+14,2,2,'#5a3a20')}
+      const it=(tx*3+ty)%6;
+      if(it===0){R(g,X+3,Y+5,7,5,'#c8ccd2');R(g,X+4,Y+5,5,2,'#f6e3a1');R(g,X+10,Y+3,1,7,'#8a8f96');R(g,X+9,Y+2,3,2,'#b8bec4')}
+      else if(it===1){R(g,X+2,Y+5,12,5,'#efe8dc');for(let i=0;i<4;i++)R(g,X+3+i*3,Y+6,2,3,'#f6efe0')}
+      else if(it===2){R(g,X+3,Y+4,3,6,'#b8bec4');R(g,X+3,Y+4,3,1,'#e0e4ea');R(g,X+8,Y+6,4,4,'#d8d4cc');R(g,X+9,Y+7,2,2,'#f6e3a1');R(g,X+13,Y+5,1,5,'#8a6a4a')}
+      else if(it===3){R(g,X+2,Y+6,6,4,'#b8bec4');R(g,X+3,Y+5,4,1,'#8a8f96');R(g,X+10,Y+4,3,7,'#efe8dc');R(g,X+10,Y+4,3,1,'#c8202a')}
+      else if(it===4){R(g,X+3,Y+7,9,2,'#8a8f96');R(g,X+11,Y+4,2,4,'#8a8f96');R(g,X+4,Y+4,3,3,'#efe8dc');R(g,X+5,Y+3,1,1,'#ffd25a')}
+      else{R(g,X+2,Y+5,5,5,'#e8dfc8');R(g,X+3,Y+4,3,1,'#c9bfa0');R(g,X+9,Y+6,5,3,'#d9a050');R(g,X+9,Y+5,5,1,'#c88a3a')}
+      break}
+    case ']':{floor();const Tp=at(0,-1)!==']';R(g,X+1,Y,2,16,'#3a2214');R(g,X+13,Y,2,16,'#3a2214');if(Tp)R(g,X+1,Y,14,2,'#5e3a20');R(g,X+1,Y+8,14,1,'#5e3a20');
+      const pc=Tp?['#2a2a30','#b8703c']:['#b8703c','#2a2a30'];
+      R(g,X+4,Y+2,1,3,'#8a8f96');R(g,X+2,Y+4,6,6,K);R(g,X+3,Y+5,4,4,pc[0]);R(g,X+11,Y+9,1,2,'#8a8f96');R(g,X+8,Y+10,7,6,K);R(g,X+9,Y+11,5,4,pc[1]);
+      if(!Tp){R(g,X+3,Y+12,4,3,'#5a5a62');R(g,X+4,Y+11,2,1,'#8a8f96')}
+      break}
     case '&':R(g,X,Y,16,16,'#26222a');R(g,X+3,Y+1,10,14,'#1a0e0a');R(g,X+4,Y+2,8,12,'#5e3a20');R(g,X+4,Y+2,8,1,'#7a5232');R(g,X+7,Y+4,2,8,'#c9a54a');R(g,X+5,Y+6,6,2,'#c9a54a');break;
     case 'D':if(sc==='crypt')R(g,X,Y,16,16,'#26222a');else if(sc==='outside')R(g,X,Y,16,16,tx===6?'#c4bcac':tx===28?'#2a3a3e':'#352325');else if(sc==='greenhouse'||sc==='chapel')R(g,X,Y,16,16,sc==='chapel'?'#3e383c':'#5a3a2e');else floor();R(g,X+2,Y,12,16,'#2a170e');R(g,X+3,Y+1,10,15,'#5e3a20');R(g,X+3,Y+8,10,1,'#4a2c18');R(g,X+8,Y+1,1,15,'#4a2c18');R(g,X+10,Y+9,1,1,'#e0b84a');break;
     case '=':case 'U':R(g,X,Y,16,16,'#5c3c2d');for(let i=0;i<4;i++){R(g,X,Y+i*4+3,16,1,'#2e1c14');R(g,X,Y+i*4,16,1,'#704a38')}if(c==='U')R(g,X,Y,16,16,'rgba(0,0,0,.35)');break;
@@ -1000,7 +1021,7 @@ const EXP={
 };
 /* 放大後新增的家具（新座標）：% 木箱、$ 斗櫃，其他字元同地圖 */
 const ADD={
-  hall:[[1,9,'$'],[24,11,'%'],[5,14,'%']], kitchen:[[16,9,'x'],[13,11,'%'],[14,11,'y']],
+  hall:[[1,9,'$'],[24,11,'%'],[5,14,'%']], kitchen:[[16,9,'x'],[13,11,'%'],[14,11,'y'],[1,10,'('],[2,10,'('],[1,11,'('],[2,11,'('],[10,7,')'],[11,7,')'],[12,7,')'],[10,8,')'],[11,8,')'],[12,8,')'],[16,7,']'],[16,8,']']],
   dining:[[18,6,'$'],[1,6,'$']], exhibit:[[5,10,'%'],[5,4,'v']], f2:[[6,2,'$'],[19,7,'%'],[5,7,'%']],
   roomL:[[8,2,'$'],[15,10,'%']], roomR:[[8,2,'$'],[2,10,'%']], chapel:[[18,8,'%'],[1,8,'%']],
   greenhouse:[[2,10,'%'],[17,10,'y']],
@@ -2253,6 +2274,9 @@ function restartGame(){
    ch：從第幾章開始出現（0 序幕、1~4 各幕、5 終幕）。只是畫在地上的擺設，不會擋路，面對它按調查會有一句描述。 */
 const DECOR=[
   /* 廚房：拉拉的麵粉和失敗作越來越多 */
+  {sc:'kitchen',x:3,y:0,k:'wallpans',ch:0},{sc:'kitchen',x:10,y:0,k:'wallpans',ch:0},{sc:'kitchen',x:13,y:0,k:'wallpans',ch:0},
+  {sc:'kitchen',x:7,y:4,k:'custard',ch:0,cond:()=>qGet('lala')&&qGet('lala').st==='alt'},
+  {sc:'dining',x:9,y:3,k:'custard',ch:0,cond:()=>qGet('lala')&&qGet('lala').st==='alt'},
   {sc:'kitchen',x:1,y:2,k:'flourbag',ch:0},{sc:'kitchen',x:5,y:4,k:'bowl',ch:0},
   {sc:'kitchen',x:7,y:7,k:'flour',ch:1},{sc:'kitchen',x:10,y:8,k:'burnt',ch:1},{sc:'kitchen',x:3,y:10,k:'flour',ch:1},
   {sc:'kitchen',x:11,y:6,k:'goo',ch:2},{sc:'kitchen',x:6,y:4,k:'stack',ch:2},{sc:'kitchen',x:14,y:8,k:'plates',ch:2},{sc:'kitchen',x:2,y:8,k:'flour',ch:2},
@@ -2278,6 +2302,8 @@ const DECOR=[
   {sc:'dining',x:16,y:1,k:'plates',ch:2},{sc:'dining',x:3,y:1,k:'phead',ch:3},{sc:'dining',x:2,y:8,k:'candles',ch:4},
 ];
 const DECOR_T={
+  wallpans:'牆上掛著一排平底鍋。',
+  custard:'一整盤卡士達口味的史萊姆鬆餅，還在微微扭動。旁邊的紙條寫著：「正大光明地吃！——拉拉」',
   flourbag:'一大袋麵粉，袋口開著。上面寫著「鬆餅專用」。',
   bowl:'攪拌碗和打蛋器。碗底黏著一點奶黃色的麵糊……好像動了一下。',
   flour:'地上灑了一灘麵粉，上面印著半個手掌印。',
@@ -2302,12 +2328,16 @@ const DECOR_T={
   web:'角落結了一張蜘蛛網。網子正中間，蜘蛛排成了一個南瓜的形狀。',
   clothes:'衣櫃前散落了一堆衣服。衣櫃裡傳來咚咚的敲門聲……衣服是被推出來的？',
 };
-function decorAt(x,y){return S?DECOR.find(d=>d.sc===S.scene&&d.x===x&&d.y===y&&chOf()>=d.ch)||null:null}
+const decorOn=d=>chOf()>=d.ch&&(!d.cond||d.cond());
+function decorAt(x,y){return S?DECOR.find(d=>d.sc===S.scene&&d.x===x&&d.y===y&&decorOn(d))||null:null}
 function drawDecor(cx,cy){
   if(!S)return;const g=ctx,ch=chOf(),fl=(tick>>3)%2;
   for(const d of DECOR){
-    if(d.sc!==S.scene||ch<d.ch)continue;const X=d.x*T-cx,Y=d.y*T-cy;
+    if(d.sc!==S.scene||!decorOn(d))continue;const X=d.x*T-cx,Y=d.y*T-cy;
     switch(d.k){
+      case 'wallpans':for(const[px,sz,c]of[[1,5,'#2a2a30'],[7,4,'#b8703c'],[12,3,'#5a5a62']]){R(g,X+px+sz/2,Y+1,1,3,'#8a8f96');R(g,X+px,Y+4,sz+1,sz+1,K);R(g,X+px+1,Y+5,sz-1,sz-1,c)}break;
+      case 'custard':{const b=fl;R(g,X+1,Y+11,14,3,'#efe8dc');R(g,X+2,Y+13,12,1,'#b8b0a0');R(g,X+3,Y+8,10,3,'#d9a050');R(g,X+3,Y+6,10,2,'#c88a3a');
+        R(g,X+4,Y+3-b,8,4,'#f6e3a1');R(g,X+5,Y+1-b,6,2,'#f6e3a1');R(g,X+7,Y-1-b,2,2,'#f6e3a1');R(g,X+6,Y+4-b,1,1,K);R(g,X+9,Y+4-b,1,1,K);R(g,X+3,Y+7,2,2,'#ffd25a');break}
       case 'flourbag':R(g,X+3,Y+4,10,11,K);R(g,X+4,Y+5,8,9,'#e8dfc8');R(g,X+5,Y+3,6,2,'#c9bfa0');R(g,X+6,Y+8,4,3,'#c8202a');R(g,X+1,Y+13,4,2,'#efe8dc');break;
       case 'bowl':R(g,X+3,Y+8,10,5,K);R(g,X+4,Y+8,8,4,'#b8bec4');R(g,X+5,Y+8,6,2,'#f6e3a1');R(g,X+10,Y+3,1,6,'#8a8f96');R(g,X+9,Y+2,3,2,'#c8ccd2');break;
       case 'flour':R(g,X+2,Y+7,10,5,'rgba(246,240,228,.9)');R(g,X+4,Y+5,6,2,'rgba(246,240,228,.75)');R(g,X+11,Y+9,3,2,'rgba(246,240,228,.6)');R(g,X+1,Y+10,2,1,'rgba(246,240,228,.6)');R(g,X+13,Y+5,1,1,'rgba(246,240,228,.8)');R(g,X+5,Y+8,4,1,'rgba(220,210,190,.9)');R(g,X+5,Y+9,1,2,'rgba(220,210,190,.9)');break;
@@ -3276,6 +3306,7 @@ function tileText(c,x,y){
     greenhouse:{r:'溫室裡的玫瑰開得又大又紅……\n你一靠近，整排玫瑰「唰」地一起轉過來，盯著你看。\n……發現你是薊的朋友，又慢慢轉了回去。',J:'玻璃外是雨和霧，溫室裡卻暖暖的，像另一個季節。',z:'薊的調藥桌。乾燥的草藥一束束掛著，聞了會想笑。',j:'一張白色鐵椅，上面攤著一本翻開的園藝雜誌。',Q:'小噴泉的水很清，倒映著溫室的玻璃頂。'},
     maze:{h:'高高的樹籬，看不見另一邊。',Q:'迷宮中央的噴泉。噴泉中間站著一座抱著頭的騎士雕像。',r:'樹籬轉角種著一叢紅玫瑰。'},
     roomL:{b:'柔軟的床。床單少了一條，枕頭上有一小撮鬆餅屑。',B:'一個小書櫃。最上層放著一本《如何在任何地方睡著》。'},
+    kitchen:{'(':'磚砌的大烤爐，裡面的火燒得正旺。烤盤上排著一圈小小的鬆餅，邊緣烤得金黃。',')':'調理桌上堆滿了打鬆餅的工具：打蛋器、量杯、篩網、一整盒雞蛋……還有一支被打彎了的打蛋器。',']':'掛滿平底鍋的鍋架。大的、小的、銅的、鐵的……每一個鍋底，都有一圈鬆餅形狀的焦痕。'},
     roomR:{b:'這張床鋪得整整齊齊，好像從來沒人睡過。'},
     f2:{u:'走廊的花瓶裡插著乾燥的南瓜藤。'},
     storage:{x:'架上放著麵粉、果醬，還有一排空空的番茄汁備貨箱。',y:'一袋麵粉。拉拉說這是鬆餅的命。'},
