@@ -153,6 +153,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .ach b{font-weight:700}.ach.on b{color:var(--gold)}
 .ach p{margin:0;font-size:.88em;line-height:1.5}
 .idle-t{position:absolute;z-index:5;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;font-size:clamp(11px,1.9cqw,19px);color:var(--cream);text-shadow:1px 1px 0 #000,0 0 6px #000}
+.ptx{position:absolute;z-index:5;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;font-size:clamp(10px,1.7cqw,17px);color:var(--cream);text-shadow:1px 1px 0 #000,0 0 4px #000;line-height:1}
+.ptx.l{transform:translate(0,-50%)}.ptx.big{font-size:clamp(20px,5cqw,46px);font-weight:bold;text-shadow:3px 3px 0 #000,0 0 8px #000}.ptx.mid{font-size:clamp(12px,2.2cqw,21px)}
 .idle-t.bub{background:#efe8dc;color:var(--ink);text-shadow:none;border:2px solid var(--ink);border-radius:10px;padding:2px 10px}
 #achPop{position:absolute;top:3%;right:2%;z-index:6;display:flex;gap:8px;align-items:center;padding:6px 14px 6px 10px;background:rgba(42,21,20,.97);border:2px solid var(--gold);border-radius:2px;pointer-events:none;box-shadow:0 3px 0 rgba(0,0,0,.5)}
 #achPop span{font-size:clamp(16px,2.6cqw,26px)}
@@ -230,6 +232,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div id="toast" hidden></div>
     <div id="sokoBar" hidden><button type="button" id="sokoUndo">↶ 上一步</button><button type="button" id="sokoReset">⟲ 重來</button></div>
     <div id="bossbar" hidden><span>南瓜稻草人</span><i><b id="bossfill"></b></i></div>
+    <div id="pitchTx"></div>
     <div id="idleSay" class="idle-t bub" hidden></div><div id="idleHint" class="idle-t" hidden></div>
     <div id="achPop" role="status" hidden><span aria-hidden="true">🏆</span><div><i></i><b></b></div></div>
     <div id="chap" hidden><div class="c1"></div><div class="c2"></div></div>
@@ -2257,6 +2260,16 @@ function pitchBall(p){
   return{x:x0+k*130,y:Math.min(178,y0+k*60),s:1.4,r:k<.4?t*.3:0};
 }
 /* 觀眾席：墓園，墳墓之間有手臂鑽出來揮手；全壘打的時候會鼓掌 */
+/* 棒球畫面的文字用網頁文字疊在畫布上，才不會被像素放大弄糊 */
+const PTX={};let PTX_USED=null;
+function ptx(key,text,x,y,cls='',color='',scale=1){
+  PTX_USED&&PTX_USED.add(key);let el=PTX[key];
+  if(!el){el=document.createElement('div');$('pitchTx').appendChild(el);PTX[key]=el;el._v=''}
+  const v=[text,x,y,cls,color,scale].join('|');if(el._v===v)return;el._v=v;
+  el.className='ptx '+cls;el.textContent=text;el.style.left=(x/320*100)+'%';el.style.top=(y/208*100)+'%';el.style.color=color;
+  el.style.transform=(cls.includes('l')?'translate(0,-50%)':'translate(-50%,-50%)')+(scale!==1?` scale(${scale})`:'');el.hidden=false;
+}
+function ptxEnd(){for(const k in PTX)if(!PTX_USED||!PTX_USED.has(k)){if(!PTX[k].hidden){PTX[k].hidden=true;PTX[k]._v=''}}PTX_USED=null}
 function drawPitchStands(g,p){
   const t=p.t,go=p.ph==='go'&&t>=52,mood=go?p.res:-1,cheer=mood===3,boo=mood===0;
   R(g,0,74,320,22,'#1a1420');R(g,0,74,320,2,'#2a2030');
@@ -2277,11 +2290,11 @@ function drawPitchStands(g,p){
   }
   if(cheer){
     for(let i=0;i<14;i++){const x=(i*53+t*0)%320,y=((t-52)*1.2+i*17)%110,c=['#ff5fa2','#ffd25a','#5fd0ff','#a8ff6a'][i%4];R(g,x+Math.sin((t+i*9)/8)*4,y,3,2,c)}
-    if(((tick>>3)%2)===0){g.font='8px DotGothic16, monospace';g.textAlign='center';g.textBaseline='top';g.fillStyle='#fff6c8';for(const x of[34,286])g.fillText('啪啪啪！',x+((tick>>3)%3)*2,56)}
+    if(((tick>>3)%2)===0){ptx('clapL','啪啪啪！',38+((tick>>3)%3)*2,60,'','#fff6c8');ptx('clapR','啪啪啪！',282+((tick>>3)%3)*2,60,'','#fff6c8')}
   }
 }
 function drawPitch(){
-  if(!PITCH)return;const g=ctx,p=PITCH,t=p.t;
+  if(!PITCH){ptxEnd();return}PTX_USED=new Set();const g=ctx,p=PITCH,t=p.t;
   /* 夜晚的球場 */
   const sky=g.createLinearGradient(0,0,0,96);sky.addColorStop(0,'#0c0814');sky.addColorStop(1,'#2a1a2e');g.fillStyle=sky;g.fillRect(0,0,320,96);
   g.fillStyle='rgba(255,246,200,.85)';g.beginPath();g.arc(298,52,9,0,6.28);g.fill();g.fillStyle='#0c0814';g.beginPath();g.arc(303,49,8,0,6.28);g.fill();
@@ -2321,24 +2334,24 @@ function drawPitch(){
     g.strokeStyle='#ffd25a';g.lineWidth=2;for(let i=0;i<8;i++){const a=i/8*6.28;g.beginPath();g.moveTo(PIT.zx+Math.cos(a)*6,PIT.zy+p.x*28+Math.sin(a)*6);g.lineTo(PIT.zx+Math.cos(a)*16,PIT.zy+p.x*28+Math.sin(a)*16);g.stroke()}}
   if(p.ph==='go'&&p.res===3&&t>130){const k=(t-130)/10,gl=(tick>>2)%2?'#fff6c8':'#ffd25a';R(g,22,30-2,1,5,gl);R(g,20,30,5,1,gl);if(k<1){g.fillStyle=`rgba(255,210,90,${1-k})`;g.beginPath();g.arc(22,30,8*k+2,0,6.28);g.fill()}}
   /* 記分板 */
-  R(g,206,4,110,30,'rgba(14,10,12,.8)');g.font='8px DotGothic16, monospace';g.textBaseline='top';g.textAlign='left';
-  g.fillStyle='#ffd25a';g.fillText('全壘打',212,8);for(let i=0;i<3;i++){R(g,248+i*9,9,6,6,i<p.hr?'#ffd25a':'#3a2a2a')}
-  g.fillStyle='#e8d9bf';g.fillText('好球',212,20);for(let i=0;i<3;i++){R(g,248+i*9,21,6,6,i<p.strikes?'#e0213a':'#3a2a2a')}
-  g.fillStyle='#b9a58e';g.fillText('袋 '+p.left,284,20);
+  R(g,206,4,110,30,'rgba(14,10,12,.8)');
+  ptx('hr','全壘打',211,12,'l','#ffd25a');for(let i=0;i<3;i++){R(g,248+i*9,9,6,6,i<p.hr?'#ffd25a':'#3a2a2a')}
+  ptx('st','好球',211,24,'l','#e8d9bf');for(let i=0;i<3;i++){R(g,248+i*9,21,6,6,i<p.strikes?'#e0213a':'#3a2a2a')}
+  ptx('bag','袋 '+p.left,284,24,'l','#b9a58e');
   /* 時機條 */
   if(p.ph==='aim'){
     const BX=40,BW=150,BY=14,cx=BX+BW/2;R(g,BX-3,BY-3,BW+6,30,'rgba(14,10,12,.8)');
     const pm=DF().pitch,zw=k=>Math.min(1,k*pm);R(g,BX,BY,BW,8,'#4a3a3a');R(g,cx-BW/2*zw(.65),BY,BW*zw(.65),8,'#8a7a5a');R(g,cx-BW/2*zw(.35),BY,BW*zw(.35),8,'#d9a640');R(g,cx-BW/2*zw(.12),BY,BW*zw(.12),8,'#e0213a');
     const mx=Math.round(cx+Math.sin(t*p.w)*BW/2);R(g,mx-1,BY-3,2,14,'#fff');R(g,mx-3,BY-4,6,2,'#fff');
-    g.fillStyle='#efe8dc';g.textAlign='center';g.fillText('紅＝全壘打　黃＝安打　灰＝界外',cx,BY+12);
-    g.font='8px DotGothic16, monospace';g.fillStyle='#fff6c8';g.fillText(isTouch?'時機對了就點畫面（或按 A）投球！':'時機對了就按 Z／空白／Enter 投球！',160,196-8);
+    ptx('legend','紅＝全壘打　黃＝安打　灰＝界外',cx,BY+17,'','#efe8dc');
+    ptx('howto',isTouch?'時機對了就點畫面（或按 A）投球！':'時機對了就按 Z／空白／Enter 投球！',160,192,'mid','#fff6c8');
   }else if(t>=60){
     const txt=['揮空！','界外球','安打！','全壘打！！'][p.res],sub=['怪物從 IAN 的鏟子下溜走了……','球飛到觀眾席去了。','漂亮的平飛球！','怪物飛過了宅邸的屋頂！'][p.res];
-    const pop=Math.min(1,(t-60)/8);g.save();g.translate(160,46);g.scale(.6+pop*.4,.6+pop*.4);g.font='20px DotGothic16, monospace';g.textAlign='center';g.textBaseline='middle';
-    g.fillStyle=K;g.fillText(txt,2,2);g.fillStyle=p.res===3?'#ffd25a':p.res===0?'#ff7a7a':'#efe8dc';g.fillText(txt,0,0);g.restore();
-    g.font='8px DotGothic16, monospace';g.textAlign='center';g.textBaseline='top';g.fillStyle='#e8d9bf';g.fillText(sub,160,64);
+    const pop=Math.min(1,(t-60)/8);
+    ptx('res',txt,160,44,'big',p.res===3?'#ffd25a':p.res===0?'#ff7a7a':'#efe8dc',Math.round((.6+pop*.4)*20)/20);
+    ptx('sub',sub,160,68,'mid','#e8d9bf');
   }
-  g.textAlign='left';
+  g.textAlign='left';ptxEnd();
 }
 /* ---------------- 會長：番茄汁（交給會長本人、拉拉或小蝙蝠都可以） ---------------- */
 const CANS_N=5;
