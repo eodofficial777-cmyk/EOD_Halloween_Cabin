@@ -3484,7 +3484,7 @@ async function talk(id){
         await say('me','甩成這樣……不會頭暈嗎？');
         await say('sui','不會啊？頭又不在身上。');return;
       }
-      return say('sui','要不要騎一下我的馬？牠只是有點透明，不會咬人。');
+      return say('sui',['要不要騎一下我的馬？牠只是有點透明，不會咬人。','那個書蟲又躲在展覽室啃書了吧？叫他出來幫忙查案啦，整天只會在旁邊看戲！'][(S.flags.suiR=(S.flags.suiR||0)+1)%2]);
     case 'boss':
       if(!hasEv('boss')){
         await n('首領整個人攤在巨大南瓜旁邊，懷裡南瓜燈的火光有氣無力地閃著。');
@@ -3511,7 +3511,7 @@ async function talk(id){
         addEv('ian');
         await say('ian','找到兇手的話跟我說！大叔我替你出頭！');return;
       }
-      return say('ian','對了，揮棒的時候別站在我後面！上次小波就被我揮到屋頂上了，哈哈！');
+      return say('ian',['對了，揮棒的時候別站在我後面！上次小波就被我揮到屋頂上了，哈哈！','有空幫大叔我看看小白，那小子又在外面躺一整天了，別讓他著涼啊！','部長那杯香菜咖啡，大叔我喝過一口，比被怪物揍還痛！哈哈！'][(S.flags.ianR=(S.flags.ianR||0)+1)%3]);
     case 'ji':
       if(!hasEv('potion')){
         await n('薊身上的玻璃藥瓶叮叮噹噹地響，空氣裡有股讓人想笑的香味。');
@@ -3850,12 +3850,12 @@ async function talk3(id){
         rmItem('stack20');F.stackEaten=1;F.ian=(F.ian||32)+20;if(F.ian>=40)ach('h_ian');return;
       }
       if(!hasEv('ianhr')){
-        await say('ian','翠的頭？說到這個，大叔我昨晚打了一記超大的全壘打！');
+        await say('ian','大姊頭的頭？說到這個，大叔我昨晚打了一記超大的全壘打！');
         await say('ian','怪物飛得好高好高，一路飛向南瓜田那邊……');
-        await say('ian','喂喂，該不會是我把翠打飛的吧？哈哈哈！不會啦不會啦！');
+        await say('ian','喂喂，該不會是我把大姊頭打飛的吧？哈哈哈！不會啦不會啦！');
         addEv('ianhr');return;
       }
-      await say('ian','要把南瓜劈開嗎？交給我，一鏟子就搞定！');return say('ian','啊，首領會生氣吧。算了算了！');
+      await say('ian','要把南瓜劈開嗎？交給我，一鏟子就搞定！');return say('ian','啊，小白會生氣吧。算了算了！');
     case 'lala':
       if(F.needLadder&&!hasItem('ladder')&&!F.ladderSet){
         if(F.stackEaten){
@@ -3889,7 +3889,7 @@ async function deduction3(){
   const F=S.flags;
   await n('你把大家叫到了大南瓜旁邊。南瓜裡的翠：「欸？要開庭了嗎？」');
   await ask('翠的頭是怎麼跑進南瓜裡的？',['首領把它塞進去的','被撞飛，畫了一道拋物線掉進去','阿北的全壘打打進去的'],1,
-    {0:['boss','我連翻身都懶。還塞頭？'],2:['ian','大叔我打的是怪物，又不是翠的頭！應該吧？哈哈哈！']});
+    {0:['boss','我連翻身都懶。還塞頭？'],2:['ian','大叔我打的是怪物，又不是大姊頭的頭！應該吧？哈哈哈！']});
   await say('me','翠的身體比了「咻——」的手勢，薊也看到了拋物線。她的頭是被撞飛的。');
   await ask('是誰撞飛了翠？',['首領','幽靈羊駝','錐齒獸'],2,
     {0:['boss','南瓜上卡的毛，是銀灰色的。我是白色的。早就看到了，只是沒人問我。'],1:['n','羊駝「呸」地吐了你一臉口水。……好像在說：才不是我。']});
