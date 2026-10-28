@@ -1425,6 +1425,9 @@ const ACHS=[
   {id:'h_shishono',t:'謝絕髒客',d:'全身髒兮兮的，被司書擋在展覽室門外。',hint:'有個地方，謝絕某種客人。'},
   {id:'h_cilantro',t:'香菜三倍',d:'偷喝了司書的香菜口味三倍濃縮咖啡。',hint:'有些味道，有人愛得要命，有人一口都不能碰。'},
   {id:'h_gear',t:'全副武裝',d:'找到了阿鳳姨留下的鐵圍裙、鏡面鍋蓋，和兩個南瓜派護身符。',hint:'阿鳳姨留下的東西，不只有武器。'},
+  {id:'h_trip',t:'玫瑰的惡作劇',d:'在溫室裡被調皮的玫瑰絆倒了。',hint:'溫室的花，在黑暗裡特別有精神。'},
+  {id:'h_ambush',t:'麵糰伏擊',d:'在廚房被史萊姆麵糰偷襲了。',hint:'廚房的碗裡，有東西在等你經過。'},
+  {id:'h_bookhit',t:'知識砸進腦袋',d:'在展覽室被掉下來的書砸到頭。',hint:'書架很高，書很重。'},
   {id:'h_horse',t:'幽靈駱馬的噴嚏',d:'和幽靈駱馬打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
@@ -1706,6 +1709,7 @@ async function talk0(id){
   if(!F.gathered){return say(id,'大家都在 餐廳 集合喔，快過去吧！')}
   if(!first){
     if(await sideTalk(id))return;
+    if(id==='po'&&NPCS.po.state==='sleep')return say('po','……枕頭……祭壇……Zzz……管他的……');
     const again={kaicho:'我沒事，只是有點貧血。……晚點喝杯番茄汁就好。',shisho:'書的事，拜託你了。……別學會長拿書當枕頭。',sui:'駱馬還是不讓我靠近……糧草就拜託你啦！',
       lala:'史萊姆鬆餅很快喔！用跑的追！',boss:'……嗯。大南瓜很安靜。不像你。',ian:'怪物抓來丟給我，我全部揮出去！',ji:'試完要回來報告喔～別試到一半就逃跑。',po:'最舒服的枕頭……要軟軟的、涼涼的、甜甜的，還要可以抱……Zzz……'};
     return say(id,again[id]);
@@ -1764,8 +1768,16 @@ async function talk0(id){
       await say('boss','……想躺的時候，再來找我。');
       qStart('boss',{round:0,fails:0});break;
     case 'ian':
-      await n('IAN 拄著鏟子，看著墓園。');
-      await say('ian','喲！來得正好！這裡等一下會冒出一大堆怪物！');
+      if(NPCS.ian.state==='upper'){
+        await n('只剩上半身的 IAN 靠在墓碑旁，鏟子還好好地握在手裡。');
+        await say('ian','喲！別擔心，腳不在也能揮！下半身那傢伙會幫我站穩的！');
+      }else if(NPCS.ian.scene==='kitchen'){
+        await n('IAN 坐在廚房的桌邊，面前的鬆餅疊得比他的頭還高。');
+        await say('ian','喲！吃飽了正好運動運動！外面墓園冒了一大堆怪物！');
+      }else{
+        await n('IAN 拄著鏟子，看著墓園。');
+        await say('ian','喲！來得正好！這裡等一下會冒出一大堆怪物！');
+      }
       await say('ian','你會丟球嗎？不會也沒關係，大哥教你！');
       await say('ian','我們來玩怪物棒球吧！你把怪物抓來丟給我，我負責把牠們全部揮出去！');
       await say('ian','丟得越準越好！正中紅心的話，我保證把牠打到森林另一頭！');
@@ -1782,6 +1794,14 @@ async function talk0(id){
       await say('ji','試完要回來報告喔～我的研究筆記，可是要流傳千古的。');
       qStart('ji',{tested:[],rep:[]});break;
     case 'po':
+      if(NPCS.po.state==='sleep'){
+        await n('小波睡得很熟。你靠近的時候，他翻了個身，開始說夢話——');
+        await say('po','……枕頭……我的枕頭不見了……');
+        await say('po','……教堂……睡教的祭壇……要供……最舒服的……');
+        await say('po','……軟軟的……涼涼的……甜甜的……可以抱……管他的……Zzz……');
+        await n('……看來，他在夢裡拜託你幫忙找枕頭。');
+        qStart('po',{got:[]});break;
+      }
       await say('po','……好睏。大家好吵……管他的，吵就吵吧。');
       await say('po','屋外那間小教堂，是「睡教」的教堂……嗯，就是那樣。解釋起來好麻煩。');
       await say('po','睡教的教義只有一條：想睡就睡。');
@@ -1812,7 +1832,7 @@ function sideOption(id){
   }
   if(id==='lala'&&ch>0&&!qGet('kaicho')&&qGet('lala'))return['會長的番茄汁？',lalaOfferCans];
   if(id==='boss'&&qOn('boss'))return F.riot&&!F.riotDone?null:['一起躺在大南瓜旁邊發呆',idleSession];
-  const avail={lala:1,shisho:1,ji:1,ian:1,boss:!(F.riot&&!F.riotDone),sui:NPCS.sui.state!=='nohead',po:NPCS.po.state==='stand'};
+  const avail={lala:1,shisho:1,ji:1,ian:1,boss:!(F.riot&&!F.riotDone),sui:NPCS.sui.state!=='nohead',po:NPCS.po.state==='stand'||(NPCS.po.state==='sleep'&&chOf()>=3)};
   if(!avail[id])return null;
   if(id==='ian'&&hasItem('potion')&&qOn('ji')&&!qGet('ji').tested.includes('ian'))return['請 IAN 喝藥水',ianDrink];
   const q=qGet(id);
@@ -1832,7 +1852,11 @@ async function talk0offer(id){const F=S.flags,keep=F.ch;F.preEnd=F.gathered=true
 /* 薊的支線讓 IAN 喝藥水（也可以直接跟 IAN 說） */
 async function ianDrink(){
   await say('me','IAN，可以幫薊試個藥水嗎？');
-  await say('ian','薊的藥水啊？好，大哥來試！一口乾了！');
+  if(NPCS.ian.state==='upper'){
+    await say('ian','藥水？等等，該不會是長大藥水吧？我才剛因為那個斷成兩截耶！');
+    await say('me','是薊的，標籤上是荊棘，不是南瓜。');
+    await say('ian','那就好！好，大哥來試！一口乾了！');
+  }else await say('ian','薊的藥水啊？好，大哥來試！一口乾了！');
   await n('IAN 一口氣把整瓶藥水灌了下去。');shake=12;
   await n('……啪。啪。');
   await n('他的背後，又長出了兩隻手。');
@@ -1925,6 +1949,7 @@ async function pumpkinEvent(){
   await n('藥水順著南瓜皮流了下去……');shake=14;
   await n('大南瓜「咕嚕、咕嚕」地膨脹起來，變得比剛才大了一倍！');
   S.flags.bigPumpkin=1;potionUsed('pumpkin');
+  if(chOf()===3&&!S.flags.suiBack)await n('南瓜裡面傳來悶悶的聲音：「……欸？怎麼突然變寬敞了？」');
   if(NPCS.boss.scene==='outside'){await say('boss','……大南瓜變大了。');await say('boss','……很好。總算有人做了一件有用的事。')}
 }
 
@@ -1932,7 +1957,8 @@ async function pumpkinEvent(){
 const LL={goal:6,hay:18};
 const COURT={x0:11,y0:16,x1:23,y1:24};
 async function llamaStart(){
-  await say('sui','糧草都找齊了？太好了～！');
+  if(S.flags.riot&&!S.flags.riotDone){await say('sui','糧草都找齊了？太好了～！……可是外面南瓜精靈正在暴動，駱馬嚇得不敢出來。');await say('sui','先把那些南瓜精靈收拾掉吧！');return}
+  await say('sui',chOf()===3&&S.flags.suiBack?'糧草都找齊了？太好了～！我的頭也剛回來，正好一起慶祝！':'糧草都找齊了？太好了～！');
   await say('sui','我把牠叫到 中庭 去！你對準牠的嘴巴丟糧草，丟進嘴巴裡牠才會吃喔！');
   await say('sui','啊，牠心情不好的時候會一直吐口水……小心點！');
   clearCombat();
@@ -2082,8 +2108,10 @@ function drawPitch(){
   else if(thrown&&t<34){const u=Math.min(1,(t-18)/6);R(g,78+lean,116,8+u*14,4,K);R(g,79+lean,117,6+u*14,2,sk);
     if(t<26){g.strokeStyle='rgba(255,246,200,.7)';g.lineWidth=2;g.beginPath();g.arc(80,118,18,-1.6,.2);g.stroke();g.beginPath();g.arc(80,118,12,-1.4,0);g.stroke()}}
   /* IAN 與鏟子 */
-  g.save();g.translate(244,100);g.scale(2,2);drawChar(g,'ian','left',0,tick);g.restore();
-  const sw=p.ph==='go'?Math.max(0,Math.min(1,(t-44)/10)):0,ang=-2.3+sw*(p.res===0?2.6:2.1),hx=250,hy=128;
+  const half=NPCS.ian.state==='upper';
+  if(half){g.save();g.translate(282,104+Math.abs(Math.sin(tick/8))*2);g.scale(2,2);drawChar(g,'legs','left',0,tick);g.restore()}
+  g.save();g.translate(244,half?112:100);g.scale(2,2);drawChar(g,'ian','left',0,tick,half?'upper':undefined);g.restore();
+  const sw=p.ph==='go'?Math.max(0,Math.min(1,(t-44)/10)):0,ang=-2.3+sw*(p.res===0?2.6:2.1),hx=250,hy=half?140:128;
   const ex=hx+Math.cos(ang)*26,ey=hy+Math.sin(ang)*26;
   g.strokeStyle='#7a5332';g.lineWidth=3;g.beginPath();g.moveTo(hx,hy);g.lineTo(ex,ey);g.stroke();
   g.save();g.translate(ex,ey);g.rotate(ang);R(g,-2,-5,9,10,K);R(g,-1,-4,7,8,'#9aa0a6');R(g,0,-4,2,8,'#c9ced4');g.restore();
@@ -2253,10 +2281,17 @@ async function altar(){
     await n('祭壇沉默了一下，還是收下了它。教堂裡的蠟燭搖了搖。');
     await n({feather:'那天晚上，宅邸裡的每個人都熱得翻來覆去，一整晚沒睡好。',lavender:'那天晚上，宅邸裡的每個人都在夢裡一直笑，笑到天亮。',
       flour:'那天晚上，宅邸裡的每個人睡到一半都在打噴嚏。哈啾——',pumpkinp:'那天晚上，宅邸裡的每個人都夢到自己被南瓜籽淹沒了。',sponge:'那天晚上，宅邸裡的每個人醒來，枕頭都是濕的。',coffin:'那天晚上，宅邸裡的每個人都夢到了一整晚的蜘蛛。',velvet:'那天晚上，宅邸裡的每個人都在找自己的枕頭，誰也抱不住。'}[k]);
-    await n('……遠遠的，傳來小波的聲音：「……睡不著……」');
-    await n('過了一會兒，小波披著床單飄進了教堂。');
-    await say('po','……睡不著？……管他的，那就大家一起熬夜吧。');
-    await n('那一晚，宅邸裡的大家第一次聚在一起，聊天聊到了天亮。');
+    if(chOf()===2&&!S.flags.poFell2){
+      await n('……不知道從哪裡，傳來小波含糊的聲音：「……睡不著……管他的，那就熬夜吧……」');
+      await n('那一晚，宅邸裡的大家聚在大廳，聊天聊到了天亮。只有小波不在——');
+      await n('……可是閣樓的方向，好像也一直有人在跟著笑。');
+    }else{
+      await n('……遠遠的，傳來小波的聲音：「……睡不著……」');
+      if(chOf()>=3)await n('過了一會兒，小波閉著眼睛、披著床單飄進了教堂。……他根本還在睡。');
+      else await n('過了一會兒，小波披著床單飄進了教堂。');
+      await say('po','……睡不著？……管他的，那就大家一起熬夜吧。');
+      await n('那一晚，宅邸裡的大家第一次聚在一起，聊天聊到了天亮。');
+    }
     qAlt('po',{candy:3});return;
   }
   await n('抱枕輕輕落在枕頭座上，不再飄了。');
@@ -2264,6 +2299,7 @@ async function altar(){
   await n('……呼……呼……');
   await n('蠟燭重新亮起時，祭壇上的「好睡」兩個字，正在發著柔和的光。');
   await n('你覺得今晚，宅邸裡的每個人都會睡得很好。');
+  if(chOf()===2&&!S.flags.poFell2)await n('……閣樓的方向，傳來一聲滿足的打呼。');
   if((q.tried||[]).length>=5)ach('h_pillowfirst');
   qFinish('po',{candy:3});
 }
@@ -2287,6 +2323,7 @@ async function lalaDone(){
   }
   await n('你把六坨扭來扭去的麵糊放回攪拌碗裡。');
   await say('lala','太好了！謝謝你～！');
+  if(chOf()===4&&!S.flags.ded4)await say('lala','……大家都在說是我把 IAN 弄斷的。可是你還願意幫我抓鬆餅……嗚，謝謝你。');
   await n('拉拉抓起打蛋器，「啪啪啪啪啪啪」地打了起來，快到看不見手。');
   await say('lala','……三百九十八、三百九十九、四百！');
   await say('lala','好，這次一定安分了！煎好了第一片給你吃！');
@@ -2387,7 +2424,7 @@ function llamaFail(){
 }
 async function pitchSession(){
   const q=qGet('ian');q.strikes=q.strikes||0;
-  await say('ian','抓到啦？好樣的！丟過來！');
+  await say('ian',NPCS.ian.state==='upper'?'抓到啦？好樣的！下半身，去本壘後面幫我當捕手！':'抓到啦？好樣的！丟過來！');
   await n('你站上投手丘，IAN 在本壘扛起了鏟子。');
   await n('上面的指針會左右擺動，按一下就投球。停在越中間的紅色，IAN 越容易打出全壘打！連續三次揮空就三振出局。');
   while(q.sack.length){
@@ -2418,6 +2455,10 @@ async function pitchSession(){
 }
 async function idleSession(){
   const q=qGet('boss');q.round=q.round||0;q.fails=q.fails||0;
+  const F=S.flags;
+  if(chOf()===3&&F.a3seen&&!F.riotDone)await say('boss','……大家都在懷疑我。正好。躺著，就不用解釋。');
+  else if(chOf()===4)await say('boss','……又有人被冤枉了？……這間屋子的人，懷疑別人的速度比南瓜長得還快。');
+  if(F.bigPumpkin)await n('大南瓜比之前大了一倍，躺在旁邊，像靠著一座溫暖的小山。');
   await say('boss','……躺下來。什麼都不要做。……這你應該很擅長吧。');
   await n(`（第 ${q.round+1} 輪：撐過 ${IDLE_DUR[q.round]} 秒，什麼按鍵都不要按，也不要點畫面。動了 5 次的話，首領會換個方式陪你。）`);
   for(;;){
@@ -3797,7 +3838,43 @@ function onArrive(){
   const ex=sc().exitsN.find(e=>e[0]===P.x&&e[1]===P.y);
   if(ex&&ex[2]==='exhibit'&&S.scene!=='exhibit'&&(S.flags.dirt||[]).length&&NPCS.shisho.scene==='exhibit')return run(shishoNoEntry);
   if(ex)return changeScene(ex[2],ex[3],ex[4],ex[5]);
-  if(tileAt(P.x,P.y)==='X')run(async()=>{await n('濃霧裡傳來不明生物的嚎叫。');await n('……現在還不能離開這裡。');P.y-=1;P.dir='up'});
+  if(tileAt(P.x,P.y)==='X')return run(async()=>{await n('濃霧裡傳來不明生物的嚎叫。');await n('……現在還不能離開這裡。');P.y-=1;P.dir='up'});
+  stepHazard();
+}
+/* 宅邸裡的小意外：黑暗中被調皮的玫瑰絆倒、廚房的麵糰趁機偷襲、展覽室的書掉下來 */
+function nearTile(ch){for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(tileAt(P.x+dx,P.y+dy)===ch)return true;return false}
+function stepHazard(){
+  if(!S||busy||CB.lock||CB.mini||chOf()<1||chOf()>=5||P.hazCd>0)return;
+  const F=S.flags,dark=blackOn>0,r=Math.random();
+  if(S.scene==='greenhouse'&&nearTile('r')&&r<(dark?.35:.03)){P.hazCd=60*20;return run(()=>roseTrip(dark))}
+  if(S.scene==='kitchen'&&!(P.morph)){const lq=qGet('lala'),mad=lq&&lq.st==='alt',calm=lq&&lq.st==='done';
+    if(r<(dark?.12:.025)*(mad?2:calm?.4:1)){P.hazCd=60*25;return run(()=>doughAmbush(mad,calm))}}
+  if(S.scene==='exhibit'&&nearTile('B')&&r<(dark?.25:.02)){P.hazCd=60*25;return run(bookFall)}
+}
+async function roseTrip(dark){
+  const F=S.flags;F.trips=(F.trips||0)+1;shake=6;P.stun=40;P.moving=false;
+  await n(dark?'黑暗中，有什麼東西「咻」地勾住了你的腳——':'腳邊的玫瑰藤，突然悄悄伸長了一截——');
+  await n('你整個人往前撲倒在地上，滿頭都是花瓣。……旁邊的玫瑰，花瓣抖啊抖的，好像在偷笑。');
+  addDirt('petal');ach('h_trip');
+  if(NPCS.ji.scene==='greenhouse')await say('ji',F.trips>1?'又摔了？你跟牠們是不是有什麼過節～':'哎呀～牠們只是想跟你玩嘛。……不過摔得真難看，噗。');
+  else if(F.trips>2)await n('……你覺得，這些玫瑰好像已經記住你了。');
+}
+async function doughAmbush(mad,calm){
+  const F=S.flags;F.ambush=(F.ambush||0)+1;
+  if(calm){await n('一小坨麵糰從碗裡探出頭，看了看你，又乖乖縮了回去。');await n('……拉拉打了四百下的成果，好像真的有用。');return}
+  shake=5;
+  await n(blackOn>0?'黑暗中，流理台那邊傳來「啵」的一聲——':'攪拌碗裡的麵糰，趁你經過的時候「啵」地彈了出來——');
+  await n(mad?'好幾坨史萊姆麵糰一起撲上來，黏在你身上！……牠們好像還記得，你吃掉了牠們的同伴。':'一坨史萊姆麵糰撲上來，黏在你的腳上！走起路來黏答答的。');
+  addDirt('batter');P.sticky=mad?60*8:60*5;ach('h_ambush');
+  if(NPCS.lala.scene==='kitchen'){await say('lala',mad?'啊啊啊對不起！！牠們最近特別針對你……是因為那一次嗎……':'啊！又跑出來了！對不起對不起，我馬上多打一百下！');}
+  toast('腳被麵糰黏住了，走路變慢了……');
+}
+async function bookFall(){
+  shake=4;P.stun=30;P.moving=false;
+  await n(blackOn>0?'黑暗中，書架上方傳來一陣沙沙聲——':'書架上方，有一本書自己往外挪了一點——');
+  await n('「咚」！一本厚厚的書砸在你頭上。');
+  addDirt('dust');ach('h_bookhit');
+  if(NPCS.shisho.scene==='exhibit')await say('shisho','那本是我的宵夜。……別用頭接，會壓扁。');
 }
 function heldDir(){return held[held.length-1]}
 function update(){
@@ -3805,6 +3882,7 @@ function update(){
   if(PITCH)pitchTick();
   idleTick();
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
+  if(mode==='play'&&!busy){if(P.stun>0)P.stun--;if(P.sticky>0)P.sticky--;if(P.hazCd>0)P.hazCd--}
   if(P.morph&&mode==='play'&&!busy&&--P.morph.t<=0){P.morph=null;toast('藥效退了，你變回原樣了。')}
   if(toastT>0&&--toastT===0)$('toast').hidden=true;
   if(fade>0)fade=Math.max(0,fade-.06);
@@ -3825,11 +3903,11 @@ function update(){
   if(!P.moving&&!busy&&!overlayOpen()){
     const d=heldDir();
     if(!d)P.guard=false;
-    if(d&&!(P.morph&&P.morph.k==='roll')){P.dir=d;const[dx,dy]=DV[d];const nx=P.x+dx,ny=P.y+dy;
+    if(d&&!(P.morph&&P.morph.k==='roll')&&!(P.stun>0)){P.dir=d;const[dx,dy]=DV[d];const nx=P.x+dx,ny=P.y+dy;
       const back=P.guard&&sc().exitsN.some(e=>e[0]===nx&&e[1]===ny);
       if(walkable(nx,ny)&&!back){P.moving=true;P.tx=nx;P.ty=ny;P.prog=0;P.guard=false}}
   }
-  if(P.moving){const sp=runHeld?4:2;P.prog+=sp;P.wc+=sp/2;if(P.prog>=16){const ox=P.x,oy=P.y;P.x=P.tx;P.y=P.ty;P.moving=false;P.prog=0;legsStep(ox,oy);onArrive()}}
+  if(P.moving){const sp=P.sticky>0?1:runHeld?4:2;P.prog+=sp;P.wc+=sp/2;if(P.prog>=16){const ox=P.x,oy=P.y;P.x=P.tx;P.y=P.ty;P.moving=false;P.prog=0;legsStep(ox,oy);onArrive()}}
   else if(!heldDir())P.wc=0;
 }
 function interact(){
@@ -4790,7 +4868,7 @@ function startPlay(isNew){
   mode='play';$('title').hidden=true;$('hud').style.visibility='visible';
   if(S.v!==2){[S.x,S.y]=toNew(S.scene,S.x,S.y);S.v=2}
   syncMaxHP();
-  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
+  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
   clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
   applyWorld();spawnSlimes();fade=1;nextBlack=60*45;blackOn=0;updateHUD();
