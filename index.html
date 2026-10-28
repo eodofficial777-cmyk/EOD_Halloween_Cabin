@@ -1304,6 +1304,7 @@ const ACHS=[
   {id:'h_treat',t:'給糖也導彈',d:'給了南瓜幽靈糖果……結果還是被導彈追著跑。',hint:'給了糖，就不會被搗蛋了吧？'},
   {id:'h_legs',t:'斷腿助攻',d:'IAN 的下半身幫你踢飛了 10 隻災獸。',hint:'第四幕裡，有個很會踢的伙伴。',stat:'legs',goal:10},
   {id:'h_radio',t:'不能申訴退款',d:'聽完了廣播頭的廣播。',hint:'故事最後，好像有誰在廣播。'},
+  {id:'h_hints',t:'其實早就有跡象',d:'在南瓜幽靈坦白之前，就找到了拉拉、司書、薊、首領沒被作祟的伏筆。',hint:'廚房角落的客人、一疊咖啡杯、會轉頭的玫瑰、很兇的大南瓜。'},
   {id:'h_k10', t:'初次狩獵',d:'累計擊倒 10 隻災獸。',hint:'宅邸裡的災獸，好像怎麼打都打不完……',stat:'kills',goal:10},
   {id:'h_k50', t:'災獸剋星',d:'累計擊倒 50 隻災獸。',hint:'再多打一些。',stat:'kills',goal:50},
   {id:'h_k150',t:'宅邸清道夫',d:'累計擊倒 150 隻災獸。',hint:'多到數不清。',stat:'kills',goal:150},
@@ -1572,6 +1573,8 @@ async function talk0(id){
       qStart('kaicho',{got:[]});break;
     case 'shisho':
       await n('司書坐在書堆裡，正翻著一本封面發黑的書。');
+      await n('司書的眼睛底下，掛著兩圈深深的黑眼圈。旁邊堆著一疊空咖啡杯。');
+      await say('shisho','睡覺？……書還沒吃完。我已經三天沒睡了。');
       await say('shisho','這棟宅邸的書，我一本都沒看過。……也一本都沒吃過。');
       await say('shisho','書裡也許寫著這個地方的秘密。宅邸裡到處都散落著書——幫我找來。');
       await say('shisho','順便，替我找出最好吃的那一本。我喜歡酸酸甜甜的味道。');
@@ -1596,12 +1599,15 @@ async function talk0(id){
       await say('lala','那是史萊姆鬆餅的麵糊……明明都打過四百次了，還是不安分，真是太調皮了！');
       await say('lala','總共跑掉了六坨，好像都溜到 廚房、餐廳 跟 大廳 去了。可以幫我抓回來嗎？');
       await say('lala','牠們很快喔，要用跑的追！');
+      await say('lala','啊，對了！廚房角落那位小客人，是我剛剛請來喝下午茶的喔。好安靜、好有禮貌～');
       qStart('lala',{got:[]});break;
     case 'boss':
       await n('首領靠在屋外的大南瓜旁邊，一動也不動。');
       await say('boss','……我的能力不見了。以前碰一下就能讀出這附近發生過的所有事。');
       await say('boss','現在什麼都讀不到。好麻煩。');
       await say('boss','不過這顆大南瓜……很安靜。我喜歡。');
+      await say('boss','……剛剛有個東西想偷偷靠近我。大南瓜「咚」地把它彈開了。');
+      await say('boss','……好南瓜。');
       await say('boss','……你要不要也一起躺？什麼都不要做。很舒服。');
       await say('boss','……想躺的時候，再來找我。');
       qStart('boss',{round:0,fails:0});break;
@@ -1615,6 +1621,8 @@ async function talk0(id){
       qStart('ian',{sack:[],hr:0});break;
     case 'ji':
       await say('ji','歡迎來到我的溫室～這裡的玫瑰長得超好，連我都嚇一跳！');
+      await say('ji','這裡的花，我都把它們訓練成守衛了喔～有誰亂碰，它們會自己追上去！');
+      await n('薊身後的玫瑰，好像「唰」地一起轉過來看了你一眼。');
       await say('ji','對了對了！我剛調好一批新藥水，可是還沒找人試過……');
       await n('薊塞給你一瓶冒著粉紅色泡泡的藥水。');
       addItem('potion');
@@ -2766,6 +2774,15 @@ async function riotEnd(){
 
 /* ===== 第四幕：裂成兩半的科學怪人 ===== */
 const REQ4=['cut','seam','bottle','growth'];
+/* 伏筆：為什麼南瓜幽靈沒對拉拉、司書、薊、首領下手（終幕會揭曉） */
+const HINT_SPOTS=[
+  {sc:'kitchen',x:16,y:10,id:'tea',until:5,
+    t:['廚房角落，一顆小小的南瓜端端正正地坐在椅子上。','它面前擺著一杯紅茶，和一片吃了一半的鬆餅。','……小南瓜在微微發抖。是感動嗎？']},
+  {sc:'exhibit',x:9,y:5,id:'coffee',until:5,
+    t:['司書旁邊堆著一疊空咖啡杯。數一數，有十七杯。','杯緣上都有一個小小的咬痕。……連杯子都吃？']},
+];
+function hintSpot(x,y){return S?HINT_SPOTS.find(h=>h.sc===S.scene&&h.x===x&&h.y===y&&chOf()<h.until):null}
+function hintSeen(id){achSeen('hints',id,4,'h_hints')}
 const HINT4={cut:'墓園裡 IAN 的上半身',seam:'IAN 的下半身（看看斷口）',bottle:'IAN 旁邊草地上發亮的東西',growth:'展覽室的司書'};
 const BOTTLE={x:20,y:5};
 async function disc4(){
@@ -3052,6 +3069,7 @@ function walkable(x,y){
   if(S.scene==='f2'&&ox===9&&oy===1)return!!S.flags.atticOpen;
   if(S.scene==='kitchen'&&ox===0&&oy===3)return chOf()===2&&!!S.flags.disc2;
   if(S.scene==='chapel'&&ox===14&&oy===9)return chOf()===4&&!!S.flags.ded4;
+  if(hintSpot(x,y))return false;
   if(S.scene==='outside'&&chOf()===4&&x===BOTTLE.x&&y===BOTTLE.y)return false;
   const c=tileAt(x,y);if(SOLID.has(c))return false;{const na=npcAt(x,y);if(na&&!(na==='legs'&&legsOn()))return false}
   if(S.scene==='dining'&&ox===8&&oy===6&&chOf()>=1)return false;
@@ -3119,6 +3137,7 @@ const TOMBS=['這裡長眠著：說了「我去去就回」的人。','這裡長
 function objectAt(nx,ny){
   const s=S.scene,[x,y]=toOld(s,nx,ny),sk=SEARCH[s+'@'+nx+','+ny]?s+'@'+nx+','+ny:s+':'+x+','+y;
   const pr=propAt(nx,ny);if(pr)return()=>takeProp(pr);
+  {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
   if(s==='outside'&&chOf()===4&&nx===BOTTLE.x&&ny===BOTTLE.y)return bottleSpot;
   const tc=tileAt(nx,ny),pot=hasItem('potion')&&qOn('ji')&&!CB.lock,tested=k=>qGet('ji').tested.includes(k);
   if(s==='chapel'&&tc==='A')return altar;
@@ -3167,13 +3186,15 @@ function tileText(c,x,y){
     return LOCKED[s+':'+c];
   }
   const ST={chapel:{Z:'告解室。簾子後面空無一人……應該吧。',A:'祭壇上鋪著白布，十字架擦得發亮。這裡的空氣特別乾淨。',q:'木頭長椅。椅背上刻著好幾道指甲抓痕。',l:'燭台上的蠟燭燒得很慢，好像永遠不會燒完。',W:'彩繪玻璃上畫著一個舉燈的人。雷光閃過時，他好像在看你。'},
-    greenhouse:{r:'溫室裡的玫瑰開得又大又紅……紅得跟會長身旁那灘液體一樣。',J:'玻璃外是雨和霧，溫室裡卻暖暖的，像另一個季節。',z:'薊的調藥桌。乾燥的草藥一束束掛著，聞了會想笑。',j:'一張白色鐵椅，上面攤著一本翻開的園藝雜誌。',Q:'小噴泉的水很清，倒映著溫室的玻璃頂。'},
+    greenhouse:{r:'溫室裡的玫瑰開得又大又紅……\n你一靠近，整排玫瑰「唰」地一起轉過來，盯著你看。\n……發現你是薊的朋友，又慢慢轉了回去。',J:'玻璃外是雨和霧，溫室裡卻暖暖的，像另一個季節。',z:'薊的調藥桌。乾燥的草藥一束束掛著，聞了會想笑。',j:'一張白色鐵椅，上面攤著一本翻開的園藝雜誌。',Q:'小噴泉的水很清，倒映著溫室的玻璃頂。'},
     maze:{h:'高高的樹籬，看不見另一邊。',Q:'迷宮中央的噴泉。噴泉中間站著一座抱著頭的騎士雕像。',r:'樹籬轉角種著一叢紅玫瑰。'},
     roomL:{b:'柔軟的床。床單少了一條，枕頭上有一小撮鬆餅屑。',B:'一個小書櫃。最上層放著一本《如何在任何地方睡著》。'},
     roomR:{b:'這張床鋪得整整齊齊，好像從來沒人睡過。'},
     f2:{u:'走廊的花瓶裡插著乾燥的南瓜藤。'},
     storage:{x:'架上放著麵粉、果醬，還有一排空空的番茄汁備貨箱。',y:'一袋麵粉。拉拉說這是鬆餅的命。'},
     attic:{x:'堆滿舊玩具的架子。最上層有一隻少了一隻耳朵的兔子布偶。',y:'蓋著白布的舊家具。……這塊白布不會動。應該。',w:'閣樓的小窗戶。從這裡看得到屋外的大南瓜。'}};
+  if(s==='greenhouse'&&c==='r')hintSeen('rose');
+  if(s==='outside'&&c==='O'){hintSeen('pumpkin');return'一顆比人還大的南瓜。首領說，這是他最好的朋友。\n……大南瓜的表情好像有點兇，一直死死地盯著墓園的地底下。'}
   if(ST[s]&&ST[s][c])return ST[s][c];
   if(c==='C'&&s==='outside')return'一棟白色的小教堂。門口的牌子寫著：「睡教・歡迎打瞌睡」。門在正下方。';
   if(c==='v'&&s==='exhibit')return y===2&&x<=3?'展示櫃：一把生鏽的老電鋸。標籤寫著「拉拉的初代愛機」。':y===2?'展示櫃：一排風乾的南瓜燈，表情都有點累。':'展示櫃：各式各樣的玻璃藥瓶，標籤全被撕掉了。';
@@ -3679,6 +3700,10 @@ function render(){
   if(key==='f2'&&S&&S.flags.atticOpen){const[ax,ay]=toNew('f2',9,1),X=ax*T-cx,Y=ay*T-cy;R(ctx,X+1,Y,14,16,'#120c0e');R(ctx,X+3,Y,2,16,'#7a5232');R(ctx,X+11,Y,2,16,'#7a5232');for(let i=0;i<4;i++)R(ctx,X+3,Y+2+i*4,10,2,'#8e6440')}
   if(key==='hall')drawChandelier(s.w*T/2-cx,6-cy);
   if(key==='chapel'&&S&&chOf()===4&&S.flags.ded4){const[ax,ay]=toNew('chapel',14,9),X=ax*T-cx,Y=ay*T-cy;R(ctx,X,Y,16,16,'#0c080a');for(let i=0;i<4;i++)R(ctx,X+2,Y+2+i*4,12,2,'#4a4448');R(ctx,X,Y,2,16,'#6a6e72');R(ctx,X+14,Y,2,16,'#6a6e72')}
+  if(S&&mode==='play')for(const h of HINT_SPOTS){if(h.sc!==key||chOf()>=h.until)continue;const X=h.x*T-cx,Y=h.y*T-cy;
+    if(h.id==='tea'){R(ctx,X+2,Y+9,12,6,'#3a2214');R(ctx,X+3,Y+10,10,4,'#7a1f24');R(ctx,X+4,Y+3,8,7,K);R(ctx,X+5,Y+4,6,5,'#e2741c');R(ctx,X+7,Y+1,2,3,'#3f6b2a');R(ctx,X+6,Y+6,1,1,'#ffd25a');R(ctx,X+9,Y+6,1,1,'#ffd25a');
+      R(ctx,X+12,Y+6,3,3,'#efe8dc');R(ctx,X+12,Y+6,3,1,'#8a4a2a');R(ctx,X+1,Y+7,3,1,'#d9a050')}
+    else{for(let i=0;i<4;i++){R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,5,'#efe8dc');R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,1,'#5a3a22')}R(ctx,X+6,Y+2,5,5,'#efe8dc');R(ctx,X+6,Y+2,5,1,'#5a3a22')}}
   if(key==='outside'&&S&&chOf()===4){const X=BOTTLE.x*T-cx,Y=BOTTLE.y*T-cy;R(ctx,X+4,Y+8,8,5,'#9ad8c8');R(ctx,X+5,Y+9,6,3,'#c8f0e4');R(ctx,X+12,Y+10,2,2,'#9ad8c8');R(ctx,X+2,Y+12,2,1,'#9ad8c8');R(ctx,X+6,Y+9,3,2,'#e2741c');R(ctx,X+6,Y+9,1,1,K);R(ctx,X+8,Y+9,1,1,K);
     if(!hasEv('bottle')&&(tick>>4)%2){R(ctx,X+7,Y+1,1,5,'#fff6c8');R(ctx,X+5,Y+3,5,1,'#fff6c8')}}
   if(key==='crypt'&&mode==='play'){const[ppx,ppy]=pPix();cryptDark(ppx-cx+8,ppy-cy+4)}
