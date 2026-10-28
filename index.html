@@ -1424,6 +1424,7 @@ const ACHS=[
   {id:'h_batchat',t:'蝙蝠之間的秘密',d:'變成蝙蝠，和那隻飛不起來的小蝙蝠說上了話。',hint:'同類之間，比較好說話。'},
   {id:'h_shishono',t:'謝絕髒客',d:'全身髒兮兮的，被司書擋在展覽室門外。',hint:'有個地方，謝絕某種客人。'},
   {id:'h_cilantro',t:'香菜三倍',d:'偷喝了司書的香菜口味三倍濃縮咖啡。',hint:'有些味道，有人愛得要命，有人一口都不能碰。'},
+  {id:'h_gear',t:'全副武裝',d:'找到了阿鳳姨留下的鐵圍裙、鏡面鍋蓋，和兩個南瓜派護身符。',hint:'阿鳳姨留下的東西，不只有武器。'},
   {id:'h_horse',t:'幽靈駱馬的噴嚏',d:'和幽靈駱馬打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
@@ -2687,6 +2688,24 @@ const LOST=[
 ];
 for(const l of LOST)ITEMS['lost_'+l.id]={t:l.t+'（失物）',d:l.d+' 還給主人吧。'};
 const lostAt=(x,y)=>S&&chOf()>=1?LOST.find(l=>l.sc===S.scene&&l.x===x&&l.y===y&&!(S.flags.lostGot||[]).includes(l.id))||null:null;
+/* 阿鳳姨留下的裝備：隨著劇情推進，會在宅邸裡出現發光的小寶箱 */
+const GEAR=[
+  {id:'apron',sc:'attic',x:10,y:4,ch:2,t:['閣樓的角落，多了一個發著微光的小鐵箱。箱蓋上刻著一隻歪歪扭扭的鳳凰。','裡面摺著一件厚厚的鐵片圍裙。……穿起來意外地輕。','內側縫著一張紙條：「煎鬆餅會噴油，打怪物也會噴東西。穿好。——鳳」']},
+  {id:'lid',sc:'kitchen',x:16,y:2,ch:3,t:['鍋架旁邊，多了一個發著微光的小鐵箱。','裡面是一個亮得像鏡子的鍋蓋，照得出你的臉。','握把上刻著「鳳」。敲一下，鏘——聲音清脆得像要把什麼東西彈回去。']},
+  {id:'heart1',sc:'chapel',x:18,y:3,ch:3,t:['教堂角落的燭台下，多了一個發著微光的小鐵箱。','裡面是一個用南瓜派做成的護身符，熱熱的，聞起來好香。','你把它掛在脖子上——胸口暖了起來，好像多了一點力氣。']},
+  {id:'heart2',sc:'outside',x:41,y:24,ch:4,t:['花園最角落的草叢裡，藏著一個發著微光的小鐵箱。','裡面又是一個南瓜派護身符。這個還多灑了肉桂粉。','你把它也掛上了。……心跳變得好有精神。']},
+];
+ITEMS.g_apron={t:'阿鳳姨的鐵圍裙',d:'受到的重擊會減輕，偶爾還能把攻擊整個擋下來。'};
+ITEMS.g_lid={t:'鏡面鍋蓋',d:'飛過來的東西，有機會被彈回去打怪物。用鍋鏟打掉的東西，也會反彈回去。'};
+const gearAt=(x,y)=>S?GEAR.find(g=>g.sc===S.scene&&g.x===x&&g.y===y&&chOf()>=g.ch&&!S.flags['g_'+g.id])||null:null;
+function syncMaxHP(){MAXHP=10+2*((S&&S.flags.hearts)||0)}
+async function openGear(gr){
+  const F=S.flags;for(const t of gr.t)await n(t);F['g_'+gr.id]=1;
+  if(gr.id==='apron')addItem('g_apron');
+  else if(gr.id==='lid')addItem('g_lid');
+  else{F.hearts=(F.hearts||0)+1;syncMaxHP();P.hp=MAXHP;toast('體力上限 +1 顆心！');updateHUD()}
+  if(GEAR.every(g=>F['g_'+g.id]))ach('h_gear');
+}
 async function takeLost(l){
   await n(l.d);(S.flags.lostGot=S.flags.lostGot||[]).push(l.id);addItem('lost_'+l.id);
   await n(`這應該是${NAMES[l.owner]}的東西。`);
@@ -2804,6 +2823,10 @@ function drawMazeStuff(cx,cy,key){
       if(!F.mazeKey&&(tick>>4)%2){R(g,X+7,Y,1,5,'#fff6c8');R(g,X+5,Y+2,5,1,'#fff6c8')}}
     if(F.candyOpen){const X=-cx,Y=T-cy;R(g,X+2,Y,12,16,'#120a08');R(g,X+2,Y,12,2,'#6b4026');R(g,X+12,Y+8,2,2,'#ffd25a')}
   }
+  for(const gr of GEAR){if(gr.sc!==key||chOf()<gr.ch||F['g_'+gr.id])continue;const X=gr.x*T-cx,Y=gr.y*T-cy,gl=(tick>>3)%4?'#ffd25a':'#fff6c8';
+    g.fillStyle='rgba(255,210,90,.16)';g.beginPath();g.arc(X+8,Y+10,10+((tick>>4)%2),0,6.28);g.fill();
+    R(g,X+2,Y+5,12,10,K);R(g,X+3,Y+6,10,8,'#6a6c76');R(g,X+3,Y+9,10,1,'#3a3c44');R(g,X+7,Y+8,2,3,gl);R(g,X+3,Y+6,10,1,'#9a9ca6');
+    if(((tick+gr.x*17)%60)<10){R(g,X+12,Y+1,1,5,'#fff6c8');R(g,X+10,Y+3,5,1,'#fff6c8')}}
   if(chOf()>=1)for(const l of LOST){if(l.sc!==key||(F.lostGot||[]).includes(l.id))continue;const X=l.x*T-cx,Y=l.y*T-cy;R(g,X+6,Y+10,4,3,'rgba(201,165,122,.55)');
     if(((tick+l.x*31)%150)<14){R(g,X+8,Y+5,1,5,'#fff6c8');R(g,X+6,Y+7,5,1,'#fff6c8')}}
   if(chOf()===4&&F.riddle)for(const k in LAMP_POS){const[sc,x,y]=LAMP_POS[k];if(sc!==key)continue;drawLamp(g,x*T-cx+(k==='maze'?14:0),y*T-cy-(k==='chapel'?4:0),lampOn(k))}
@@ -3678,7 +3701,7 @@ function walkable(x,y){
   if(S.scene==='kitchen'&&ox===0&&oy===3)return chOf()===2&&!!S.flags.disc2;
   if(S.scene==='chapel'&&ox===14&&oy===9)return chOf()===4&&!!S.flags.ded4;
   if(hintSpot(x,y))return false;
-  if(lostAt(x,y))return false;
+  if(lostAt(x,y)||gearAt(x,y))return false;
   if(S.scene==='maze'){if(x===0&&y===1)return!!S.flags.candyOpen;if(S.flags.bossMaze&&x===STRAW.x&&y===STRAW.y)return false}
   if(S.scene==='crypt'&&chOf()===4&&y===8&&x>=9&&x<=12&&lampsN()<4)return false;
   if(S.scene==='roomL'&&chOf()===4&&S.flags.riddle&&x===15&&y===3)return false;
@@ -3755,6 +3778,7 @@ function objectAt(nx,ny){
   if(s==='bath'&&tileAt(nx,ny)==='~')return async()=>{const c=await choose('要泡個澡嗎？',['泡澡','不用了']);if(c===0)await takeBath()};
   {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
   {const l=lostAt(nx,ny);if(l)return()=>takeLost(l)}
+  {const gr=gearAt(nx,ny);if(gr)return()=>openGear(gr)}
   if(s==='maze'){
     if(S.flags.bossMaze&&nx===STRAW.x&&ny===STRAW.y)return strawPile;
     if(nx===0&&ny===1&&S.flags.mazeKey&&!S.flags.candyOpen)return candyDoor;
@@ -3860,7 +3884,7 @@ const FOES={
   book:{name:'書本怪',hp:4,r:5,spd:.75,dmg:1},
   ghost:{name:'南瓜幽靈',hp:44,r:11,spd:.5,dmg:2},
 };
-const MAXHP=10,GUN_MAG=6,MELEE_DMG=2,GUN_DMG=1;
+let MAXHP=10;const GUN_MAG=6,MELEE_DMG=2,GUN_DMG=1;
 /* 武器名稱（都是在宅邸裡撿到的，據說是阿鳳姨的手筆） */
 const WEAPONS={melee:{name:'阿鳳姨的改造鍋鏟'},gun:{name:'阿鳳姨的土製手槍'}};
 /* 可以翻找的地方：「場景:x,y」→ 拿到的東西（candy 糖果、ammo 子彈、melee/gun 武器）與描述。每個地方只能翻一次。 */
@@ -3989,7 +4013,11 @@ function hurtP(d){
   if(P.morph&&(P.morph.k==='monster'||P.morph.k==='ghost'))return;
   if(CB.lockKind==='boss')S.flags.bossHurt=1;
   if(CB.mini==='llama'){S.flags.llamaHurt=1;addDirt('spit')}
-  P.hp=Math.max(0,P.hp-d);P.inv=70;shake=10;CB.hurt=1;
+  if(S.flags.g_apron){
+    if(Math.random()<.25){P.inv=40;const[cx,cy]=pCenter();spark(cx,cy,'#c8cad2',8);warn('鐵圍裙擋下了攻擊！');return}
+    if(d>=2)d--;
+  }
+  P.hp=Math.max(0,P.hp-d);P.inv=S.flags.g_apron?100:70;shake=10;CB.hurt=1;
 }
 let warnT=0;
 function warn(t){if(tick-warnT>90){warnT=tick;toast(t)}}
@@ -4052,7 +4080,14 @@ function doMelee(){
   P.mcd=armed?22:18;CB.swing=10;CB.swingR=armed?13:9;
   const reach=armed?12:9,rad=armed?11:8,[cx,cy]=pCenter(),[dx,dy]=DV[P.dir],hx=cx+dx*reach,hy=cy+dy*reach;
   for(const e of CB.foes)if(e.hp>0&&!e.spawn&&!untouch(e)&&Math.hypot(e.x-hx,e.y-hy)<e.r+rad){e.by=armed?'melee':'fist';hitFoe(e,armed?MELEE_DMG:1,dx*(armed?3:2),dy*(armed?3:2))}
-  if(armed)for(const b of CB.eshots)if(b.life>0&&Math.hypot(b.x-hx,b.y-hy)<12){b.life=0;spark(b.x,b.y,'#ffd25a');achAdd('deflect')}
+  if(armed)for(const b of CB.eshots)if(b.life>0&&Math.hypot(b.x-hx,b.y-hy)<12){if(S.flags.g_lid)reflectShot(b);else{b.life=0;spark(b.x,b.y,'#ffd25a')}achAdd('deflect')}
+}
+/* 鏡面鍋蓋：把敵人的子彈彈回去（瞄準最近的災獸，沒有就原路彈回） */
+function reflectShot(b){
+  b.life=0;const sp=Math.max(2.5,Math.hypot(b.vx,b.vy)*1.6);
+  let best=null,bd=1e9;for(const e of CB.foes){if(e.hp<=0||e.spawn||e.launch||untouch(e))continue;const d=Math.hypot(e.x-b.x,e.y-b.y);if(d<bd&&d<200){bd=d;best=e}}
+  const a=best?Math.atan2(best.y-b.y,best.x-b.x):Math.atan2(-b.vy,-b.vx);
+  CB.shots.push({x:b.x,y:b.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:70,refl:1});spark(b.x,b.y,'#9ff0ff',6);
 }
 function doFire(){
   if(P.morph&&P.morph.k==='roll'){P.gcd=10;return}
@@ -4228,7 +4263,7 @@ function updateCombat(){
     b.x+=b.vx;b.y+=b.vy;b.life--;
     if(solidPx(b.x,b.y,false)&&!s.exitsN.some(e=>e[0]===Math.floor(b.x/T)&&e[1]===Math.floor(b.y/T))){b.life=0;spark(b.x,b.y,'#ffd25a',3);continue}
     if(b.hay){if(hayHit(b))b.life=0;continue}
-    for(const e of CB.foes)if(e.hp>0&&e.type!=='llama'&&!untouch(e)&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+3){e.by='gun';hitFoe(e,GUN_DMG,b.vx*.4,b.vy*.4);b.life=0;break}
+    for(const e of CB.foes)if(e.hp>0&&e.type!=='llama'&&!untouch(e)&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+3){e.by='gun';hitFoe(e,b.refl?2:GUN_DMG,b.vx*.4,b.vy*.4);b.life=0;break}
   }
   CB.shots=CB.shots.filter(b=>b.life>0);
   if(CB.mini==='llama'&&CB.hay<=0&&!CB.shots.some(b=>b.hay)&&CB.foes.some(f=>f.type==='llama'&&f.sat<LL.goal&&!f.munch))llamaFail();
@@ -4237,7 +4272,9 @@ function updateCombat(){
     b.x+=b.vx;b.y+=b.vy;b.life--;
     if(b.homing&&b.life>70){const a=Math.atan2(pcy-b.y,pcx-b.x),cur=Math.atan2(b.vy,b.vx);let dd=a-cur;dd=Math.atan2(Math.sin(dd),Math.cos(dd));const na=cur+Math.max(-.035,Math.min(.035,dd)),sp=Math.hypot(b.vx,b.vy);b.vx=Math.cos(na)*sp;b.vy=Math.sin(na)*sp}
     if(SOLID.has((s.map[Math.floor(b.y/T)]||'')[Math.floor(b.x/T)])){b.life=0;spark(b.x,b.y,'#ff7a1a',3);continue}
-    if(Math.hypot(b.x-pcx,b.y-pcy)<6){hurtP(b.dmg);b.life=0}
+    if(Math.hypot(b.x-pcx,b.y-pcy)<6){
+      if(S.flags.g_lid&&!CB.mini&&P.inv<=0&&!busy&&Math.random()<.35){reflectShot(b);warn('鏘！鏡面鍋蓋把它彈回去了！');continue}
+      hurtP(b.dmg);b.life=0}
   }
   CB.eshots=CB.eshots.filter(b=>b.life>0);
   for(const e of CB.foes)if(e.hp>0&&!e.spawn&&!e.launch&&!e.blink&&Math.hypot(e.x-pcx,e.y-pcy)<e.r+5)hurtP(FOES[e.type].dmg);
@@ -4355,7 +4392,7 @@ function drawCombat(cx,cy){
     if(d.k==='ammo'){R(g,x-4,y-2,8,5,'#5a4a2a');R(g,x-4,y-2,8,1,'#8a7a4a');R(g,x-2,y-4,1,2,'#d9a640');R(g,x,y-4,1,2,'#d9a640');R(g,x+2,y-4,1,2,'#d9a640')}
     else drawItemIcon(g,d.k,x,y)}
   for(const e of CB.foes)drawFoe(e,Math.round(e.x-cx),Math.round(e.y-cy));
-  for(const b of CB.shots){const x=Math.round(b.x-cx),y=Math.round(b.y-cy);if(b.hay){R(g,x-2,y-2,5,4,'#d9b860');R(g,x-1,y-3,1,2,'#8a9a3a');R(g,x+1,y-3,1,2,'#d9b860')}else R(g,x-1,y-1,3,3,'#fff6c8')}
+  for(const b of CB.shots){const x=Math.round(b.x-cx),y=Math.round(b.y-cy);if(b.hay){R(g,x-2,y-2,5,4,'#d9b860');R(g,x-1,y-3,1,2,'#8a9a3a');R(g,x+1,y-3,1,2,'#d9b860')}else if(b.refl){R(g,x-2,y-2,4,4,'#9ff0ff');R(g,x-1,y-1,2,2,'#fff')}else R(g,x-1,y-1,3,3,'#fff6c8')}
   for(const sl of CB.slimes||[])drawSlime(g,Math.round(sl.x-cx),Math.round(sl.y-cy),sl.t);
   for(const b of CB.eshots){const x=Math.round(b.x-cx),y=Math.round(b.y-cy);
     if(b.k==='seed'){R(g,x-2,y-2,4,4,K);R(g,x-1,y-1,2,2,'#c89a4a')}else if(b.k==='missile'){const a=Math.atan2(b.vy,b.vx),ex=Math.round(Math.cos(a)*3),ey=Math.round(Math.sin(a)*3);R(g,x-2,y-2,5,5,'#e0213a');R(g,x-1,y-1,3,3,'#efe8dc');R(g,x+ex-1,y+ey-1,2,2,'#ffd25a');R(g,x-ex-1,y-ey-1,2,2,'#ff5fa2')}else if(b.k==='candy'){R(g,x-2,y-2,4,4,'#ff5fa2');R(g,x-1,y-1,2,2,'#fff');R(g,x-4,y-1,2,2,'#ff5fa2');R(g,x+2,y-1,2,2,'#ff5fa2')}else if(b.k==='spit'){R(g,x-2,y-2,5,5,'rgba(220,240,255,.85)');R(g,x-1,y-1,2,2,'#fff')}else if(b.k==='eye'){R(g,x-2,y-2,4,4,'#ff3030');R(g,x-1,y-1,2,2,'#ffd0d0')}else if(b.k==='thorn'){R(g,x-2,y-1,5,3,'#1f3a22');R(g,x-1,y-1,2,1,'#c8202a')}else{R(g,x-2,y-2,5,5,'#ff7a1a');R(g,x-1,y-1,3,3,'#ffd25a')}}
@@ -4376,7 +4413,7 @@ function pxText(t,x,y,c){for(const ch of String(t)){const m=PXD[ch];if(m)for(let
 function drawHUD(){
   if(!S.inv)S.inv={candy:0,ammo:0};
   if(CB.hurt>0){ctx.fillStyle=`rgba(200,20,30,${CB.hurt*.3})`;ctx.fillRect(0,0,320,208)}
-  const itemsH=[...Object.keys(SNACK),'magic'].filter(k=>S.inv[k]>0),hw=Math.max(50,(S.flags.gun?50:5)+itemsH.length*27);
+  const itemsH=[...Object.keys(SNACK),'magic'].filter(k=>S.inv[k]>0),hw=Math.max(8+MAXHP/2*9,(S.flags.gun?50:5)+itemsH.length*27);
   R(ctx,2,2,hw,itemsH.length||S.flags.gun?21:12,'rgba(14,10,12,.65)');
   ctx.font='8px DotGothic16, monospace';ctx.textBaseline='top';
   for(let i=0;i<MAXHP/2;i++){
@@ -4658,7 +4695,8 @@ $('tChars').onclick=()=>{S=S||null;openNote('chars')};
 function startPlay(isNew){
   mode='play';$('title').hidden=true;$('hud').style.visibility='visible';
   if(S.v!==2){[S.x,S.y]=toNew(S.scene,S.x,S.y);S.v=2}
-  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,hp:S.hp>0?S.hp:MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
+  syncMaxHP();
+  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
   clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
   applyWorld();spawnSlimes();fade=1;nextBlack=60*45;blackOn=0;updateHUD();
