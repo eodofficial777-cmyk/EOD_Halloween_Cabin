@@ -3511,7 +3511,7 @@ async function talk(id){
         addEv('ian');
         await say('ian','找到兇手的話跟我說！大叔我替你出頭！');return;
       }
-      return say('ian',['對了，揮棒的時候別站在我後面！上次小波就被我揮到屋頂上了，哈哈！','有空幫大叔我看看小白，那丫頭又在外面躺一整天了，別讓她著涼啊！','部長那杯香菜咖啡，大叔我喝過一口，比被怪物揍還痛！哈哈！'][(S.flags.ianR=(S.flags.ianR||0)+1)%3]);
+      return say('ian',['對了，揮棒的時候別站在我後面！上次小波就被我揮到屋頂上了，哈哈！','有空幫大叔我看看小白，那孩子又在外面躺一整天了，別讓她著涼啊！','部長那杯香菜咖啡，大叔我喝過一口，比被怪物揍還痛！哈哈！'][(S.flags.ianR=(S.flags.ianR||0)+1)%3]);
     case 'ji':
       if(!hasEv('potion')){
         await n('薊身上的玻璃藥瓶叮叮噹噹地響，空氣裡有股讓人想笑的香味。');
@@ -3855,7 +3855,7 @@ async function talk3(id){
         await say('ian','喂喂，該不會是我把大姊頭打飛的吧？哈哈哈！不會啦不會啦！');
         addEv('ianhr');return;
       }
-      await say('ian','要把南瓜劈開嗎？交給我，一鏟子就搞定！');return say('ian','啊，小白會生氣吧。算了算了！');
+      await say('ian','要把南瓜劈開嗎？交給我，一鏟子就搞定！');return say('ian','啊，那孩子會生氣吧。算了算了！');
     case 'lala':
       if(F.needLadder&&!hasItem('ladder')&&!F.ladderSet){
         if(F.stackEaten){
