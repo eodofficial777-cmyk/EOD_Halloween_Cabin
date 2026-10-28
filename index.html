@@ -61,6 +61,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #choices button.sel::before{content:'▶';position:absolute;left:5px;color:var(--gold);font-size:11px;top:50%;transform:translateY(-50%)}
 #choices button.dis{color:#8a7a6a}
 
+#sokoBar{position:absolute;right:1.5%;bottom:3%;display:flex;gap:6px;z-index:5}#sokoBar[hidden]{display:none}
+#sokoBar button{font:inherit;font-size:clamp(11px,1.6cqw,16px);padding:3px 10px;background:rgba(20,14,16,.85);color:var(--cream);border:2px solid var(--cream);border-radius:2px;cursor:pointer}
+#sokoBar button:hover{background:rgba(142,28,28,.95)}
 #toast{position:absolute;top:4%;left:50%;transform:translateX(-50%);padding:4px 14px;font-size:clamp(12px,1.9cqw,19px);white-space:nowrap;background:rgba(142,28,28,.95);border:2px solid var(--cream);border-radius:2px;pointer-events:none}
 
 /* Portraits (RMVA 式半身立繪) */
@@ -222,6 +225,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div id="dlg" class="win" hidden><canvas id="face" width="24" height="24"></canvas><div class="dbody"><div id="dname"></div><div id="dtext"></div></div><div class="next">▼</div></div>
     <div id="choices" class="win" hidden></div>
     <div id="toast" hidden></div>
+    <div id="sokoBar" hidden><button type="button" id="sokoUndo">↶ 上一步</button><button type="button" id="sokoReset">⟲ 重來</button></div>
     <div id="bossbar" hidden><span>南瓜稻草人</span><i><b id="bossfill"></b></i></div>
     <div id="idleSay" class="idle-t bub" hidden></div><div id="idleHint" class="idle-t" hidden></div>
     <div id="achPop" role="status" hidden><span aria-hidden="true">🏆</span><div><i></i><b></b></div></div>
@@ -1835,7 +1839,7 @@ async function talk0(id){
         await n('IAN 拄著鏟子，看著墓園。');
         await say('ian','喲！來得正好！這裡等一下會冒出一大堆怪物！');
       }
-      await say('ian','你會丟球嗎？不會也沒關係，大哥教你！');
+      await say('ian','你會丟球嗎？不會也沒關係，大叔我教你！');
       await say('ian','我們來玩怪物棒球吧！你把怪物抓來丟給我，我負責把牠們全部揮出去！');
       await say('ian','丟得越準越好！正中紅心的話，我保證把牠打到森林另一頭！');
       await n('（打倒災獸時，會自動收進怪物袋。抓到之後回來找 IAN。）');
@@ -1916,8 +1920,8 @@ async function ianDrink(){
   if(NPCS.ian.state==='upper'){
     await say('ian','藥水？等等，該不會是長大藥水吧？我才剛因為那個斷成兩截耶！');
     await say('me','是薊的，標籤上是荊棘，不是南瓜。');
-    await say('ian','那就好！好，大哥來試！一口乾了！');
-  }else await say('ian','薊的藥水啊？好，大哥來試！一口乾了！');
+    await say('ian','那就好！好，大叔我來試！一口乾了！');
+  }else await say('ian','薊的藥水啊？好，大叔我來試！一口乾了！');
   await n('IAN 一口氣把整瓶藥水灌了下去。');shake=12;
   await n('……啪。啪。');
   await n('他的背後，又長出了兩隻手。');
@@ -2523,7 +2527,7 @@ async function pitchSession(){
     if(res===0)q.strikes++;else q.strikes=0;
     if(q.strikes>=3){
       await say('ian','哎呀，三振！今天手感不太好！');
-      await say('ian','來，換你揮揮看！別怕，大哥幫你顧著！');
+      await say('ian','來，換你揮揮看！別怕，大叔我幫你顧著！');
       await n('IAN 把鏟子塞到你手裡，自己抓起一隻怪物，輕輕一拋——');
       await n('你閉上眼睛，用力一揮。');
       await n('……鏘！！');
@@ -2916,7 +2920,7 @@ async function openGear(gr){
   checkWude();
 }
 /* 阿鳳姨的鍋鏟、土製手槍、鐵圍裙、鏡面鍋蓋全部到手 → 稱號「武德豐沛」 */
-const WUDE_LINE={ian:'喲！全副武裝啦！這身武德，大哥都要敬你三分！',ji:'鍋鏟、手槍、鐵圍裙、鍋蓋……你是要去打仗還是去煎鬆餅？……兩個都很適合你啦～',
+const WUDE_LINE={ian:'喲！全副武裝啦！這身武德，大叔我都要敬你三分！',ji:'鍋鏟、手槍、鐵圍裙、鍋蓋……你是要去打仗還是去煎鬆餅？……兩個都很適合你啦～',
   shisho:'……武德豐沛。這四個字，我在一本書裡讀過。那本書很難吃。',lala:'哇！那是阿鳳姨的鍋鏟跟鍋蓋！你、你也是煎鬆餅的同好嗎！？',
   boss:'……全身叮叮噹噹的。好吵。……不過，看起來很可靠。',sui:'好帥！借我那個鍋蓋！我要拿來當盾牌，保護我的頭！',
   po:'……好重的樣子。……管他的，看起來很強。',kaicho:'……阿鳳姨的裝備。她要是知道有人全部找齊，一定會很高興。'};
@@ -3202,7 +3206,7 @@ async function talk(id){
         await say('ian','我說可以分他一點血，他看了看我身上的縫線，就說不用了！');
         await say('ian','我的血有那麼難喝嗎？哈哈，下次我先洗個澡再問他！');
         addEv('ian');
-        await say('ian','找到兇手的話跟我說！大哥替你出頭！');return;
+        await say('ian','找到兇手的話跟我說！大叔我替你出頭！');return;
       }
       return say('ian','對了，揮棒的時候別站在我後面！上次小波就被我揮到屋頂上了，哈哈！');
     case 'ji':
@@ -3467,7 +3471,7 @@ async function po2(){
   Object.assign(NPCS.ian,{scene:'hall',x:toNew('hall',10,11)[0],y:toNew('hall',10,11)[1],dir:'up',mv:null,queue:[],patrol:null});
   await walkTo('ian',10,5,1.6,true);NPCS.ian.dir='left';
   await say('ian','又滾下來啦？');
-  await say('ian','睡覺就該在床上睡嘛！來，大哥扛你回去！');
+  await say('ian','睡覺就該在床上睡嘛！來，大叔我扛你回去！');
   NPCS.po.state='stand';
   const up=Promise.all([walkTo('ian',10,2,1.2),sleep(200).then(()=>walkTo('po',9,2,1.2))]);
   await n('IAN 一把扛起小波，像扛一袋麵粉，一步一步走上樓梯。');
@@ -3639,7 +3643,7 @@ async function talk4(id){
         await say('ian','——啪！就斷成兩截啦！');
         addEv('cut');return;
       }
-      if(F.ded4)return say('ian','地下室的南瓜是吧！走，大哥陪你一起去揍他！');
+      if(F.ded4)return say('ian','地下室的南瓜是吧！走，大叔我陪你一起去揍他！');
       {const miss=REQ4.filter(k=>!hasEv(k));
       if(miss.length){await n(`線索還不夠，現在還沒辦法推理。（關鍵線索 ${REQ4.length-miss.length}/${REQ4.length}）`);return n('可以再去查查看：'+HINT4[miss[0]]+'。')}}
       if((await choose('要把大家叫來，公布推理嗎？',['公布推理','再調查一下']))===1)return;
@@ -3821,7 +3825,7 @@ async function finalEnding(){
   await say('ghost','……因為你力氣最大，大家一下子就相信了嘛。嘻嘻。');
   await n('拉拉氣得把旁邊的棺材整個舉了起來。……大家默默退後了一步。');
   await n('真相大白之後，大家互相看了看。');
-  await say('ian','第一天被關進儲藏室的小波是冤枉的啊！小波，對不起，大哥欠你一頓宵夜！');
+  await say('ian','第一天被關進儲藏室的小波是冤枉的啊！小波，對不起，大叔我欠你一頓宵夜！');
   await say('ji','拉拉被懷疑了兩次呢～放走小波一次，砍斷 IAN 一次。');
   await say('lala','兩次！！整整兩次！！');
   await say('sui','還有首領～我們還說他把我的頭藏起來……');
@@ -3953,10 +3957,10 @@ function onArrive(){
   stepHazard();
 }
 /* ---------------- 南瓜田深處：推南瓜寶寶回苗床 ---------------- */
-let PFB=[];
+let PFB=[],PFH=[];
 const sokoOf=()=>S?SOKO[S.scene]||null:null;
 const sokoSt=k=>{const F=S.flags;F.soko=F.soko||{};return F.soko[k]=F.soko[k]||{}};
-function sokoInit(k){const v=SOKO[k],st=sokoSt(k);PFB=(st.solved?v.tg:v.boxes).map(([x,y])=>({x,y,fx:x*T,fy:y*T,rot:0}))}
+function sokoInit(k){const v=SOKO[k],st=sokoSt(k);PFH=[];PFB=(st.solved?v.tg:v.boxes).map(([x,y])=>({x,y,fx:x*T,fy:y*T,rot:0}))}
 const pfAt=(x,y)=>sokoOf()?PFB.find(b=>b.x===x&&b.y===y)||null:null;
 const pfOnT=b=>sokoOf().tg.some(([x,y])=>x===b.x&&y===b.y);
 const pfGate=(x,y)=>{const v=sokoOf();return v&&v.gate[0]===x&&v.gate[1]===y};
@@ -3965,6 +3969,7 @@ function pfPush(b,dx,dy){
   const v=sokoOf(),st=sokoSt(S.scene);if(st.solved)return warn('南瓜寶寶已經睡在苗床上了，別吵醒它們。');
   const nx=b.x+dx,ny=b.y+dy;
   if(tileAt(nx,ny)!=='a'||pfAt(nx,ny)||pfGate(nx,ny))return warn('推不動……後面卡住了。（卡關的話，對南瓜按調查鍵可以重來）');
+  PFH.push({b:PFB.map(q=>[q.x,q.y]),p:[P.x,P.y,P.dir]});if(PFH.length>200)PFH.shift();
   b.x=nx;b.y=ny;S.flags.pfPush=(S.flags.pfPush||0)+1;if(S.flags.pfPush>=15)ach('h_pfpush');
   if(v.tg.every(([x,y])=>PFB.some(q=>q.x===x&&q.y===y)))setTimeout(()=>run(sokoSolved),350);
 }
@@ -3974,11 +3979,22 @@ async function sokoSolved(){
   if(v.next){await n('田埂盡頭的南瓜藤「沙沙沙」地退開，讓出了一條路。');gainLoot(v.reward)}
   else{await n('田埂盡頭的南瓜藤退開了。後面，坐著一顆比你還大的南瓜。');if(!st.resets)ach('h_pfclean')}
 }
+/* 快速重來／上一步（按鍵 R、U 或畫面右下角的按鈕） */
+function sokoReset(){
+  const k=S&&S.scene,v=SOKO[k];if(!v||busy||P.moving)return;const st=sokoSt(k);if(st.solved)return warn('這塊田已經完成了。');
+  st.resets=(st.resets||0)+1;sokoInit(k);Object.assign(P,{x:v.start[0],y:v.start[1],dir:'right',moving:false,prog:0});fade=.5;toast('重來！南瓜寶寶回到原位了。');
+}
+function sokoUndo(){
+  const k=S&&S.scene,v=SOKO[k];if(!v||busy||P.moving)return;if(sokoSt(k).solved)return;
+  const h=PFH.pop();if(!h)return warn('已經是最一開始了。');
+  h.b.forEach(([x,y],i)=>{PFB[i].x=x;PFB[i].y=y});[P.x,P.y,P.dir]=h.p;P.moving=false;P.prog=0;
+}
+function sokoBarSync(){const on=!!(S&&mode==='play'&&SOKO[S.scene]&&!sokoSt(S.scene).solved&&!busy);const el=$('sokoBar');if(el.hidden===on)el.hidden=!on}
 async function pfPoke(){
   const k=S.scene,st=sokoSt(k);
   if(st.solved)return n('南瓜寶寶睡在苗床上，發出咕嚕、咕嚕的聲音。');
-  const c=await choose('南瓜寶寶歪著頭看你。要重來這塊田嗎？（南瓜和你都會回到原位）',['重來','不用']);if(c===1)return;
-  st.resets=(st.resets||0)+1;sokoInit(k);const v=SOKO[k];Object.assign(P,{x:v.start[0],y:v.start[1],dir:'right',moving:false,prog:0});fade=.6;
+  const c=await choose('南瓜寶寶歪著頭看你。要怎麼做？',['重來這塊田','退回上一步','不用']);
+  if(c===0){busy=false;sokoReset()}else if(c===1){busy=false;sokoUndo()}
 }
 async function pfEnd(){
   const F=S.flags;
@@ -3995,9 +4011,9 @@ async function sokoIntro(k){
   if(k==='pf1'&&!F.pfIntro){F.pfIntro=1;
     await n('田埂上立著一塊歪歪的木牌：');
     await n('「南瓜寶寶們又到處亂滾了。請把它們推回發光的苗床上，睡飽了，路就會打開。」');
-    await n('「注意：南瓜只能推，不能拉。卡住的話，對南瓜寶寶說一聲，就能重來。——南瓜田管理員」');
+    await n('「注意：南瓜只能推，不能拉。卡住的話，隨時可以重來，或是退回上一步。——南瓜田管理員」');
   }
-  if(!sokoSt(k).solved)toast(`第 ${i}／3 塊田：把南瓜寶寶推回發光的苗床`);
+  if(!sokoSt(k).solved){toast(`第 ${i}／3 塊田：把南瓜寶寶推回發光的苗床（${isTouch?'右下角按鈕可以重來或退一步':'R 重來・U 上一步'}）`);toastT=300}
 }
 function pfTick(){
   if(!sokoOf())return;
@@ -4067,6 +4083,7 @@ function update(){
   idleTick();
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
   if(mode==='play')pfTick();
+  sokoBarSync();
   if(mode==='play'&&!busy){if(P.stun>0)P.stun--;if(P.sticky>0)P.sticky--;if(P.hazCd>0)P.hazCd--}
   if(P.morph&&mode==='play'&&!busy&&--P.morph.t<=0){P.morph=null;toast('藥效退了，你變回原樣了。')}
   if(toastT>0&&--toastT===0)$('toast').hidden=true;
@@ -4978,7 +4995,7 @@ function renderNote(){
     body.appendChild(l);
   }else{
     const groups=[['協會',[['kaicho','吸血鬼。平常不太喝血，要有人逼才肯喝，所以常常貧血發呆。熱愛番茄汁。'],['shisho','長角的惡魔。比起收集靈魂，更喜歡吃書，總是待在有書的地方。'],['sui','無頭騎士杜拉罕。常騎著幽靈駱馬在森林外圍徘徊，抱著自己的腦袋甩來甩去，似乎不會頭暈。'],['lala','德州電鋸殺人魔。能舉起來的不只電鋸，還有古典壁畫和大理石雕像。平常在廚房做好吃的鬆餅。']]],
-      ['夜鷺',[['boss','傑克南瓜。失去了讀取資訊的超能力，顯得特別懶洋洋，只想跟外面的大南瓜待在一起。'],['ian','大塊頭科學怪人。豪爽又愛照顧人，是大家的大哥。拿鏟子當武器，把怪物當棒球揮出去，同時小心別把自己弄散架。'],['ji','身纏荊棘的花草女巫。玻璃藥劑叮噹作響，藥水會讓人快樂，似乎加了某種葉子有七片尖角的草。問她是什麼，只會笑著說是「個人秘方」。'],['po','披著床單的小幽靈。隨處倒頭就睡，有時從樓梯滾下來變成一坨布，睡飽了又披著床單亂晃。']]]];
+      ['夜鷺',[['boss','傑克南瓜。失去了讀取資訊的超能力，顯得特別懶洋洋，只想跟外面的大南瓜待在一起。'],['ian','大塊頭科學怪人。豪爽又愛照顧人，是大家可靠的四十五歲大叔。拿鏟子當武器，把怪物當棒球揮出去，同時小心別把自己弄散架。'],['ji','身纏荊棘的花草女巫。玻璃藥劑叮噹作響，藥水會讓人快樂，似乎加了某種葉子有七片尖角的草。問她是什麼，只會笑著說是「個人秘方」。'],['po','披著床單的小幽靈。隨處倒頭就睡，有時從樓梯滾下來變成一坨布，睡飽了又披著床單亂晃。']]]];
     for(const [gname,list] of groups){
       const h=document.createElement('h3');h.textContent=gname;body.appendChild(h);
       const wrap=document.createElement('div');wrap.className='chars';
@@ -5083,7 +5100,8 @@ window.addEventListener('keydown',e=>{
   const lk=e.key.toLowerCase();
   if(lk==='j'||lk==='x'){e.preventDefault();if(!busy){meleeHeld=true;if(!e.repeat)meleeQ=20}return}
   if(lk==='k'||lk==='c'){e.preventDefault();if(!busy){gunHeld=true;if(!e.repeat)gunQ=20}return}
-  if(lk==='r'){if(!busy)startReload();return}
+  if(lk==='r'){if(!busy){if(S&&SOKO[S.scene])sokoReset();else startReload()}return}
+  if(lk==='u'||e.key==='Backspace'){if(!busy&&S&&SOKO[S.scene]){e.preventDefault();sokoUndo()}return}
   if(lk==='h'||lk==='q'){if(!busy)useCandy();return}
   if(lk==='v'){if(!busy)useMagic();return}
   const d=KEYDIR[e.key];
@@ -5104,6 +5122,7 @@ document.querySelectorAll('.dpad button').forEach(b=>{
 [['pM',v=>{meleeHeld=v;if(v)meleeQ=20}],['pG',v=>{gunHeld=v;if(v)gunQ=20}]].forEach(([id,f])=>{const b=$(id);
   b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}if(!busy)f(true)});['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>f(false)))});
 $('pH').addEventListener('pointerdown',e=>{e.preventDefault();useCandy()});
+$('sokoReset').addEventListener('click',e=>{e.preventDefault();sokoReset()});$('sokoUndo').addEventListener('click',e=>{e.preventDefault();sokoUndo()});
 $('cv').addEventListener('pointerdown',e=>{if(PITCH&&dlgRes){e.preventDefault();dlgRes()}});
 $('pA').addEventListener('pointerdown',e=>{e.preventDefault();if(choiceState)pickChoice();else if(dlgRes)advance();else interact()});
 $('stage').addEventListener('click',e=>{if(mode==='play'&&!busy&&e.target===cv)interact()});
