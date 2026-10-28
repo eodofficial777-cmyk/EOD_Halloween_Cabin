@@ -2004,50 +2004,96 @@ function catchFoe(e){
   q.sack=q.sack||[];if(q.sack.length>=3)return;
   q.sack.push(e.type);toast(`抓到${FOES[e.type].name}了！（怪物袋 ${q.sack.length}/3）`);
 }
+/* 一球：指針左右來回擺動，按一下投出。停得越靠中間（紅色），IAN 越容易打出全壘打。
+   之後播放：投手出手 → 怪物飛向本壘 → IAN 揮棒 → 擊球結果 */
+const PZ=[[.12,3],[.35,2],[.65,1]];
 function pitchOne(m,q){
   return new Promise(res=>{
     dlg.hidden=true;clearPorts();
-    PITCH={m,ph:'x',t:0,lx:0,ly:0,w:.075+Math.min(.05,(q.hr||0)*.012),arms:!!S.flags.ianArms};
+    PITCH={m,ph:'aim',t:0,x:0,w:.055+Math.min(.04,(q.hr||0)*.012),arms:!!S.flags.ianArms,hr:q.hr||0,strikes:q.strikes||0,left:q.sack.length,fin:res,trail:[]};
     dlgRes=()=>{
-      if(!PITCH)return;
-      if(PITCH.ph==='x'){PITCH.lx=Math.sin(PITCH.t*PITCH.w);PITCH.ph='y';PITCH.t=0}
-      else if(PITCH.ph==='y'){
-        PITCH.ly=Math.sin(PITCH.t*PITCH.w*1.15);const d=Math.hypot(PITCH.lx,PITCH.ly);
-        PITCH.res=d<.2?3:d<.45?2:d<.75?1:0;PITCH.ph='fly';PITCH.t=0;dlgRes=null;
-        setTimeout(()=>{PITCH=null;res(PITCH_RES)},1500);PITCH_RES=PITCH.res;
-      }
+      const p=PITCH;if(!p||p.ph!=='aim')return;
+      p.x=Math.sin(p.t*p.w);const d=Math.abs(p.x);p.res=(PZ.find(z=>d<z[0])||[0,0])[1];
+      p.ph='go';p.t=0;p.end=160;dlgRes=null;
     };
   });
 }
-let PITCH_RES=0;
+function pitchTick(){
+  const p=PITCH;if(!p)return;p.t++;
+  if(p.ph!=='go')return;
+  if(p.t===52){if(p.res>0)shake=p.res*3}
+  if(p.t>=p.end){PITCH=null;p.fin(p.res)}
+}
+const PIT={hx:86,hy:112,zx:240,zy:132};
+function pitchBall(p){
+  /* 回傳怪物目前的位置、縮放與旋轉 */
+  const t=p.t,endY=PIT.zy+p.x*28;
+  if(t<18)return{x:PIT.hx-4-Math.sin(t/18*Math.PI)*10,y:PIT.hy-14-Math.sin(t/18*Math.PI)*4,s:1.4,r:0};
+  if(t<52){const u=(t-18)/34;return{x:PIT.hx+(PIT.zx-PIT.hx)*u,y:PIT.hy+(endY-PIT.hy)*u-Math.sin(u*Math.PI)*34,s:1.4,r:u*9}}
+  const k=(t-52)/90,x0=PIT.zx,y0=endY;
+  if(p.res===3)return{x:x0-k*300,y:y0-Math.sin(Math.min(1,k*1.3)*Math.PI/2)*150,s:1.4*(1-k*.8),r:t*.5};
+  if(p.res===2){const bx=x0-k*190,hop=Math.abs(Math.sin(k*Math.PI*2.2))*(1-k)*60;return{x:bx,y:178-hop,s:1.4,r:t*.4}}
+  if(p.res===1)return{x:x0+k*110,y:y0-Math.sin(k*Math.PI*.6)*120,s:1.4*(1-k*.5),r:t*.4};
+  return{x:x0+k*130,y:Math.min(178,y0+k*60),s:1.4,r:k<.4?t*.3:0};
+}
 function drawPitch(){
-  if(!PITCH)return;const g=ctx,p=PITCH,CX=120,CY=96,RR=48;
-  g.fillStyle='rgba(8,5,7,.82)';g.fillRect(0,0,320,208);
-  const ring=[[RR,'#efe8dc'],[RR*.75,'#2b4a6a'],[RR*.45,'#efe8dc'],[RR*.2,'#c8202a']];
-  for(const[r,c]of ring){g.fillStyle=c;g.beginPath();g.arc(CX,CY,r,0,6.28);g.fill()}
-  g.strokeStyle=K;g.lineWidth=1;for(const[r]of ring){g.beginPath();g.arc(CX,CY,r,0,6.28);g.stroke()}
-  let x=p.lx,y=p.ly;
-  if(p.ph==='x'){x=Math.sin(p.t*p.w);R(g,CX-RR,CY,RR*2,1,'rgba(255,246,200,.35)')}
-  if(p.ph==='y'){y=Math.sin(p.t*p.w*1.15);R(g,CX+x*RR,CY-RR,1,RR*2,'rgba(255,246,200,.35)')}
-  const rx=Math.round(CX+x*RR),ry=Math.round(CY+y*RR);
-  if(p.ph!=='fly'){R(g,rx-6,ry,13,1,'#ffd25a');R(g,rx,ry-6,1,13,'#ffd25a');R(g,rx-2,ry-2,5,5,'rgba(255,210,90,.35)')}
-  /* IAN 在右邊，把怪物打出去 */
-  g.save();g.translate(236,92);g.scale(2,2);drawChar(g,'ian','down',0,tick);g.restore();
-  if(p.ph==='fly'){
-    const k=Math.min(1,p.t/40),txt=['揮空！','界外球','安打！','全壘打！！'][p.res];
-    let mx=rx+(250-rx)*Math.min(1,k*2),my=ry+(130-ry)*Math.min(1,k*2);
-    if(k>.5){const k2=(k-.5)*2;if(p.res===3){mx=250+k2*120;my=130-k2*160}else if(p.res===2){mx=250-k2*80;my=130-k2*60}else if(p.res===1){mx=250+k2*40;my=130+k2*20}else{mx=250+k2*30;my=150}}
-    drawFoe({type:p.m,t:tick,x:0,y:0,hp:1,max:1,face:1,flash:0,state:'walk'},Math.round(mx),Math.round(my));
-    if(k>.45){g.strokeStyle='rgba(255,246,200,.8)';g.lineWidth=2;g.beginPath();g.arc(254,120,22,-1.8,.4);g.stroke()}
-    g.font='16px DotGothic16, monospace';g.textAlign='center';g.textBaseline='middle';g.fillStyle=K;g.fillText(txt,161,31);g.fillStyle=p.res===3?'#ffd25a':'#efe8dc';g.fillText(txt,160,30);
-  }else{
-    drawFoe({type:p.m,t:tick,x:0,y:0,hp:1,max:1,face:1,flash:0,state:'walk'},36,150);
-    g.font='8px DotGothic16, monospace';g.textAlign='left';g.textBaseline='top';g.fillStyle='#efe8dc';
-    g.fillText(p.ph==='x'?'① 定住左右':'② 定住上下',14,14);g.fillStyle='#b9a58e';g.fillText(isTouch?'按 A 鍵':'按 Z／空白／Enter',14,26);
+  if(!PITCH)return;const g=ctx,p=PITCH,t=p.t;
+  /* 夜晚的球場 */
+  const sky=g.createLinearGradient(0,0,0,96);sky.addColorStop(0,'#0c0814');sky.addColorStop(1,'#2a1a2e');g.fillStyle=sky;g.fillRect(0,0,320,96);
+  g.fillStyle='rgba(255,246,200,.85)';g.beginPath();g.arc(298,52,9,0,6.28);g.fill();g.fillStyle='#0c0814';g.beginPath();g.arc(303,49,8,0,6.28);g.fill();
+  R(g,0,70,320,26,'#140e18');for(let i=0;i<16;i++){R(g,4+i*20,64+(i%3)*2,14,8,'#1c1420');const gl=((tick>>4)+i)%7?'#e2741c':'#ffd25a';R(g,9+i*20,74,4,3,gl)}
+  R(g,0,92,320,116,'#1f3a22');for(let i=0;i<8;i++)R(g,0,96+i*14,320,7,'#234226');
+  g.fillStyle='#6b4a2a';g.beginPath();g.ellipse(160,150,120,26,0,0,6.28);g.fill();
+  g.fillStyle='#7a5532';g.beginPath();g.ellipse(70,152,26,8,0,0,6.28);g.fill();
+  R(g,236,154,14,4,'#efe8dc');R(g,238,158,10,2,'#efe8dc');
+  /* 好球帶 */
+  const zg=p.ph==='aim'?.35+Math.sin(tick/8)*.15:.18;
+  g.strokeStyle=`rgba(255,246,200,${zg})`;g.lineWidth=1;g.strokeRect(232.5,118.5,16,28);
+  /* 投手（玩家） */
+  const wind=p.ph==='go'&&t<18,thrown=p.ph==='go'&&t>=18;
+  const lean=wind?-Math.sin(t/18*Math.PI)*3:thrown&&t<34?4-(t-18)/4:0,sk=playerDef().o.skin;
+  g.save();g.translate(54+lean,104);g.scale(2,2);drawChar(g,'me','right',0,tick);g.restore();
+  /* 投球的手臂：舉高 → 往後拉 → 往前甩 */
+  if(p.ph==='aim'||wind){const bx=lean;R(g,80+bx,100,4,20,K);R(g,81+bx,101,2,18,sk)}
+  else if(thrown&&t<34){const u=Math.min(1,(t-18)/6);R(g,78+lean,116,8+u*14,4,K);R(g,79+lean,117,6+u*14,2,sk);
+    if(t<26){g.strokeStyle='rgba(255,246,200,.7)';g.lineWidth=2;g.beginPath();g.arc(80,118,18,-1.6,.2);g.stroke();g.beginPath();g.arc(80,118,12,-1.4,0);g.stroke()}}
+  /* IAN 與鏟子 */
+  g.save();g.translate(244,100);g.scale(2,2);drawChar(g,'ian','left',0,tick);g.restore();
+  const sw=p.ph==='go'?Math.max(0,Math.min(1,(t-44)/10)):0,ang=-2.3+sw*(p.res===0?2.6:2.1),hx=250,hy=128;
+  const ex=hx+Math.cos(ang)*26,ey=hy+Math.sin(ang)*26;
+  g.strokeStyle='#7a5332';g.lineWidth=3;g.beginPath();g.moveTo(hx,hy);g.lineTo(ex,ey);g.stroke();
+  g.save();g.translate(ex,ey);g.rotate(ang);R(g,-2,-5,9,10,K);R(g,-1,-4,7,8,'#9aa0a6');R(g,0,-4,2,8,'#c9ced4');g.restore();
+  if(sw>0&&sw<1){g.strokeStyle='rgba(255,246,200,.6)';g.lineWidth=2;g.beginPath();g.arc(hx,hy,24,-2.3,ang);g.stroke()}
+  /* 怪物 */
+  let b=p.ph==='aim'?{x:PIT.hx-4,y:PIT.hy-14+Math.sin(tick/10)*2,s:1.4,r:0}:pitchBall(p);
+  if(p.ph==='go'&&t>=18){p.trail.push([b.x,b.y]);if(p.trail.length>10)p.trail.shift();
+    p.trail.forEach(([x,y],i)=>{g.fillStyle=`rgba(255,${p.res===3&&t>52?210:246},${p.res===3&&t>52?90:200},${i/30})`;g.beginPath();g.arc(x,y,2+i*.3,0,6.28);g.fill()})}
+  if(p.ph==='go'&&t>=18&&t<52){const u=(t-18)/34;g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(PIT.hx+(PIT.zx-PIT.hx)*u,160,6,2,0,0,6.28);g.fill()}
+  g.save();g.translate(b.x,b.y);g.rotate(b.r);g.scale(b.s,b.s);drawFoe({type:p.m,t:tick,x:0,y:0,hp:1,max:1,face:1,flash:0,state:'walk'},0,0);g.restore();
+  /* 擊中瞬間 */
+  if(p.ph==='go'&&t>=52&&t<60&&p.res>0){g.fillStyle=`rgba(255,255,255,${(60-t)/8*(p.res===3?.7:.35)})`;g.fillRect(0,0,320,208);
+    g.strokeStyle='#ffd25a';g.lineWidth=2;for(let i=0;i<8;i++){const a=i/8*6.28;g.beginPath();g.moveTo(PIT.zx+Math.cos(a)*6,PIT.zy+p.x*28+Math.sin(a)*6);g.lineTo(PIT.zx+Math.cos(a)*16,PIT.zy+p.x*28+Math.sin(a)*16);g.stroke()}}
+  if(p.ph==='go'&&p.res===3&&t>130){const k=(t-130)/10,gl=(tick>>2)%2?'#fff6c8':'#ffd25a';R(g,22,30-2,1,5,gl);R(g,20,30,5,1,gl);if(k<1){g.fillStyle=`rgba(255,210,90,${1-k})`;g.beginPath();g.arc(22,30,8*k+2,0,6.28);g.fill()}}
+  /* 記分板 */
+  R(g,206,4,110,30,'rgba(14,10,12,.8)');g.font='8px DotGothic16, monospace';g.textBaseline='top';g.textAlign='left';
+  g.fillStyle='#ffd25a';g.fillText('全壘打',212,8);for(let i=0;i<3;i++){R(g,248+i*9,9,6,6,i<p.hr?'#ffd25a':'#3a2a2a')}
+  g.fillStyle='#e8d9bf';g.fillText('好球',212,20);for(let i=0;i<3;i++){R(g,248+i*9,21,6,6,i<p.strikes?'#e0213a':'#3a2a2a')}
+  g.fillStyle='#b9a58e';g.fillText('袋 '+p.left,284,20);
+  /* 時機條 */
+  if(p.ph==='aim'){
+    const BX=40,BW=150,BY=14,cx=BX+BW/2;R(g,BX-3,BY-3,BW+6,30,'rgba(14,10,12,.8)');
+    R(g,BX,BY,BW,8,'#4a3a3a');R(g,cx-BW/2*.65,BY,BW*.65,8,'#8a7a5a');R(g,cx-BW/2*.35,BY,BW*.35,8,'#d9a640');R(g,cx-BW/2*.12,BY,BW*.12,8,'#e0213a');
+    const mx=Math.round(cx+Math.sin(t*p.w)*BW/2);R(g,mx-1,BY-3,2,14,'#fff');R(g,mx-3,BY-4,6,2,'#fff');
+    g.fillStyle='#efe8dc';g.textAlign='center';g.fillText('紅＝全壘打　黃＝安打　灰＝界外',cx,BY+12);
+    g.font='8px DotGothic16, monospace';g.fillStyle='#fff6c8';g.fillText(isTouch?'時機對了就點畫面（或按 A）投球！':'時機對了就按 Z／空白／Enter 投球！',160,196-8);
+  }else if(t>=60){
+    const txt=['揮空！','界外球','安打！','全壘打！！'][p.res],sub=['怪物從 IAN 的鏟子下溜走了……','球飛到觀眾席去了。','漂亮的平飛球！','怪物飛過了宅邸的屋頂！'][p.res];
+    const pop=Math.min(1,(t-60)/8);g.save();g.translate(160,46);g.scale(.6+pop*.4,.6+pop*.4);g.font='20px DotGothic16, monospace';g.textAlign='center';g.textBaseline='middle';
+    g.fillStyle=K;g.fillText(txt,2,2);g.fillStyle=p.res===3?'#ffd25a':p.res===0?'#ff7a7a':'#efe8dc';g.fillText(txt,0,0);g.restore();
+    g.font='8px DotGothic16, monospace';g.textAlign='center';g.textBaseline='top';g.fillStyle='#e8d9bf';g.fillText(sub,160,64);
   }
   g.textAlign='left';
 }
-
 /* ---------------- 會長：番茄汁（交給會長本人、拉拉或小蝙蝠都可以） ---------------- */
 const CANS_N=5;
 const CAN_FAKE={c4:1,c6:1};
@@ -2318,13 +2364,14 @@ function llamaFail(){
 async function pitchSession(){
   const q=qGet('ian');q.strikes=q.strikes||0;
   await say('ian','抓到啦？好樣的！丟過來！');
-  await n('看準移動的準心按下按鍵：先定住左右，再定住上下。越靠近紅心越好。連續三次揮空就三振出局。');
+  await n('你站上投手丘，IAN 在本壘扛起了鏟子。');
+  await n('上面的指針會左右擺動，按一下就投球。停在越中間的紅色，IAN 越容易打出全壘打！連續三次揮空就三振出局。');
   while(q.sack.length){
     const m=q.sack.shift();
     const res=await pitchOne(m,q);
     if(res===3){q.hr=(q.hr||0)+1;q.streak=(q.streak||0)+1;if(q.streak>=3)ach('h_pitch3');
-      await say('ian',['……飛了。','全壘打。','鏘。','下一個。'][(Math.random()*4)|0])}
-    else{q.streak=0;await say('ian',res===2?'安打。……還不夠。':res===1?'界外。歪了。':`……揮空。${q.strikes+1} 好球。`)}
+      await say('ian',['飛啦！！看到沒！','全壘打！好球！','鏘——！漂亮！','好投！下一個！'][(Math.random()*4)|0])}
+    else{q.streak=0;await say('ian',res===2?'安打！差一點就飛出去了！':res===1?'界外！球有點歪啦！':`揮空！${q.strikes+1} 好球！別在意，再來！`)}
     if(res===0)q.strikes++;else q.strikes=0;
     if(q.strikes>=3){
       await say('ian','哎呀，三振！今天手感不太好！');
@@ -3731,7 +3778,7 @@ function onArrive(){
 function heldDir(){return held[held.length-1]}
 function update(){
   tick++;
-  if(PITCH)PITCH.t++;
+  if(PITCH)pitchTick();
   idleTick();
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
   if(P.morph&&mode==='play'&&!busy&&--P.morph.t<=0){P.morph=null;toast('藥效退了，你變回原樣了。')}
