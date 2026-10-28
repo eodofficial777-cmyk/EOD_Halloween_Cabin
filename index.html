@@ -352,6 +352,9 @@ const CREDITS = [
   ['p','IAN｜揮點滴架的科學怪人'],
   ['p','薊｜叮噹作響的荊棘女巫'],
   ['p','小波｜床單小幽靈'],
+  ['h','宅邸'],
+  ['p','南瓜幽靈｜想跟大家一起玩的宅邸主人'],
+  ['p','廣播頭｜不接受申訴退款'],
   ['h','製作'],
   ['p','原作・世界觀　荒漠終焉 EOD'],
   ['p','企劃・劇本　荒漠終焉營運團隊'],
@@ -389,7 +392,7 @@ function dk(hex,a=.25){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&25
 const hsh=(x,y,s=0)=>(((x*73856093)^(y*19349663)^(s*83492791))>>>0);
 
 /* ---------------- 角色像素 ---------------- */
-const NAMES={kaicho:'會長',shisho:'司書',sui:'翠',lala:'拉拉',boss:'首領',ian:'IAN',ji:'薊',po:'小波',horse:'幽靈駱馬',batk:'小蝙蝠',cone:'錐齒獸'};
+const NAMES={kaicho:'會長',shisho:'司書',sui:'翠',lala:'拉拉',boss:'首領',ian:'IAN',ji:'薊',po:'小波',horse:'幽靈駱馬',batk:'小蝙蝠',cone:'錐齒獸',legs:'IAN 的下半身',ghost:'南瓜幽靈',radio:'廣播頭'};
 function O(o){o.shade=o.shade||dk(o.cloth,.3);return o}
 const CH={
   kaicho:{o:O({skin:'#e8e2f2',hair:'#211c2e',eye:'#e0213a',cloth:'#1d1824',cloth2:'#d8d2e4',pants:'#1d1824'}),
@@ -635,7 +638,41 @@ function drawMorph(g,k,d,f){
   R(g,1,7+y,14,12,K);R(g,2,8+y,12,10,O);R(g,5,8+y,1,10,Od);R(g,10,8+y,1,10,Od);R(g,7,4+y,2,4,'#3f6b2a');
   if(d!=='up'){const gl='#ffd25a';if(d==='down'){R(g,4,11+y,2,2,gl);R(g,10,11+y,2,2,gl);R(g,5,15+y,6,1,gl)}else{R(g,11,11+y,2,2,gl);R(g,10,15+y,3,1,gl)}}
 }
+/* 南瓜幽靈：南瓜頭＋白床單身體，飄在半空中 */
+function drawGhost(g,t){
+  const b=Math.round(Math.sin(t/10)*2),W='#eef0f6',Sd='#cdd2e0',O='#e2741c',Od='#b8560f',gl=(t>>3)%5?'#ffd25a':'#ffb03a';
+  R(g,3,22,10,2,'rgba(0,0,0,.3)');
+  g.save();g.translate(0,b-2);
+  R(g,2,10,12,10,K);R(g,3,11,10,8,W);R(g,11,11,2,8,Sd);
+  for(let i=0;i<5;i++){R(g,3+i*2,19+((i+(t>>3))%2),2,1,W);R(g,3+i*2,20+((i+(t>>3))%2),2,1,K)}
+  R(g,0,12,3,3,K);R(g,1,13,1,1,W);R(g,13,12,3,3,K);R(g,14,13,1,1,W);
+  R(g,15,10,2,3,'#ff5fa2');R(g,14,11,1,1,'#ffd25a');R(g,17,11,1,1,'#ffd25a');
+  R(g,1,0,14,11,K);R(g,2,1,12,9,O);R(g,5,1,1,9,Od);R(g,10,1,1,9,Od);R(g,7,-2,2,3,'#3f6b2a');R(g,9,-2,2,1,'#4f8a34');
+  R(g,4,3,2,2,gl);R(g,10,3,2,2,gl);R(g,4,7,8,1,gl);R(g,5,8,1,1,gl);R(g,8,8,1,1,gl);R(g,11,6,1,1,gl);R(g,4,6,1,1,gl);
+  g.restore();
+}
+/* 廣播頭：頭是一台老收音機 */
+function drawRadio(g,t){
+  const on=(t>>4)%2;
+  R(g,3,21,10,2,'rgba(0,0,0,.35)');
+  R(g,5,19,2,3,'#1d1a22');R(g,9,19,2,3,'#1d1a22');
+  R(g,3,12,10,8,K);R(g,4,13,8,6,'#3b4a5a');R(g,7,13,2,5,'#e8e2f2');R(g,7,14,2,1,'#a8232b');
+  R(g,2,13,1,4,'#3b4a5a');R(g,13,13,1,4,'#3b4a5a');
+  R(g,11,-4,1,6,'#8a8f96');R(g,10,-5,3,1,on?'#ff5fa2':'#8a2a5a');
+  R(g,0,1,16,11,K);R(g,1,2,14,9,'#c9a13c');R(g,1,2,14,1,'#e0c060');
+  R(g,2,3,6,7,'#5c4d38');for(let y=0;y<3;y++)for(let x=0;x<3;x++)R(g,3+x*2,4+y*2,1,1,'#2a2018');
+  R(g,10,3,4,3,'#efe8dc');R(g,11,4,2,1,K);R(g,10,7,4,2,'#2a2018');R(g,10+((t>>3)%4),7,1,2,'#e0213a');
+}
 function drawChar(g,id,dir='down',f=0,t=0,st,blink){
+  if(id==='ghost')return drawGhost(g,t);
+  if(id==='radio')return drawRadio(g,t);
+  /* 第四幕：IAN 斷成上下兩半 */
+  if(id==='legs'||(id==='ian'&&st==='upper')){
+    const up=id==='ian';g.save();if(up)g.translate(0,6);g.beginPath();if(up)g.rect(-6,-12,28,27);else g.rect(-6,15,28,12);g.clip();
+    drawChar(g,'ian',dir,f,t,undefined,blink);g.restore();
+    const th='#efe3c8';if(up){R(g,2,21,12,2,'rgba(0,0,0,.35)');R(g,4,21,1,2,th);R(g,7,21,1,3,th);R(g,10,21,1,2,th)}else{R(g,4,13,1,2,th);R(g,7,12,1,3,th);R(g,10,13,1,2,th);R(g,11,14,1,1,th)}
+    return;
+  }
   if(id==='po')return drawPo(g,st,t);
   if(id==='batk')return drawBatK(g,t);
   if(id==='cone'){g.save();if(dir==='left'){g.translate(16,0);g.scale(-1,1)}drawCone(g,t);g.restore();return}
@@ -655,7 +692,7 @@ function drawEntity(g,id,X,Y,dir,f,t,st,blink){
 }
 
 /* ---------------- 地圖 ---------------- */
-const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$'.split(''));
+const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&'.split(''));
 function buildOutside(){
   const W=46,H=29,m=[];
   for(let y=0;y<H;y++){const r=[];for(let x=0;x<W;x++)r.push((x<3||x>42||y<2||y>26)?'f':'g');m.push(r)}
@@ -668,7 +705,10 @@ function buildOutside(){
   for(let x=4;x<=41;x++)set(x,6,'n');
   for(let y=3;y<=5;y++)for(let x=4;x<=8;x++)set(x,y,'C');
   [11,14,17,20,23,26,29,32,35,38].forEach(x=>set(x,4,'t'));[12,15,18,22,25,28,31,34,37,40].forEach(x=>set(x,6,'t'));
-  for(let x=4;x<=41;x++)set(x,7,'h');set(6,7,'d');set(10,7,'d');set(36,7,'d');set(6,5,'D');
+  /* 墓園沒有矮樹籬隔開，往下延伸到宅邸東側 */
+  for(let x=4;x<=41;x++)set(x,7,'n');set(6,7,'d');set(10,7,'d');set(6,5,'D');
+  for(let x=24;x<=41;x++)set(x,8,'n');for(let x=30;x<=41;x++)set(x,9,'n');
+  [28,31,34,37].forEach(x=>set(x,8,'t'));[33,36,39].forEach(x=>set(x,9,'t'));
   for(let y=8;y<=24;y++){set(10,y,'d');set(9,y,'h')}
   set(9,11,'d');set(9,19,'d');
   /* 宅邸 */
@@ -839,9 +879,27 @@ const SCENES={
     '#Z.....,,.....Y#',
     '#Z.....,,.....k#',
     '#######DD#######'],
-    exits:[[7,11,'outside',6,6,'down'],[8,11,'outside',6,6,'down']]},
+    exits:[[7,11,'outside',6,6,'down'],[8,11,'outside',6,6,'down'],[14,9,'crypt',10,14,'up']]},
   maze:{name:'花園迷宮',out:1,map:buildMaze(),
     exits:[[0,10,'outside',32,18,'left']]},
+  crypt:{name:'地下墓室',map:[
+    '######################',
+    '#l..................l#',
+    '#....................#',
+    '#..&..............&..#',
+    '#....................#',
+    '#..&..............&..#',
+    '#....................#',
+    '#l..................l#',
+    '#########....#########',
+    '#&.&.&..#....#..&.&.&#',
+    '#.......#....#.......#',
+    '#..l................l#',
+    '#.......#....#.......#',
+    '#&.&.&..#....#..&.&.&#',
+    '#.......#....#.......#',
+    '##########DD##########'],
+    exits:[[10,15,'chapel',14,8,'down'],[11,15,'chapel',14,8,'down']]},
   outside:{name:'屋外',out:1,map:buildOutside(),
     exits:[[11,11,'hall',1,6,'right'],[16,15,'hall',9,11,'up'],[17,15,'hall',10,11,'up'],[6,5,'chapel',7,10,'up'],[28,12,'greenhouse',7,10,'up'],[33,18,'maze',1,10,'right']]},
 };
@@ -868,13 +926,15 @@ function drawTile(g,c,X,Y,tx,ty,sc){
   const wall=()=>{R(g,X,Y,16,16,'#2b1a1f');R(g,X+2,Y,1,13,'#36212a');R(g,X+10,Y,1,13,'#36212a');R(g,X+6,Y+3,1,1,'#43282f');R(g,X+14,Y+8,1,1,'#43282f');R(g,X,Y+13,16,3,'#1a0e12');R(g,X,Y+13,16,1,'#5a3a2a')};
   const grass=(b,l)=>{R(g,X,Y,16,16,b);for(let i=0;i<4;i++)R(g,X+((h>>(i*4))%15),Y+((h>>(i*4+2))%13),1,2,l)};
   switch(c){
-    case '.':if(sc==='greenhouse'){R(g,X,Y,16,16,'#5a3a2e');R(g,X,Y,16,1,'#4a2e24');R(g,X,Y,1,16,'#4a2e24');R(g,X+8,Y+8,8,1,'#4a2e24');R(g,X+8,Y+8,1,8,'#4a2e24')}
+    case '.':if(sc==='crypt'){R(g,X,Y,16,16,'#26222a');R(g,X,Y,16,1,'#1c1920');R(g,X,Y,1,16,'#1c1920');if(h%5===0)R(g,X+5,Y+6,4,1,'#302b34');if(h%11===0)R(g,X+9,Y+10,2,1,'#e2741c')}
+      else if(sc==='greenhouse'){R(g,X,Y,16,16,'#5a3a2e');R(g,X,Y,16,1,'#4a2e24');R(g,X,Y,1,16,'#4a2e24');R(g,X+8,Y+8,8,1,'#4a2e24');R(g,X+8,Y+8,1,8,'#4a2e24')}
       else if(sc==='chapel'){R(g,X,Y,16,16,'#3e383c');R(g,X,Y,16,1,'#332e31');R(g,X,Y,1,16,'#332e31');if(h%4===0)R(g,X+4,Y+5,3,1,'#4a4448')}else floor();break;
     case ',':R(g,X,Y,16,16,'#6e1b22');R(g,X+3,Y+3,1,1,'#8e2a32');R(g,X+11,Y+11,1,1,'#8e2a32');R(g,X+11,Y+3,1,1,'#561419');R(g,X+3,Y+11,1,1,'#561419');R(g,X+7,Y+7,2,2,'#a8323a');break;
     case '#':wall();break;
     case 'w':wall();R(g,X+3,Y+1,10,11,'#6b4a3a');R(g,X+4,Y+2,8,9,'#16202e');R(g,X+7,Y+2,2,9,'#6b4a3a');R(g,X+4,Y+6,8,1,'#6b4a3a');R(g,X+5,Y+3,1,2,'#2a3a50');R(g,X+10,Y+7,1,2,'#2a3a50');break;
     case 'P':wall();R(g,X+2,Y+2,12,9,'#b08a3a');R(g,X+3,Y+3,10,7,['#3a4a3a','#4a3040','#2e3e52'][h%3]);R(g,X+6,Y+5,4,4,['#c9b38a','#8a6a50','#d8c8a0'][h%3]);R(g,X+5,Y+9,6,1,'#1d1420');break;
-    case 'D':if(sc==='outside')R(g,X,Y,16,16,tx===6?'#c4bcac':tx===28?'#2a3a3e':'#352325');else if(sc==='greenhouse'||sc==='chapel')R(g,X,Y,16,16,sc==='chapel'?'#3e383c':'#5a3a2e');else floor();R(g,X+2,Y,12,16,'#2a170e');R(g,X+3,Y+1,10,15,'#5e3a20');R(g,X+3,Y+8,10,1,'#4a2c18');R(g,X+8,Y+1,1,15,'#4a2c18');R(g,X+10,Y+9,1,1,'#e0b84a');break;
+    case '&':R(g,X,Y,16,16,'#26222a');R(g,X+3,Y+1,10,14,'#1a0e0a');R(g,X+4,Y+2,8,12,'#5e3a20');R(g,X+4,Y+2,8,1,'#7a5232');R(g,X+7,Y+4,2,8,'#c9a54a');R(g,X+5,Y+6,6,2,'#c9a54a');break;
+    case 'D':if(sc==='crypt')R(g,X,Y,16,16,'#26222a');else if(sc==='outside')R(g,X,Y,16,16,tx===6?'#c4bcac':tx===28?'#2a3a3e':'#352325');else if(sc==='greenhouse'||sc==='chapel')R(g,X,Y,16,16,sc==='chapel'?'#3e383c':'#5a3a2e');else floor();R(g,X+2,Y,12,16,'#2a170e');R(g,X+3,Y+1,10,15,'#5e3a20');R(g,X+3,Y+8,10,1,'#4a2c18');R(g,X+8,Y+1,1,15,'#4a2c18');R(g,X+10,Y+9,1,1,'#e0b84a');break;
     case '=':case 'U':R(g,X,Y,16,16,'#5c3c2d');for(let i=0;i<4;i++){R(g,X,Y+i*4+3,16,1,'#2e1c14');R(g,X,Y+i*4,16,1,'#704a38')}if(c==='U')R(g,X,Y,16,16,'rgba(0,0,0,.35)');break;
     case 'I':floor();R(g,X+6,Y,4,16,'#2a170e');R(g,X+7,Y,2,16,'#6b4026');break;
     case 'T':floor();if(sc==='dining'){R(g,X,Y,16,16,'#d9cfc0');R(g,X,Y+6,16,4,'#8e1c24');if(OY===3)R(g,X,Y,16,1,'#b8ae9f');if(h%3===0){R(g,X+7,Y+2,2,4,'#efe3c8');R(g,X+7,Y,2,2,'#ffcc55')}else if(h%3===1){R(g,X+4,Y+11,8,3,'#efe8dc');R(g,X+5,Y+12,6,1,'#c9bfb0')}}else{R(g,X,Y+1,16,13,'#7a5232');R(g,X,Y+1,16,2,'#8e6440');if(h%2)R(g,X+4,Y+5,7,4,'#c9b38a')}break;
@@ -977,7 +1037,7 @@ function save(){if(S&&mode==='play'){S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag
 function loadSave(){try{return JSON.parse(ls.get(SAVE_KEY)||'null')}catch(e){return null}}
 function endings(){try{return JSON.parse(ls.get(END_KEY)||'[]')}catch(e){return[]}}
 
-const NPCS={kaicho:{},shisho:{},sui:{},lala:{},boss:{},ian:{},ji:{},po:{},horse:{deco:1},batk:{},cone:{}};
+const NPCS={kaicho:{},shisho:{},sui:{},lala:{},boss:{},ian:{},ji:{},po:{},horse:{deco:1},batk:{},cone:{},legs:{},ghost:{}};
 function applyWorld(){
   const F=(S&&S.flags)||{},ch=chOf();
   const set=(id,scene,x,y,state)=>{[x,y]=toNew(scene,x,y);return Object.assign(NPCS[id],{scene,x,y,state,dir:'down',mv:null,queue:[],qdone:null,patrol:null,pi:0,wait:60+((Math.random()*120)|0),wc:0,follower:null,pspd:null,pwait:null})};
@@ -1003,13 +1063,24 @@ function applyWorld(){
   }
   /* 巡邏路線：NPC 會在這些格子之間來回走動（說話時會停下來） */
   const pat=(id,pts,spd,wait)=>{const o=NPCS[id];if(o.scene){o.patrol=pts.map(([x,y])=>toNew(o.scene,x,y));o.pspd=spd||null;o.pwait=wait??null}};
-  if(NPCS.sui.state!=='nohead'&&NPCS.sui.scene==='outside'){pat('sui',[[28,15],[25,15],[25,13],[28,13]]);if(llamaOk)NPCS.sui.follower='horse'}
-  if(NPCS.ian.scene==='outside')pat('ian',[[14,5],[34,5]]);
+  if(NPCS.sui.state!=='nohead'&&NPCS.sui.scene==='outside'&&ch<5){pat('sui',[[28,15],[25,15],[25,13],[28,13]]);if(llamaOk)NPCS.sui.follower='horse'}
+  if(ch===4){
+    set('ian','outside',21,5,'upper');
+    if(F.legsFollow&&S&&mode==='play')Object.assign(NPCS.legs,{scene:S.scene,x:P.x,y:P.y,state:null,queue:[],mv:null,patrol:null});else set('legs','outside',24,5);
+    if(!F.finalDone)set('ghost','crypt',11,3);
+  }
+  if(ch===5){
+    for(const id in NPCS)NPCS[id].scene=null;
+    const C=[['kaicho',15,20],['lala',17,20],['ian',13,20],['shisho',19,20],['sui',21,20],['boss',12,21],['ji',14,21],['po',18,21,'stand'],['ghost',16,18]];
+    for(const[id,x,y,st]of C)set(id,'outside',x,y,st);if(qDoneP('sui'))set('horse','outside',22,21);
+  }
+  if(NPCS.ian.scene==='outside'&&NPCS.ian.state!=='upper'&&ch<5)pat('ian',[[14,5],[34,5]]);
+  if(NPCS.legs.scene==='outside'&&!F.legsFollow)pat('legs',[[24,5],[31,5]]);
   if(NPCS.ji.scene==='greenhouse')pat('ji',[[4,2],[11,2]]);
   if((ch===1&&F.discovered)||(ch===0&&F.gathered))pat('lala',[[9,4],[9,2],[4,2],[4,3]]);
   if((ch===1&&F.poAwake)||(ch===0&&F.gathered))pat('po',[[12,6],[15,6],[15,8],[12,8]]);
   /* 被錐齒獸追著跑的蝙蝠會長（第二、三幕） */
-  if(ch>=2){pat('batk',[[12,17],[22,17],[22,23],[12,23]],1.5,6);NPCS.batk.follower='cone'}
+  if(ch>=2&&ch<5){pat('batk',[[12,17],[22,17],[22,23],[12,23]],1.5,6);NPCS.batk.follower='cone'}
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function npcWalkable(o,x,y){
@@ -1096,6 +1167,16 @@ const EV={
   gesture:{t:'翠的身體比的手勢',d:'翠的身體指了指大南瓜，又指了指被錐齒獸追著跑的小蝙蝠，做出把東西往上拋的動作。',key:1},
   witness:{t:'薊的目擊證詞',d:'錐齒獸追著不會飛的小蝙蝠衝過去，撞到翠，她的頭飛起來，剛好掉進大南瓜頂上的洞裡。',key:1},
 };
+Object.assign(EV,{
+  cut:{t:'IAN 的證詞（三）',d:'睡覺時，好像有人往他身上倒了什麼，涼涼甜甜的。身體一直變大，然後「啪」地斷成兩半。',key:1},
+  seam:{t:'撐斷的縫線',d:'IAN 下半身的斷口不是切開的，而是縫線被硬生生撐斷，線頭拉得長長的，旁邊的布料也被撐破了。',key:1},
+  bottle:{t:'南瓜標誌的藥水瓶',d:'墓園裡摔破的玻璃瓶。標籤畫著咧嘴笑的南瓜，寫著「超級長大藥水（試作品）」，聞起來涼涼甜甜的。',key:1},
+  growth:{t:'《縫合怪物保養手冊》',d:'「縫合怪物的身體若是突然長大，最先撐不住的，是腰部的縫線。」',key:1},
+  lala4:{t:'拉拉的證詞（二）',d:'拉拉整晚都在廚房做鬆餅，電鋸上只有麵糊。她說電鋸切出來的斷口，不會那麼「毛毛的」。'},
+  notji:{t:'不是薊的藥水',d:'薊的藥水瓶上都畫著荊棘標誌。咧嘴笑的南瓜標誌，她從來沒看過。'},
+  laugh:{t:'首領聽到的笑聲',d:'首領說，墓園的地底下好像一直有東西在嘻嘻嘻地笑。'},
+  gate:{t:'打開的柵欄',d:'翠看到小教堂裡，通往地下墓室的柵欄被打開了一條縫。'},
+});
 const REQ1=['juice','body','fridge','ghost','sheet'];
 const REQ3=['pvoice','gesture','witness'];
 const HINT1={juice:'會長身旁的那灘液體',body:'會長本人',fridge:'廚房的冰箱',ghost:'展覽室裡的司書',sheet:'2F 左客房的小波（他看起來很愛吃）'};
@@ -1188,6 +1269,8 @@ const ACHS=[
   {id:'m_act2', main:1,t:'第二幕・睡覺就該在床上睡',d:'找到從上鎖儲藏室消失的小波。'},
   {id:'m_riot', main:1,t:'南瓜精靈鎮壓',d:'平息大南瓜旁的南瓜精靈暴動。'},
   {id:'m_act3', main:1,t:'第三幕・南瓜裡的頭',d:'幫翠找回她的頭。'},
+  {id:'m_act4', main:1,t:'第四幕・縫線的真相',d:'揭開 IAN 斷成兩半的真相，替拉拉洗清冤屈。'},
+  {id:'m_final',main:1,t:'終幕・不給糖就搗蛋',d:'打倒地下墓室深處的南瓜幽靈，和大家一起離開宅邸。'},
 
   {id:'q_po',side:1,t:'睡教的信徒',d:'把最舒服的枕頭供奉在睡教的祭壇上。'},
   {id:'q_lala',side:1,t:'鬆餅牧羊人',d:'抓回六坨逃跑的史萊姆鬆餅。'},
@@ -1217,6 +1300,10 @@ const ACHS=[
   {id:'h_kaicho_can',t:'晚點喝',d:'在序幕就把番茄罐頭交給了會長本人。',hint:'趁他還醒著的時候……'},
   {id:'h_bat_can',t:'吱！',d:'把番茄罐頭給了那隻飛不起來的小蝙蝠。',hint:'那隻小蝙蝠的眼睛，紅得跟番茄一樣。'},
   {id:'h_idle_perfect',t:'不動如山',d:'一次都沒動，就撐完了三輪發呆。',hint:'連停電都不能讓你動一下。'},
+  {id:'h_trick',t:'不給糖就搗蛋',d:'沒有給南瓜幽靈糖果。',hint:'南瓜幽靈會問你要不要給糖。'},
+  {id:'h_treat',t:'給糖也導彈',d:'給了南瓜幽靈糖果……結果還是被導彈追著跑。',hint:'給了糖，就不會被搗蛋了吧？'},
+  {id:'h_legs',t:'斷腿助攻',d:'IAN 的下半身幫你踢飛了 10 隻災獸。',hint:'第四幕裡，有個很會踢的伙伴。',stat:'legs',goal:10},
+  {id:'h_radio',t:'不能申訴退款',d:'聽完了廣播頭的廣播。',hint:'故事最後，好像有誰在廣播。'},
   {id:'h_k10', t:'初次狩獵',d:'累計擊倒 10 隻災獸。',hint:'宅邸裡的災獸，好像怎麼打都打不完……',stat:'kills',goal:10},
   {id:'h_k50', t:'災獸剋星',d:'累計擊倒 50 隻災獸。',hint:'再多打一些。',stat:'kills',goal:50},
   {id:'h_k150',t:'宅邸清道夫',d:'累計擊倒 150 隻災獸。',hint:'多到數不清。',stat:'kills',goal:150},
@@ -1230,7 +1317,7 @@ const ACHS=[
   {id:'h_clues',t:'記筆記的好習慣',d:'在同一次調查中，收集到所有線索與證詞。',hint:'不放過任何人說的任何一句話。'},
   {id:'h_sweet',t:'甜食中毒',d:'累計吃掉 20 顆糖果。',hint:'萬聖節就是要吃糖。',stat:'candy',goal:20},
   {id:'h_down',t:'溫熱的鬆餅',d:'第一次在戰鬥中倒下。',hint:'倒下也沒關係，會有人照顧你的。'},
-  {id:'h_nodeath',t:'不死之身',d:'一次都沒倒下就完成第三幕。',hint:'從頭到尾都站著。'},
+  {id:'h_nodeath',t:'不死之身',d:'一次都沒倒下就完成終幕。',hint:'從頭到尾都站著。'},
   {id:'h_detective',t:'名偵探',d:'第一幕的推理，全部一次答對。',hint:'推理的時候，別讓任何人吐槽你。'},
   {id:'h_accuse',t:'亂槍打鳥',d:'在第一幕把其他所有人都指認過一遍。',hint:'不是你、不是你、也不是你……'},
   {id:'h_tombs',t:'墓園巡禮',d:'讀過墓園裡每一塊不同的墓碑。',hint:'墓碑上寫的東西，每一塊都不一樣。'},
@@ -2124,7 +2211,7 @@ const ALT_NOTE={po:'供奉了另一個枕頭，大家一起熬夜聊到了天亮
 /* ---------------- 章節存檔 ---------------- */
 /* 每一章開始時自動存一份，可以從標題或選單的「章節選擇」回到那一章重玩 */
 const CHAP_KEY='eod_hw_cabin_ch';
-const CHAP_NAMES=['序幕　雷雨夜的晚餐','第一幕　會長之死','第二幕　消失的小波','第三幕　南瓜裡的頭'];
+const CHAP_NAMES=['序幕　雷雨夜的晚餐','第一幕　會長之死','第二幕　消失的小波','第三幕　南瓜裡的頭','第四幕　裂成兩半的科學怪人'];
 function chapterSave(n){if(!S)return;S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag=P.ammo;ls.set(CHAP_KEY+n,JSON.stringify({t:Date.now(),name:S.name,s:S}));toast('章節存檔：'+CHAP_NAMES[n])}
 function chapterGet(n){try{return JSON.parse(ls.get(CHAP_KEY+n)||'null')}catch(e){return null}}
 function renderChap(){
@@ -2221,6 +2308,7 @@ async function talk(id){
   if(id==='lala'&&F.discovered&&S.inv.candy===0&&P.hp<MAXHP){S.inv.candy=1;toast('拉拉塞了一顆糖果給你：「受傷了要記得吃喔！」')}
   if(chOf()===2)return talk2(id);
   if(chOf()===3)return talk3(id);
+  if(chOf()===4)return talk4(id);
   if(!F.discovered){
     const pre={shisho:'……剛剛那是尖叫聲？好像是從餐廳傳來的。我在用餐，你去看。',sui:'喲，新面孔？剛才宅邸裡好像有人在叫，我的頭聽得很清楚喔。',boss:'……好吵。你要去看就去，別叫我。',ian:'餐廳那邊有動靜。如果是怪物，叫我，我幫你揮出去。',ji:'哎呀，好像有誰在尖叫？快樂藥水要不要來一瓶～',po:'Zzz……',horse:'幽靈駱馬噴了一口白霧，好像在叫你快去餐廳。'};
     if(!pre[id])return;
@@ -2666,27 +2754,254 @@ async function riotEnd(){
   await away;
   await say('sui','欸……剛剛那隻蝙蝠，是不是長得有點像會長？');
   await n('……所有人都沉默了。');
-  await chapterCard('第三幕　完');
-  return finish('act3');
+  ach('m_act3');
+  await n('……雨好像小了一點。大家總算可以喘口氣了。');
+  await chapterCard('第四幕　裂成兩半的科學怪人');
+  S.flags.ch=4;applyWorld();changeScene('hall',10,8,'down');chapterSave(4);
+  await n('那天夜裡，宅邸難得安靜了一會兒。');
+  shake=12;
+  await n('——啪！');
+  await n('墓園 的方向，傳來一聲像是什麼東西繃斷的聲音。');
+}
+
+/* ===== 第四幕：裂成兩半的科學怪人 ===== */
+const REQ4=['cut','seam','bottle','growth'];
+const HINT4={cut:'墓園裡 IAN 的上半身',seam:'IAN 的下半身（看看斷口）',bottle:'IAN 旁邊草地上發亮的東西',growth:'展覽室的司書'};
+const BOTTLE={x:20,y:5};
+async function disc4(){
+  S.flags.disc4=true;
+  await n('墓園裡，大家已經圍成了一圈。');
+  await n('圈子正中間——IAN 的上半身靠著墓碑坐在地上，下半身在旁邊來回踱步。');
+  await say('ian','……醒來，就這樣了。');
+  await say('ian','不痛。只是有點涼。');
+  await say('ji','切口好整齊喔……該不會，是電鋸吧？');
+  await n('所有人的視線，慢慢移到了拉拉身上。');
+  await say('lala','不、不是我啦！！我的電鋸今天只切過鬆餅跟南瓜！！');
+  await n('拉拉一激動，把旁邊的墓碑整塊舉了起來。……大家的眼神更懷疑了。');
+  await say('lala','啊！這、這不是證據啦！');
+  await say('boss','……拉拉力氣最大。');
+  await say('shisho','嗯。很合理。');
+  await say('lala','嗚嗚嗚……');
+  await n('IAN 的下半身走了過來，輕輕踢了踢你的腳。好像有話想說。');
+  await n('看來，又得靠你來查清楚了。');
+}
+async function talk4(id){
+  const F=S.flags;
+  switch(id){
+    case 'ian':
+      if(!hasEv('cut')){
+        await say('ian','……睡覺的時候，好像有人往我身上倒了什麼。');
+        await say('ian','涼涼的。甜甜的。');
+        await say('ian','然後，身體一直變大、一直變大……');
+        await say('ian','……啪。');
+        addEv('cut');return;
+      }
+      if(F.ded4)return say('ian','……地下室。南瓜。揍他。');
+      {const miss=REQ4.filter(k=>!hasEv(k));
+      if(miss.length){await n(`線索還不夠，現在還沒辦法推理。（關鍵線索 ${REQ4.length-miss.length}/${REQ4.length}）`);return n('可以再去查查看：'+HINT4[miss[0]]+'。')}}
+      if((await choose('要把大家叫來，公布推理嗎？',['公布推理','再調查一下']))===1)return;
+      return deduction4();
+    case 'legs':
+      if(!hasEv('seam')){
+        await n('你蹲下來，仔細看了看 IAN 下半身的斷口。');
+        await n('……不是切開的。一根根縫線像是被硬生生撐斷，線頭都拉得長長的。');
+        await n('旁邊的布料也被撐破了，好像身體突然變大了一圈。');
+        addEv('seam');
+        await n('下半身「咚」地踢了一下地面，跟在你後面走了起來。');
+        F.legsFollow=1;toast('IAN 的下半身成為你的伙伴！靠近的災獸會被牠踢飛。');toastT=300;return;
+      }
+      return n('IAN 的下半身原地踏步了兩下。好像在說：走吧。');
+    case 'lala':
+      if(!hasEv('lala4')){
+        await say('lala','我真的沒有！！我整晚都在廚房做鬆餅！');
+        await say('lala','你看，電鋸上只有麵糊！而且我切東西都是「唰」地一刀切斷，才不會切得這麼……毛毛的！');
+        addEv('lala4');return;
+      }
+      return say('lala','拜託你了……幫我洗清冤屈！');
+    case 'ji':
+      if(!hasEv('notji')&&hasEv('bottle')){
+        await say('ji','這個瓶子？不是我的喔！我的藥水瓶上，都畫著荊棘的標誌～');
+        await say('ji','這個咧嘴笑的南瓜……我從來沒看過。');
+        addEv('notji');return;
+      }
+      return say('ji',hasEv('notji')?'南瓜標誌的藥水……好想研究看看喔～':'IAN 變成兩半了？好可憐～……不過下半身好像很有精神耶。');
+    case 'shisho':
+      if(!hasEv('growth')){
+        await n('司書翻開一本縫線密密麻麻的書——《縫合怪物保養手冊》。');
+        await n('「縫合怪物的身體若是突然長大，最先撐不住的，是腰部的縫線。」');
+        await say('shisho','這本有點硬。……不過，內容寫得很清楚。');
+        addEv('growth');return;
+      }
+      return say('shisho','《縫合怪物保養手冊》還剩一半。我留給 IAN。');
+    case 'boss':
+      if(!hasEv('laugh')){
+        await say('boss','……IAN 斷掉了？');
+        await say('boss','……我讀不到。可是……');
+        await say('boss','墓園的地底下，好像有東西一直在笑。嘻嘻嘻的。好吵。');
+        addEv('laugh');return;
+      }
+      return say('boss','……地底下還在笑。');
+    case 'sui':
+      if(!hasEv('gate')){
+        await say('sui','頭回來真好～剛剛我把頭甩到好高好高的時候……');
+        await say('sui','看到 小教堂 裡面，通往地下墓室的柵欄被打開了一條縫！');
+        addEv('gate');return;
+      }
+      return say('sui','地下墓室好像很深喔，小心點！');
+    case 'po':return n('小波睡得很熟。床單上沾著幾顆南瓜籽。');
+    case 'horse':return n('幽靈駱馬一直盯著墓園的地面，耳朵豎得直直的。');
+    case 'batk':case 'cone':return talkChase(id);
+  }
+}
+async function bottleSpot(){
+  if(hasEv('bottle'))return n('摔破的藥水瓶。標籤上的南瓜，好像在對你笑。');
+  await n('IAN 旁邊的草地上，躺著一個摔破的玻璃瓶。');
+  await n('標籤上畫著一個咧嘴笑的南瓜，寫著：「超級長大藥水（試作品）」。');
+  await n('瓶底還剩一點點，聞起來涼涼的、甜甜的。');
+  addEv('bottle');
+}
+async function deduction4(){
+  await n('你把大家叫到了墓園。雨絲斜斜地落在墓碑上。');
+  await ask('IAN 是被什麼弄成兩半的？',['拉拉的電鋸','縫線被撐斷了','被怪物咬斷'],1,{0:['lala','就說不是我了啦！！'],2:['ian','怪物咬不斷我。']});
+  await say('me','IAN 不是被切開的。斷口的縫線是被撐斷的，線頭都拉得長長的。');
+  await ask('縫線為什麼會被撐斷？',['揮棒太用力','身體突然長大','吃了太多鬆餅'],1,{0:['ian','揮棒，不會斷。'],2:['lala','我的鬆餅不會讓人斷掉啦！']});
+  await say('me','《縫合怪物保養手冊》寫著：身體突然長大時，最先撐不住的就是腰部的縫線。');
+  await ask('讓 IAN 突然長大的是？',['薊的藥水','畫著南瓜標誌的「超級長大藥水」','拉拉的鬆餅'],1,{0:['ji','我的藥水瓶上，是荊棘的標誌喔～'],2:['lala','鬆餅不會讓人長大……應該吧？']});
+  await say('me','有人趁 IAN 睡著的時候，把「超級長大藥水」淋在他身上。所以——拉拉不是犯人！');
+  await say('lala','嗚哇啊啊……謝謝你！！');
+  await n('拉拉激動地抱住你。你的骨頭發出了「喀啦」一聲。');
+  await say('ian','……那，南瓜標誌是誰的？');
+  await say('boss','……不是我。我的南瓜沒有畫標誌。');
+  await say('sui','我剛剛看到 小教堂 的地下墓室，柵欄開了一條縫！地上還掉了一排南瓜籽！');
+  await say('ji','南瓜籽？……幕後黑手，就躲在地底下吧～');
+  await n('IAN 的下半身「咚」地跺了一下地面，跑到你旁邊——好像在說：我跟你去。');
+  S.flags.ded4=true;S.flags.legsFollow=1;legsWarp();ach('m_act4');
+  await n('往 小教堂 的地下墓室前進吧。');
+}
+
+/* IAN 的下半身：跟在你後面走，會把靠近的災獸踢飛 */
+function legsOn(){return S&&chOf()===4&&S.flags.legsFollow}
+function legsStep(ox,oy){const L=NPCS.legs;if(!legsOn()||L.scene!==S.scene)return;L.patrol=null;L.queue.push([ox,oy]);L.qspd=runHeld?4:2.2}
+function legsWarp(){if(!legsOn())return;Object.assign(NPCS.legs,{scene:S.scene,x:P.x,y:P.y,queue:[],mv:null,patrol:null,qdone:null})}
+
+/* ---------------- 地下墓室與南瓜幽靈 ---------------- */
+async function finalIntro(){
+  S.flags.finalMet=true;
+  await n('地下墓室的最深處，堆滿了南瓜燈。燭光一閃一閃的。');
+  await n('一顆南瓜頭，從棺材後面慢慢地飄了出來。');
+  await say('ghost','嘻嘻嘻……終於有人找到這裡啦！');
+  await say('ghost','我是這棟宅邸的主人——南瓜幽靈！');
+  await say('ghost','長大藥水是我倒的喔！IAN 長得好大好大，然後——啪！嘻嘻嘻！');
+  await say('me','是你把 IAN 弄成兩半的？');
+  await say('ghost','是縫線自己斷掉的嘛～');
+  await say('ghost','好啦好啦，既然你找到我了，那就來玩吧！');
+  await say('ghost','聽好囉——不給糖就搗蛋！給糖也導彈！');
+  const c=await choose('要給南瓜幽靈糖果嗎？',['給糖','不給糖']);
+  if(c===0){
+    if(S.inv.candy>0){S.inv.candy--;await n('你交出了一顆糖果。')}else await n('你翻遍了口袋……只翻出一張糖果紙。');
+    await say('ghost','謝謝你的糖！那麼——');
+    await say('ghost','給糖也導彈！！');ach('h_treat');
+  }else{
+    await say('ghost','不給糖？那就——');
+    await say('ghost','不給糖就搗蛋！！');ach('h_trick');
+  }
+  startFinal();
+}
+function startFinal(){
+  CB.lockKind='final';CB.lock=new Set(['9,8','10,8','11,8','12,8']);NPCS.ghost.scene=null;
+  const e=spawnFoe('ghost',11*T+8,3*T+8,true);e.cd=90;e.noLaunch=1;e.spawn=40;
+  $('bossbar').querySelector('span').textContent='南瓜幽靈';$('bossfill').style.width='100%';$('bossbar').hidden=false;
+}
+function updGhost(e,pcx,pcy){
+  const F=FOES.ghost;e.kx=e.ky=0;
+  if(!e.wt||Math.hypot(e.wt[0]-e.x,e.wt[1]-e.y)<4||e.t%240===0)e.wt=[(3+Math.random()*16)*T,(2+Math.random()*4)*T];
+  const wx=e.wt[0]-e.x,wy=e.wt[1]-e.y,wd=Math.hypot(wx,wy)||1;e.x+=wx/wd*F.spd;e.y+=wy/wd*F.spd;e.face=pcx>=e.x?1:-1;
+  const rage=e.hp<e.max/2;
+  if(--e.cd<=0){
+    e.ph=((e.ph||0)+1)%3;
+    if(e.ph===0){const n=rage?4:2,a0=Math.atan2(pcy-e.y,pcx-e.x);for(let i=0;i<n;i++){const a=a0+(i-(n-1)/2)*.5;CB.eshots.push({x:e.x,y:e.y,vx:Math.cos(a)*1.4,vy:Math.sin(a)*1.4,life:300,dmg:1,k:'missile',homing:1})}toast('給糖也導彈！')}
+    else if(e.ph===1){const n=rage?16:12;for(let i=0;i<n;i++){const a=i/n*Math.PI*2+e.t*.02;CB.eshots.push({x:e.x,y:e.y,vx:Math.cos(a)*1.3,vy:Math.sin(a)*1.3,life:220,dmg:1,k:'candy'})}toast('不給糖就搗蛋！')}
+    else if(CB.foes.length<6){for(const dx of[-18,18]){const b=spawnFoe('bat',e.x+dx,e.y,true);b.spawn=30}}
+    e.cd=rage?85:120;shake=3;
+  }
+  $('bossbar').hidden=false;$('bossfill').style.width=Math.max(0,e.hp/e.max*100)+'%';
+}
+function finalDown(){
+  S.flags.finalDone=true;$('bossbar').hidden=true;
+  for(const f of CB.foes)if(f.arena)f.hp=0;CB.eshots=[];
+  toast('打倒了南瓜幽靈！');
+  setTimeout(()=>run(finalEnding),900);
+}
+let RADIO_T=0;
+async function finalEnding(){
+  Object.assign(NPCS.ghost,{scene:'crypt',x:11,y:3,state:'tame',queue:[],mv:null,patrol:null});
+  await n('南瓜幽靈的南瓜頭「咚」地掉在地上，滾了兩圈，又自己飄了回去。');
+  await say('ghost','……嗚哇，輸了輸了！');
+  await say('ghost','……其實，我只是想跟大家一起玩而已。');
+  await say('ghost','這棟房子，一直都只有我一個。每年萬聖節，我都會把「需要這棟房子的人」請進來……');
+  await say('ghost','冰箱裡的番茄汁，是我偷偷貼上「草莓牛奶」標籤的喔。拉拉的麵糊會動，也是我施的小魔法。');
+  await say('ghost','大家的超能力，也是我先借走的。不然你們一下子就把我抓到了嘛！');
+  await say('ghost','……對不起啦。很好玩嗎？');
+  await n('墓室的階梯傳來一陣腳步聲——宅邸裡的大家都追下來了。');
+  await say('lala','原來是你搞的鬼！害大家都以為是我！');
+  await say('ian','……我的下半身。還我。');
+  await n('IAN 的下半身咚咚咚地跑過去，踢了南瓜幽靈一腳。……輕輕的。');
+  await say('boss','……原來，這棟房子在等的人，是我們啊。');
+  await say('sui','欸～那明年還可以再來玩嗎？');
+  await say('ghost','……真的嗎！？');
+  await say('ghost','那、那我把大家的超能力還回去！還有……');
+  await n('南瓜幽靈打了一個響指。');
+  await n('……地底下，遠遠地傳來了一聲雞叫。');
+  await chapterCard('終幕　天亮了');
+  S.flags.ch=5;applyWorld();changeScene('outside',17,22,'up');
+  await n('濃霧散了。這棟宅邸，第一次迎來了日出。');
+  await n('陽光照進中庭的時候，那隻飛不起來的小蝙蝠，全身亮了起來——');
+  await n('……變回了會長。');
+  await say('kaicho','……我睡了多久？');
+  await say('kaicho','……好渴。有番茄汁嗎？');
+  if(qDoneP('kaicho'))await say('lala','有！我幫你冰了五罐番茄罐頭！');
+  else await say('lala','我、我馬上去煎鬆餅！番茄口味的！');
+  await n('拉拉用她驚人的力氣，三兩下就把 IAN 的上半身和下半身縫了回去。');
+  await say('ian','……縫好了。腳，回來了。');
+  await n('大家一起走出了宅邸的大門。');
+  await say('ghost','明年萬聖節，還要再來玩喔——！');
+  await n('……就在這時。');
+  RADIO_T=tick;shake=16;
+  await n('——滋滋滋滋滋！');
+  await say('radio','……喂？喂？麥克風測試，一、二。');
+  await say('radio','這次故事各位聽眾還滿意嗎？不滿意也不能申訴退款！');
+  await say('radio','那麼，我們下次再見——滋——');
+  RADIO_T=0;ach('h_radio');
+  finish('final');
+}
+function drawRadioPop(){
+  if(!RADIO_T)return;const k=Math.min(1,(tick-RADIO_T)/18),y=Math.round(208-k*128+Math.sin(tick/7)*2);
+  ctx.save();ctx.translate(136,y);ctx.scale(3,3);drawRadio(ctx,tick);ctx.restore();
+}
+/* 地下墓室比較暗 */
+function cryptDark(px,py){
+  dctx.globalCompositeOperation='source-over';dctx.clearRect(0,0,320,208);dctx.fillStyle='rgba(4,2,8,.6)';dctx.fillRect(0,0,320,208);
+  dctx.globalCompositeOperation='destination-out';const gr=dctx.createRadialGradient(px,py,10,px,py,90);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,0)');dctx.fillStyle=gr;dctx.fillRect(0,0,320,208);
+  ctx.drawImage(dark,0,0);
 }
 
 /* ---------------- 結局 / 名單 ---------------- */
 function finish(type){
-  if(type==='act3'){ach('m_act3');if(!S.flags.deaths)ach('h_nodeath')}
+  if(type==='final'){ach('m_final');if(!S.flags.deaths)ach('h_nodeath')}
   const e=endings();if(!e.includes(type)){e.push(type);ls.set(END_KEY,JSON.stringify(e))}
   ls.del(SAVE_KEY);mode='ending';
   const ec=$('endCv'),g=ec.getContext('2d');drawLineup(g,type);
-  $('endS').textContent='TO BE CONTINUED';
-  $('endT').textContent='第三幕　南瓜裡的頭';
-  $('endP').textContent='翠的頭回來了，小波還在床上睡，而那隻不會飛的小蝙蝠……還在被錐齒獸追著跑。故事，未完待續。';
+  $('endS').textContent='THE END';
+  $('endT').textContent='終幕　天亮了';
+  $('endP').textContent='南瓜幽靈的惡作劇結束了。會長變回了人，IAN 也縫好了。大家一起走出宅邸，迎接了第一道陽光。……明年萬聖節，宅邸還會再請大家來玩吧。';
   setTimeout(()=>{$('ending').hidden=false;$('toCredits').focus()},500);
 }
 function drawLineup(g,type){
   g.clearRect(0,0,232,104);
   for(let x=0;x<232;x+=16)for(let y=0;y<64;y+=16)drawTile(g,y===0?'#':'.',x,y,x/16,y/16,'end');
   for(let x=24;x<232;x+=64){R(g,x,6,14,13,'#6b4a3a');R(g,x+1,7,12,11,'#16202e');R(g,x+6,7,2,11,'#6b4a3a')}
-  const ids=['boss','ji','ian','po','batk','lala','sui','shisho','me'];
-  ids.forEach((id,i)=>{const X=6+i*24,Y=42;
+  const ids=['boss','ji','ian','po','kaicho','lala','sui','shisho','ghost','me'];
+  ids.forEach((id,i)=>{const X=2+i*23,Y=42;
     drawEntity(g,id,X,Y+(id==='batk'?-6:0),'down',0,30,id==='po'?'sleep':undefined)});
   R(g,0,74,232,30,'#d9cfc0');R(g,0,74,232,2,'#efe8dc');R(g,0,82,232,6,'#8e1c24');R(g,0,102,232,2,'#7a6a5a');
   for(let x=12;x<232;x+=40){R(g,x,70,14,3,'#d9a050');R(g,x+1,67,12,3,'#e6b866');R(g,x+1,66,12,1,'#f0d090');R(g,x+5,64,4,2,'#f6e08a')}
@@ -2723,7 +3038,9 @@ function walkable(x,y){
   const[ox,oy]=toOld(S.scene,x,y);
   if(S.scene==='f2'&&ox===9&&oy===1)return!!S.flags.atticOpen;
   if(S.scene==='kitchen'&&ox===0&&oy===3)return chOf()===2&&!!S.flags.disc2;
-  const c=tileAt(x,y);if(SOLID.has(c))return false;if(npcAt(x,y))return false;
+  if(S.scene==='chapel'&&ox===14&&oy===9)return chOf()===4&&!!S.flags.ded4;
+  if(S.scene==='outside'&&chOf()===4&&x===BOTTLE.x&&y===BOTTLE.y)return false;
+  const c=tileAt(x,y);if(SOLID.has(c))return false;{const na=npcAt(x,y);if(na&&!(na==='legs'&&legsOn()))return false}
   if(S.scene==='dining'&&ox===8&&oy===6&&chOf()>=1)return false;
   if(propAt(x,y))return false;
   if(S.scene===SIGN.scene&&x===SIGN.x&&y===SIGN.y)return false;
@@ -2731,12 +3048,13 @@ function walkable(x,y){
 }
 function changeScene(to,x,y,dir){
   [x,y]=toNew(to,x,y);
-  S.scene=to;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
+  S.scene=to;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
   if(to==='dining'&&chOf()===0&&!S.flags.gathered)run(gatherScene);
   else if(to==='dining'&&chOf()===1&&!S.flags.discovered)run(discovery);
   if(to==='kitchen'&&chOf()===2&&!S.flags.disc2)run(discovery2);
   if(to==='hall'&&chOf()===2&&hasEv('trail')&&!S.flags.poFell2)run(stairFall);
   if(to==='outside'&&chOf()===3&&!S.flags.a3seen)run(act3Scene);
+  if(to==='outside'&&chOf()===4&&!S.flags.disc4)run(disc4);
 }
 function onArrive(){
   const ex=sc().exitsN.find(e=>e[0]===P.x&&e[1]===P.y);
@@ -2772,7 +3090,7 @@ function update(){
       const back=P.guard&&sc().exitsN.some(e=>e[0]===nx&&e[1]===ny);
       if(walkable(nx,ny)&&!back){P.moving=true;P.tx=nx;P.ty=ny;P.prog=0;P.guard=false}}
   }
-  if(P.moving){const sp=runHeld?4:2;P.prog+=sp;P.wc+=sp/2;if(P.prog>=16){P.x=P.tx;P.y=P.ty;P.moving=false;P.prog=0;onArrive()}}
+  if(P.moving){const sp=runHeld?4:2;P.prog+=sp;P.wc+=sp/2;if(P.prog>=16){const ox=P.x,oy=P.y;P.x=P.tx;P.y=P.ty;P.moving=false;P.prog=0;legsStep(ox,oy);onArrive()}}
   else if(!heldDir())P.wc=0;
 }
 function interact(){
@@ -2788,6 +3106,7 @@ const TOMBS=['這裡長眠著：說了「我去去就回」的人。','這裡長
 function objectAt(nx,ny){
   const s=S.scene,[x,y]=toOld(s,nx,ny),sk=SEARCH[s+'@'+nx+','+ny]?s+'@'+nx+','+ny:s+':'+x+','+y;
   const pr=propAt(nx,ny);if(pr)return()=>takeProp(pr);
+  if(s==='outside'&&chOf()===4&&nx===BOTTLE.x&&ny===BOTTLE.y)return bottleSpot;
   const tc=tileAt(nx,ny),pot=hasItem('potion')&&qOn('ji')&&!CB.lock,tested=k=>qGet('ji').tested.includes(k);
   if(s==='chapel'&&tc==='A')return altar;
   if(pot&&s==='greenhouse'&&tc==='r'&&!tested('rose'))return roseEvent;
@@ -2828,6 +3147,7 @@ function objectAt(nx,ny){
 }
 function tileText(c,x,y){
   const s=S.scene;[x,y]=toOld(s,x,y);
+  if(s==='chapel'&&c==='Y'&&chOf()===4&&!S.flags.ded4)return'通往地下墓室的柵欄……被打開了一條縫。縫太小，擠不進去。\n柵欄另一邊，傳來嘻嘻嘻的笑聲。';
   if(LOCKED[s+':'+c]){
     achSeen('locked',s+':'+c,Object.keys(LOCKED).length,'h_locked');
     if(s==='roomR'&&c==='M'&&blackOn>0){ach('h_mirror');return'停電了。鏡子裡一片漆黑，只剩一雙眼睛還亮著。\n你眨了眨眼——鏡子裡那雙眼睛，晚了一拍才眨。'}
@@ -2865,6 +3185,7 @@ const FOES={
   sprite:{name:'南瓜精靈',hp:2,r:5,spd:.8,dmg:1},
   vine:{name:'玫瑰觸手怪',hp:8,r:7,spd:0,dmg:1},
   llama:{name:'幽靈駱馬',hp:99,r:12,spd:.45,dmg:1},
+  ghost:{name:'南瓜幽靈',hp:44,r:11,spd:.5,dmg:2},
 };
 const MAXHP=10,GUN_MAG=6,MELEE_DMG=2,GUN_DMG=1;
 /* 武器名稱（都是在宅邸裡撿到的，據說是阿鳳姨的手筆） */
@@ -2911,9 +3232,10 @@ const SEARCH={
 };
 const CB={foes:[],shots:[],eshots:[],fx:[],drops:[],lock:null,lockKind:null,spawnT:900,graveT:300,swing:0,swingR:13,muzzle:0,hurt:0,allyT:-9999};
 /* 會隨機出現災獸的室內房間 */
-const INDOOR_FOES=['hall','f2','roomL','roomR','exhibit','kitchen','chapel','greenhouse'];
+const INDOOR_FOES=['hall','f2','roomL','roomR','exhibit','kitchen','chapel','greenhouse','crypt'];
 /* 會幫忙打怪的 NPC：reach 出手距離（像素）、cd 冷卻（影格）、lines 出手時的提示（{f}=災獸名） */
 const ALLIES={
+  legs:{reach:28,cd:60,lines:['IAN 的下半身一記飛踢，把{f}踢飛了！','「咚！」下半身把{f}踢到了牆上。','下半身踢完，還帥氣地抖了抖腳。']},
   ian:{reach:30,cd:70,lines:['IAN 掄起點滴架，把{f}揮成了一記全壘打！','「鏘！」IAN 又把{f}打飛了。','IAN：「下一個。」']},
   sui:{reach:30,cd:80,lines:['翠把自己的頭甩出去，把{f}砸飛了！','幽靈駱馬一個後踢，{f}飛出了圍牆。','翠：「欸嘿～打中了！」']},
 };
@@ -2969,8 +3291,8 @@ function spawnRandom(n,types,o={}){
 }
 function spark(x,y,c,n=5){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=.6+Math.random()*1.2;CB.fx.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:12+((Math.random()*8)|0),c})}}
 function killFx(e){
-  const C={bat:['#e2741c','#ffd25a','#1b1018'],hound:['#e8e4d4','#a8a49c','#ff3030'],wisp:['#9a5ad0','#e0c0ff','#c08af0'],boss:['#e2741c','#d9b860','#4a3a5a'],sprite:['#e2741c','#3f6b2a','#ffd25a'],vine:['#2f5a28','#c8202a','#efe3c8'],llama:['#e8f4f0','#b8e0d8','#fff']}[e.type];
-  for(let i=0;i<(e.type==='boss'?40:14);i++){const a=Math.random()*6.28,v=.5+Math.random()*2;CB.fx.push({x:e.x,y:e.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-.6,g:.05,life:20+((Math.random()*20)|0),c:C[i%3],s:2})}
+  const C={bat:['#e2741c','#ffd25a','#1b1018'],hound:['#e8e4d4','#a8a49c','#ff3030'],wisp:['#9a5ad0','#e0c0ff','#c08af0'],boss:['#e2741c','#d9b860','#4a3a5a'],sprite:['#e2741c','#3f6b2a','#ffd25a'],vine:['#2f5a28','#c8202a','#efe3c8'],llama:['#e8f4f0','#b8e0d8','#fff'],ghost:['#e2741c','#eef0f6','#ffd25a']}[e.type];
+  for(let i=0;i<(e.type==='boss'||e.type==='ghost'?40:14);i++){const a=Math.random()*6.28,v=.5+Math.random()*2;CB.fx.push({x:e.x,y:e.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-.6,g:.05,life:20+((Math.random()*20)|0),c:C[i%3],s:2})}
 }
 function hitFoe(e,dmg,kx,ky){
   if(e.launch)return;e.dormant=false;
@@ -3031,7 +3353,7 @@ function updFoe(e,pcx,pcy){
   if(e.leash&&Math.hypot(pcx-e.x,pcy-e.y)>90){
     const L=e.leash;if(!e.wt||Math.hypot(e.wt[0]-e.x,e.wt[1]-e.y)<4||e.t%400===0)e.wt=[L[0]+Math.random()*(L[2]-L[0]),L[1]+Math.random()*(L[3]-L[1])];
     const wx=e.wt[0]-e.x,wy=e.wt[1]-e.y,wd=Math.hypot(wx,wy)||1;if(moveE(e,wx/wd*.35,wy/wd*.35))e.wt=null;return}
-  if((e.kx||e.ky)&&e.type!=='vine'&&e.type!=='llama'){moveE(e,e.kx,e.ky);e.kx*=.75;e.ky*=.75;if(Math.abs(e.kx)+Math.abs(e.ky)<.1)e.kx=e.ky=0}
+  if((e.kx||e.ky)&&e.type!=='vine'&&e.type!=='llama'&&e.type!=='ghost'){moveE(e,e.kx,e.ky);e.kx*=.75;e.ky*=.75;if(Math.abs(e.kx)+Math.abs(e.ky)<.1)e.kx=e.ky=0}
   const dx=pcx-e.x,dy=pcy-e.y,dist=Math.hypot(dx,dy)||1,ux=dx/dist,uy=dy/dist,F=FOES[e.type];
   if(e.dormant){if(dist<56||e.flash>0){e.dormant=false;e.t=0}else return}
   switch(e.type){
@@ -3039,6 +3361,7 @@ function updFoe(e,pcx,pcy){
       if(--e.cd<=0){e.cd=85;const a0=Math.atan2(pcy-e.y,pcx-e.x);for(const dd of[-.25,0,.25])CB.eshots.push({x:e.x,y:e.y-6,vx:Math.cos(a0+dd)*1.5,vy:Math.sin(a0+dd)*1.5,life:160,dmg:1,k:'thorn'})}
       break}
     case 'llama':updLlama(e,pcx,pcy);break;
+    case 'ghost':updGhost(e,pcx,pcy);break;
     case 'sprite':
       if((e.t%40)<22)moveE(e,ux*F.spd*1.6,uy*F.spd*1.6);
       break;
@@ -3109,6 +3432,7 @@ function playerDown(){
 }
 function onEnterScene(to){
   clearCombat();spawnSlimes();
+  if(to==='crypt'&&!S.flags.finalDone)spawnRandom(4,['bat','wisp','sprite'],{region:[1,9,20,14]});
   if(to==='maze')spawnRandom(5,['bat','hound','wisp']);
   if(to==='outside'&&S.flags.riot&&!S.flags.riotDone)spawnRiot();
   if(to==='attic'&&chOf()===2&&!S.flags.atticCleared){
@@ -3137,9 +3461,10 @@ function updateCombat(){
     /* 墓地偶爾有災獸徘徊（IAN 會把牠們打飛） */
     if(S.scene==='outside'&&--CB.graveT<=0){
       CB.graveT=900+Math.random()*900;
-      if(CB.foes.filter(e=>e.leash).length<2)spawnRandom(1,['bat','hound','wisp'],{region:[12,3,40,6]});
+      if(CB.foes.filter(e=>e.leash).length<2)spawnRandom(1,['bat','hound','wisp'],{region:[9,3,41,9]});
     }
   }
+  if(S.scene==='crypt'&&chOf()===4&&!S.flags.finalDone&&!CB.lock&&!P.moving&&P.y<=7){if(S.flags.finalMet)startFinal();else run(finalIntro);return}
   if(S.scene==='maze'&&!S.flags.bossMaze&&!CB.lock&&!P.moving&&P.x>=MZ.x0&&P.x<=MZ.x1&&P.y>=MZ.y0&&P.y<=MZ.y1){startBoss();return}
   if(!S.flags.tut0&&CB.foes.some(e=>!e.spawn&&!e.leash)){S.flags.tut0=1;toast(isTouch?'災獸出現了！按「砍」空手也能揍':'災獸出現了！J／X 空手也能揍');toastT=300}
   /* NPC 助攻 */
@@ -3151,6 +3476,7 @@ function updateCombat(){
     if(!f)continue;
     o.acd=A.cd;o.swing=12;const sx=Math.sign(f.x-ax)||1;o.dir=Math.abs(f.x-ax)>Math.abs(f.y-ay)?(sx>0?'right':'left'):(f.y>ay?'down':'up');
     f.launch={vx:sx*3.2,vy:-3.2,life:60};f.flash=8;spark(f.x,f.y,'#fff6c8',8);
+    if(id==='legs')achAdd('legs');
     if(tick-CB.allyT>240){CB.allyT=tick;toast(A.lines[(Math.random()*A.lines.length)|0].replace('{f}',FOES[f.type].name))}
   }
   for(const e of CB.foes)updFoe(e,pcx,pcy);
@@ -3165,6 +3491,7 @@ function updateCombat(){
   updSlimes(pcx,pcy);
   for(const b of CB.eshots){
     b.x+=b.vx;b.y+=b.vy;b.life--;
+    if(b.homing&&b.life>70){const a=Math.atan2(pcy-b.y,pcx-b.x),cur=Math.atan2(b.vy,b.vx);let dd=a-cur;dd=Math.atan2(Math.sin(dd),Math.cos(dd));const na=cur+Math.max(-.035,Math.min(.035,dd)),sp=Math.hypot(b.vx,b.vy);b.vx=Math.cos(na)*sp;b.vy=Math.sin(na)*sp}
     if(SOLID.has((s.map[Math.floor(b.y/T)]||'')[Math.floor(b.x/T)])){b.life=0;spark(b.x,b.y,'#ff7a1a',3);continue}
     if(Math.hypot(b.x-pcx,b.y-pcy)<6){hurtP(b.dmg);b.life=0}
   }
@@ -3174,6 +3501,7 @@ function updateCombat(){
     e.dead=1;killFx(e);achKill(e);catchFoe(e);
     if(e.riot)riotKill();
     if(e.type==='boss')bossDown();
+    else if(e.type==='ghost')finalDown();
     else{const r=Math.random();if(r<.25)CB.drops.push({x:e.x,y:e.y,t:0,k:'candy',n:1});else if(r<.45)CB.drops.push({x:e.x,y:e.y,t:0,k:'ammo',n:2+((Math.random()*2)|0)})}
   }
   CB.foes=CB.foes.filter(e=>!e.dead);
@@ -3216,6 +3544,7 @@ function drawFoe(e,X,Y){
     g.fillStyle='rgba(160,100,255,.13)';g.beginPath();g.arc(X,y,12,0,6.28);g.fill();
     R(g,X-4,y-2,8,7,'#7a3ab0');R(g,X-3,y-5,6,4,'#9a5ad0');R(g,X-1+((t>>3)%2?1:-1),y-8,3,4,'#c08af0');R(g,X-2,y,4,4,'#e0c0ff');
     R(g,X-2,y+1,1,2,K);R(g,X+1,y+1,1,2,K);R(g,X-3,y+5,6,2,'#efe3c8');
+  }else if(e.type==='ghost'){g.save();g.translate(X-16,Y-30);g.scale(2,2);drawGhost(g,e.t);g.restore()
   }else if(e.type==='vine'){drawVine(g,e,X,Y)
   }else if(e.type==='llama'){drawLlamaBig(g,e,X,Y)
   }else if(e.type==='sprite'){
@@ -3235,7 +3564,7 @@ function drawFoe(e,X,Y){
     R(g,X-10,y-20,20,2,'#2a2228');R(g,X-5,y-26,10,6,'#2a2228');R(g,X-5,y-22,10,1,'#7a2b2b');
   }
   OVR=null;g.restore();
-  if(e.type!=='boss'&&e.hp<e.max&&!e.launch){R(g,X-7,Y-13,14,2,'#1a0d0c');R(g,X-7,Y-13,Math.max(0,14*e.hp/e.max),2,'#e0213a')}
+  if(e.type!=='boss'&&e.type!=='ghost'&&e.hp<e.max&&!e.launch){R(g,X-7,Y-13,14,2,'#1a0d0c');R(g,X-7,Y-13,Math.max(0,14*e.hp/e.max),2,'#e0213a')}
 }
 function drawCombat(cx,cy){
   const g=ctx;
@@ -3249,7 +3578,7 @@ function drawCombat(cx,cy){
   for(const b of CB.shots){const x=Math.round(b.x-cx),y=Math.round(b.y-cy);if(b.hay){R(g,x-2,y-2,5,4,'#d9b860');R(g,x-1,y-3,1,2,'#8a9a3a');R(g,x+1,y-3,1,2,'#d9b860')}else R(g,x-1,y-1,3,3,'#fff6c8')}
   for(const sl of CB.slimes||[])drawSlime(g,Math.round(sl.x-cx),Math.round(sl.y-cy),sl.t);
   for(const b of CB.eshots){const x=Math.round(b.x-cx),y=Math.round(b.y-cy);
-    if(b.k==='seed'){R(g,x-2,y-2,4,4,K);R(g,x-1,y-1,2,2,'#c89a4a')}else if(b.k==='spit'){R(g,x-2,y-2,5,5,'rgba(220,240,255,.85)');R(g,x-1,y-1,2,2,'#fff')}else if(b.k==='thorn'){R(g,x-2,y-1,5,3,'#1f3a22');R(g,x-1,y-1,2,1,'#c8202a')}else{R(g,x-2,y-2,5,5,'#ff7a1a');R(g,x-1,y-1,3,3,'#ffd25a')}}
+    if(b.k==='seed'){R(g,x-2,y-2,4,4,K);R(g,x-1,y-1,2,2,'#c89a4a')}else if(b.k==='missile'){const a=Math.atan2(b.vy,b.vx),ex=Math.round(Math.cos(a)*3),ey=Math.round(Math.sin(a)*3);R(g,x-2,y-2,5,5,'#e0213a');R(g,x-1,y-1,3,3,'#efe8dc');R(g,x+ex-1,y+ey-1,2,2,'#ffd25a');R(g,x-ex-1,y-ey-1,2,2,'#ff5fa2')}else if(b.k==='candy'){R(g,x-2,y-2,4,4,'#ff5fa2');R(g,x-1,y-1,2,2,'#fff');R(g,x-4,y-1,2,2,'#ff5fa2');R(g,x+2,y-1,2,2,'#ff5fa2')}else if(b.k==='spit'){R(g,x-2,y-2,5,5,'rgba(220,240,255,.85)');R(g,x-1,y-1,2,2,'#fff')}else if(b.k==='thorn'){R(g,x-2,y-1,5,3,'#1f3a22');R(g,x-1,y-1,2,1,'#c8202a')}else{R(g,x-2,y-2,5,5,'#ff7a1a');R(g,x-1,y-1,3,3,'#ffd25a')}}
   for(const f of CB.fx)R(g,Math.round(f.x-cx),Math.round(f.y-cy),f.s||1,f.s||1,f.c);
   const[pcx,pcy]=pCenter(),[dx,dy]=DV[P.dir];
   for(const id in ALLIES){const o=NPCS[id];if(o.scene!==S.scene||!(o.swing>0))continue;const[nx,ny]=npcPos(o);
@@ -3308,19 +3637,20 @@ function render(){
   // markers
   if(mode==='play'&&S.flags.discovered&&!busy){
     const F=S.flags,ch=chOf(),sp=[];
-    const pend=ch===1?{lala:'lala',shisho:'ghost',sui:'sui',boss:'boss',ian:'ian',ji:'potion'}:ch===2?{ian:'alibi',shisho:'ghost2',sui:'sight',boss:'boss2',ji:'potion2'}:{sui:'gesture',ji:'witness'};
+    const pend=ch===4?{ian:'cut',legs:'seam',lala:'lala4',shisho:'growth',boss:'laugh',sui:'gate',ji:hasEv('bottle')?'notji':null}:ch===1?{lala:'lala',shisho:'ghost',sui:'sui',boss:'boss',ian:'ian',ji:'potion'}:ch===2?{ian:'alibi',shisho:'ghost2',sui:'sight',boss:'boss2',ji:'potion2'}:{sui:'gesture',ji:'witness'};
     for(const [id,o] of Object.entries(NPCS)){
       if(o.scene!==key)continue;
       let need=pend[id]&&!hasEv(pend[id]);
       if(ch===1){if(id==='po'&&o.state==='pile')need=true;if(id==='kaicho'&&(!hasEv('body')||REQ1.every(hasEv)))need=true}
       else if(ch===2){if(!F.disc2)need=false;if(id==='lala'&&hasEv('sight')&&!hasItem('atticKey')&&!F.atticOpen)need=true;if(id==='po'&&o.state==='pile')need=true}
-      else if(id==='sui'&&F.suiBack)need=false;
-      if(id==='batk'&&!hasEv('batseen'))need=true;
+      else if(ch===3&&id==='sui'&&F.suiBack)need=false;
+      if(ch===4){if(!F.disc4)need=false;if(id==='ian'&&REQ4.every(hasEv)&&!F.ded4)need=true}
+      if(id==='batk'&&!hasEv('batseen')&&ch<5)need=true;
       if(need){const[bx,by]=npcPos(o);bubble(bx-cx,by-cy-(id==='ji'?22:16))}
     }
     if(ch===1){if(key==='kitchen'&&!hasEv('fridge'))sp.push([11.5,1]);if(key==='dining'&&!hasEv('juice'))sp.push([8,6])}
     else if(ch===2){if(key==='storage'&&!hasEv('lock'))sp.push([8,5]);if(key==='exhibit'&&hasEv('ghost2')&&!hasEv('vbook'))sp.push([2,7]);if(key==='f2'&&hasItem('atticKey')&&!F.atticOpen)sp.push([9,1]);if(key==='attic'&&!hasEv('trail'))sp.push([10,3])}
-    else if(key==='outside'&&!F.riot&&(!hasEv('pvoice')||REQ3.every(hasEv)))sp.push([5.5,9]);
+    else if(ch===3&&key==='outside'&&!F.riot&&(!hasEv('pvoice')||REQ3.every(hasEv)))sp.push([5.5,9]);
     for(const [x0,y0] of sp)if((tick>>4)%2){const[x,y]=toNew(key,x0,y0);const X=Math.round(x*T-cx)+7,Y=y*T-cy-4;R(ctx,X,Y-2,1,5,'#fff6c8');R(ctx,X-2,Y,5,1,'#fff6c8')}
   }
   if(mode==='play'&&S&&!busy){
@@ -3335,7 +3665,12 @@ function render(){
   }
   if(key==='f2'&&S&&S.flags.atticOpen){const[ax,ay]=toNew('f2',9,1),X=ax*T-cx,Y=ay*T-cy;R(ctx,X+1,Y,14,16,'#120c0e');R(ctx,X+3,Y,2,16,'#7a5232');R(ctx,X+11,Y,2,16,'#7a5232');for(let i=0;i<4;i++)R(ctx,X+3,Y+2+i*4,10,2,'#8e6440')}
   if(key==='hall')drawChandelier(s.w*T/2-cx,6-cy);
-  if(s.out){
+  if(key==='chapel'&&S&&chOf()===4&&S.flags.ded4){const[ax,ay]=toNew('chapel',14,9),X=ax*T-cx,Y=ay*T-cy;R(ctx,X,Y,16,16,'#0c080a');for(let i=0;i<4;i++)R(ctx,X+2,Y+2+i*4,12,2,'#4a4448');R(ctx,X,Y,2,16,'#6a6e72');R(ctx,X+14,Y,2,16,'#6a6e72')}
+  if(key==='outside'&&S&&chOf()===4){const X=BOTTLE.x*T-cx,Y=BOTTLE.y*T-cy;R(ctx,X+4,Y+8,8,5,'#9ad8c8');R(ctx,X+5,Y+9,6,3,'#c8f0e4');R(ctx,X+12,Y+10,2,2,'#9ad8c8');R(ctx,X+2,Y+12,2,1,'#9ad8c8');R(ctx,X+6,Y+9,3,2,'#e2741c');R(ctx,X+6,Y+9,1,1,K);R(ctx,X+8,Y+9,1,1,K);
+    if(!hasEv('bottle')&&(tick>>4)%2){R(ctx,X+7,Y+1,1,5,'#fff6c8');R(ctx,X+5,Y+3,5,1,'#fff6c8')}}
+  if(key==='crypt'&&mode==='play'){const[ppx,ppy]=pPix();cryptDark(ppx-cx+8,ppy-cy+4)}
+  if(S&&chOf()===5&&s.out){ctx.fillStyle='rgba(255,190,120,.16)';ctx.fillRect(0,0,320,208)}
+  else if(s.out){
     ctx.fillStyle='rgba(190,200,215,.07)';
     for(let i=0;i<6;i++){const fx=((i*97+tick*.3)%(s.w*T+120))-60-cx;ctx.fillRect(fx,(i*53)%(s.h*T)-cy,120,26)}
     ctx.fillStyle='rgba(150,170,200,.45)';for(const r of rain)ctx.fillRect(r.x|0,r.y|0,1,4);
@@ -3351,6 +3686,7 @@ function render(){
   if(cutDark){ctx.fillStyle='rgba(2,1,4,.95)';ctx.fillRect(0,0,320,208)}
   if(fade>0){ctx.fillStyle=`rgba(0,0,0,${fade})`;ctx.fillRect(0,0,320,208)}
   if(mode==='play'&&S&&!cutDark&&!busy)drawHUD();
+  drawRadioPop();
   drawPitch();
   drawIdle();
 }
@@ -3393,6 +3729,13 @@ function updateHUD(){
     else if(!hasEv('trail'))t='第二幕｜上 <b>閣樓</b> 看看。';
     else if(!F.poFell2)t='第二幕｜床單的痕跡通往樓梯……回 <b>大廳</b> 看看。';
     else t='第二幕｜<b>大廳樓梯口</b> 那坨床單……是小波嗎？';
+  }else if(ch===4){
+    const k=REQ4.filter(hasEv).length;
+    if(!F.disc4)t='第四幕｜<b>墓園</b> 那邊傳來奇怪的聲音……';
+    else if(k<REQ4.length)t=`第四幕｜IAN 怎麼會斷成兩半？調查線索 <b>${k}/${REQ4.length}</b>`;
+    else if(!F.ded4)t='第四幕｜線索齊了。到 <b>墓園</b> 找 IAN 的上半身，公布推理。';
+    else t='第四幕｜往 <b>小教堂</b> 的地下墓室深處前進！';
+  }else if(ch===5){t='終幕｜天亮了。';
   }else{
     const k=REQ3.filter(hasEv).length;
     if(!F.a3seen)t='第三幕｜外面傳來悶悶的求救聲，去 <b>屋外的大南瓜</b> 看看。';
@@ -3466,7 +3809,7 @@ function toTitle(){
   $('tCont').disabled=!loadSave();
   $('tChap').disabled=!CHAP_NAMES.some((_,i)=>chapterGet(i));
   const e=endings();AD=achData();const ag=ACHS.filter(a=>AD.got[a.id]).length;
-  $('ttEnd').textContent=(e.includes('act3')?'已通關：第三幕　南瓜裡的頭（未完待續）　':'')+(ag?`成就 ${ag}/${ACHS.length}`:'');
+  $('ttEnd').textContent=(e.includes('final')?'已通關：終幕　天亮了　':e.includes('act3')?'已通關：第三幕　南瓜裡的頭　':'')+(ag?`成就 ${ag}/${ACHS.length}`:'');
   setTimeout(()=>$('tNew').focus(),50);
 }
 const LOOK_KEY='eod_hw_cabin_look';
