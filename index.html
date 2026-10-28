@@ -420,21 +420,21 @@ const CH={
       if(d==='up'||st==='nohead')return;const hx=9+Math.round(Math.sin(t/9)*2),hy=11+Math.round(Math.cos(t/9));
       R(g,hx,hy,6,6,K);R(g,hx+1,hy+1,4,4,'#f0cdb0');R(g,hx+1,hy,4,2,'#3fae7a');R(g,hx,hy+1,1,3,'#3fae7a');R(g,hx+1,hy+3,1,1,'#1f6e4a');R(g,hx+4,hy+3,1,1,'#1f6e4a');}},
   lala:{o:O({skin:'#f6dcc4',hair:'#f2d060',eye:'#ff6a8a',cloth:'#f4f2ee',cloth2:'#e4e0d8',pants:'#3a3a44',cut:'short'}),
-    pre(g,d){if(d==='up'){R(g,7,8,3,9,'#f2d060');R(g,7,15,3,2,'#ff8a3a')}},
-    post(g,d){
+    post(g,d,t,st,dir){
       R(g,5,-2,6,5,K);R(g,6,-1,4,4,'#f8f8f6');R(g,4,2,8,1,K);R(g,5,2,6,1,'#e8e6e0');if(d!=='up')R(g,7,0,2,2,'#e0213a');
       if(d==='up')return;
       R(g,5,9,1,1,'#ff8aa0');R(g,10,9,1,1,'#ff8aa0');
-      if(d==='down'){R(g,2,6,2,9,'#f2d060');R(g,2,8,2,1,'#d8b040');R(g,2,11,2,1,'#d8b040');R(g,2,14,2,2,'#ff8a3a');R(g,1,13,1,2,'#9a5ad0');R(g,4,13,1,2,'#9a5ad0')}
-      if(d==='right'){R(g,3,7,2,8,'#f2d060');R(g,3,14,2,2,'#ff8a3a');R(g,2,12,1,2,'#9a5ad0');R(g,9,13,1,1,'#c8c4b4');R(g,9,15,1,1,'#c8c4b4');R(g,6,14,2,1,'#a8202a');R(g,8,17,2,1,'#a8202a');
+
+      if(d==='right'){if(dir==='right'){R(g,7,6,2,6,K);R(g,7,6,2,5,'#f2d060');R(g,7,8,2,1,'#d8b040');R(g,7,11,2,1,'#ff8a3a');R(g,6,10,1,1,'#9a5ad0');R(g,9,10,1,1,'#9a5ad0')}
+        R(g,9,13,1,1,'#c8c4b4');R(g,9,15,1,1,'#c8c4b4');R(g,6,14,2,1,'#a8202a');R(g,8,17,2,1,'#a8202a');
         R(g,10,12,5,5,K);R(g,11,13,3,3,'#6a6e5a');R(g,12,3,3,10,K);R(g,13,4,1,8,'#c9ced4');R(g,14,5,1,1,'#a8202a');R(g,13,8,1,2,'#a8202a');return}
       R(g,6,13,1,1,'#c8c4b4');R(g,9,13,1,1,'#c8c4b4');R(g,6,15,1,1,'#c8c4b4');R(g,9,15,1,1,'#c8c4b4');
       R(g,5,14,2,1,'#a8202a');R(g,10,12,1,3,'#a8202a');R(g,7,17,2,1,'#a8202a');
       R(g,11,12,5,5,K);R(g,12,13,3,3,'#6a6e5a');R(g,13,3,3,10,K);R(g,14,4,1,8,'#c9ced4');R(g,15,5,1,1,'#a8202a');R(g,14,8,1,2,'#a8202a');R(g,15,10,1,1,'#a8202a')}},
   boss:{o:O({skin:'#f2ebe8',hair:'#dcdae6',eye:'#7a808c',cloth:'#eeeaf2',cloth2:'#a8232b',pants:'#eeeaf2',cut:'long',robe:1}),
-    pre(g,d){if(d==='up'){R(g,4,9,8,8,'#eceaf2');R(g,4,11,8,3,'#a8232b')}},
     post(g,d,t){
-      R(g,3,11,10,3,K);R(g,3,11,10,2,'#a8232b');R(g,6,10,4,2,'#a8232b');R(g,7,12,2,1,'#e2741c');
+      if(d==='up'){R(g,3,9,10,11,K);R(g,4,9,8,10,'#dcdae6');R(g,6,10,1,9,'#c4c2d0');R(g,9,10,1,9,'#c4c2d0');R(g,4,18,8,1,'#c4c2d0');R(g,2,11,1,3,'#a8232b');R(g,13,11,1,3,'#a8232b')}
+      else{R(g,3,11,10,3,K);R(g,3,11,10,2,'#a8232b');R(g,6,10,4,2,'#a8232b');R(g,7,12,2,1,'#e2741c');}
       for(const[x,y]of[[2,2],[12,2],[4,0],[10,0]]){R(g,x,y,3,2,'#5a8a3a');R(g,x+1,y+1,1,1,'#3f6b2a')}
       R(g,1,4,3,3,'#e2741c');R(g,12,4,3,3,'#e2741c');R(g,2,3,1,1,'#3f6b2a');R(g,13,3,1,1,'#3f6b2a');
       if(d==='up')return;
@@ -454,13 +454,13 @@ const CH={
       if(S&&S.flags&&S.flags.ianArms&&d!=='up'){R(g,-1,12,3,6,K);R(g,0,13,1,4,'#dfe2e6');R(g,-2,10,2,3,K);R(g,-1,11,1,1,'#7a5332');R(g,14,12,3,6,K);R(g,15,13,1,4,'#dfe2e6');R(g,16,10,2,3,K);R(g,16,11,1,1,'#7a5332')}}},
   ji:{o:O({skin:'#f0d4c0',hair:'#7a2a6e',eye:'#ffd23a',cloth:'#1b1418',cloth2:'#a8232b',pants:'#1b1418',cut:'long',robe:1}),
     pre(g){R(g,3,5,10,9,'#7a2a6e');},
-    post(g,d){
+    post(g,d,t,st,dir){
       R(g,-1,2,18,2,K);R(g,0,2,16,1,'#1b1418');R(g,0,3,16,1,'#a8232b');R(g,-1,4,2,1,'#1b1418');R(g,15,4,2,1,'#1b1418');
       R(g,4,-3,8,5,K);R(g,5,-3,6,5,'#1b1418');R(g,6,-6,4,3,'#1b1418');R(g,9,-8,3,3,'#1b1418');R(g,11,-9,2,2,'#1b1418');R(g,5,1,6,1,'#a8232b');
-      if(d==='right'){R(g,6,11,5,3,'#a8232b');R(g,6,13,5,1,'#7a1020');R(g,9,10,2,1,'#a8232b');R(g,9,16,2,2,'#5fd0ff');R(g,9,15,2,1,K);return}
+      if(d==='right'){if(dir==='left')R(g,10,9,1,1,'#2a1a28');R(g,6,11,5,3,'#a8232b');R(g,6,13,5,1,'#7a1020');R(g,9,10,2,1,'#a8232b');R(g,9,16,2,2,'#5fd0ff');R(g,9,15,2,1,K);return}
       R(g,1,11,4,3,'#a8232b');R(g,11,11,4,3,'#a8232b');R(g,1,13,4,1,'#7a1020');R(g,11,13,4,1,'#7a1020');
       if(d==='up')return;
-      R(g,6,10,4,1,'#a8232b');R(g,7,11,2,2,'#a8232b');R(g,10,9,1,1,'#2a1a28');
+      R(g,6,10,4,1,'#a8232b');R(g,7,11,2,2,'#a8232b');R(g,9,9,1,1,'#2a1a28');
       R(g,4,16,2,2,'#c08af0');R(g,10,16,2,2,'#5fd0ff');R(g,4,15,2,1,K);R(g,10,15,2,1,K);}},
 };
 /* ---------------- 主角紙娃娃 ----------------
@@ -725,7 +725,7 @@ function drawChar(g,id,dir='down',f=0,t=0,st,blink){
   const def=id==='me'?playerDef():CH[id];
   const flip=dir==='left',d=flip?'right':dir;
   g.save();if(flip){g.translate(16,0);g.scale(-1,1);}
-  def.pre&&def.pre(g,d,t,st);baseChar(g,def.o,d,f,blink);def.post&&def.post(g,d,t,st);
+  def.pre&&def.pre(g,d,t,st);baseChar(g,def.o,d,f,blink);def.post&&def.post(g,d,t,st,dir);
   g.restore();
 }
 function drawEntity(g,id,X,Y,dir,f,t,st,blink){
