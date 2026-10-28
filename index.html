@@ -1419,6 +1419,9 @@ const ACHS=[
   {id:'h_egg',t:'它也在看你',d:'一直盯著冰箱裡的雞蛋看。',hint:'冰箱裡那顆雞蛋好像在看你。'},
   {id:'h_ian',t:'無底洞',d:'看著 IAN 吃到第 40 片鬆餅。',hint:'IAN 到底吃了幾片？'},
   {id:'h_batk',t:'那雙紅眼睛',d:'和那隻飛不起來的小蝙蝠對上眼。',hint:'那隻小蝙蝠好像想說什麼。'},
+  {id:'h_bosspumpkin',t:'八十分的南瓜',d:'變成南瓜，讓首領打了分數。',hint:'首領最喜歡的東西是什麼？如果你也變成那個……'},
+  {id:'h_batear',t:'蝙蝠的耳朵',d:'變成蝙蝠，聽見了倒下的會長的聲音。',hint:'倒下的會長一動也不動。也許只有某種耳朵才聽得見……'},
+  {id:'h_batchat',t:'蝙蝠之間的秘密',d:'變成蝙蝠，和那隻飛不起來的小蝙蝠說上了話。',hint:'同類之間，也許聊得起來。'},
   {id:'h_horse',t:'幽靈駱馬的噴嚏',d:'和幽靈駱馬打了招呼。',hint:'雨裡的那隻駱馬，也是宅邸的一份子。'},
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，打扮得越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
@@ -1811,6 +1814,7 @@ function sideOption(id){
   if(id==='ian'&&hasItem('potion')&&qOn('ji')&&!qGet('ji').tested.includes('ian'))return['請 IAN 喝藥水',ianDrink];
   const q=qGet(id);
   if(!q)return ch>0?['有什麼需要幫忙的嗎？',()=>talk0offer(id)]:null;
+  if(id==='ji'&&q.st!=='on'&&!hasItem('potion')&&ch<5)return['再要一瓶試作藥水',async()=>{await say('ji','上癮了？……也是啦，畢竟是我做的～拿去，裡面一樣加了個人秘方喔。');await say('ji','……成分？下一題～');addItem('potion')}];
   if(q.st!=='on')return null;
   if(id==='lala'&&(q.got||[]).length>=SLIMES.length)return['史萊姆鬆餅都抓回來了',lalaDone];
   if(id==='shisho'&&(q.got||[]).length>=BOOK_N)return['把書交給司書',shishoDone];
@@ -2554,6 +2558,63 @@ async function noseTalk(id){
     await say(id,line);if(F.dirt.length>=3)await say(id,'……而且，你是不是該去洗個澡了？');}
   else if(P.fresh>0&&!F.freshTalk){F.freshTalk=1;await say(id,'咦？好香喔！是玫瑰跟香草的味道？')}
 }
+/* 變身時跟人說話：首領×南瓜、會長×蝙蝠有專屬對話，其他人只會嚇一跳 */
+const MORPH_LINE={
+  pumpkin:{kaicho:'……南瓜？……是薊的藥吧。快去給首領看看，他會很高興的。',lala:'哇！好大的南瓜！可以做南瓜鬆餅——咦？你、你是新來的那位？對不起！我差點就拿電鋸了！',
+    shisho:'……南瓜在說話。嗯，至少比會長的報告有趣一點。',ji:'噗哈哈！好適合你～看吧，我的藥水是天才的傑作。順便一提，首領看到你應該會想把你帶回家喔。',
+    ian:'……南瓜？要打嗎？……喔，是你。抱歉，手有點癢。',sui:'哇，你也變成南瓜啦？我的頭也很常被當成南瓜喔～',po:'……南瓜在走路。……管他的，大概是在作夢吧。'},
+  bat:{kaicho:'……蝙蝠嗎。……不知道為什麼，覺得有點親切。',lala:'呀！蝙蝠！……啊、是你嗎？好可愛！要不要吃一小口鬆餅？',
+    shisho:'又一隻飛不起來的蝙蝠。這宅邸是蝙蝠的養老院嗎。',ji:'噗——飛不起來這點，跟某人一模一樣呢～',
+    ian:'……蝙蝠。怪物？……不對，是你。差點就揮出去了。',sui:'哇，小蝙蝠！給我摸一下～……被咬了。',boss:'……蝙蝠。不是南瓜。沒興趣。',po:'……蝙蝠在說話。……管他的，我繼續睡。'},
+  monster:{lala:'怪物！看我的電——……咦？你是？對、對不起！！',ian:'……怪物。站好，我要揮了。……什麼？是你？',boss:'……怪物。離我的南瓜遠一點。……喔，是你。那也一樣。'},
+  ghost:{shisho:'……半透明。你也是來偷看我吃書的幽靈嗎？',lala:'幽、幽靈！！……要、要一起喝下午茶嗎？',po:'……你是透明的。……管他的，透明也可以睡覺。'},
+};
+async function morphTalk(id){
+  if(!P.morph||!S)return false;
+  const F=S.flags,o=NPCS[id],k=P.morph.k==='roll'?'pumpkin':P.morph.k;F.mtalk=F.mtalk||{};
+  if(k==='pumpkin'&&id==='boss'&&o.state!=='sleep'){
+    if(F.mtalk.boss){await say('boss',P.morph.k==='roll'?'……滾得不錯。繼續滾。':'……南瓜就該安靜地待著。過來，在旁邊躺好。');return true}
+    F.mtalk.boss=1;
+    await n('首領瞇起眼睛，盯著你（南瓜）看了很久、很久。');
+    await say('boss','……喔。新來的南瓜。');
+    await say('boss','皮的顏色普通，形狀歪了一點，蒂頭太短。……而且還會走路。太吵了。');
+    await n('首領伸出手，在你頭頂上「咚、咚」地敲了兩下。聲音很飽滿。');
+    await say('boss','……嗯。熟了。');
+    await say('boss','開玩笑的。南瓜不是拿來吃的，是拿來陪的。……不像某些人類，只會吵吵鬧鬧。');
+    await say('boss','八十分。剩下二十分，等你學會閉嘴再說。');
+    await n('首領把你抱起來，輕輕地放在自己旁邊。……被南瓜的溫度包圍著，你的傷好像都好了。');
+    P.hp=MAXHP;updateHUD();ach('h_bosspumpkin');return true;
+  }
+  if(k==='bat'&&id==='kaicho'&&o.state==='down'){
+    if(F.mtalk.kaicho){await n('你豎起蝙蝠的耳朵……只聽見很輕、很輕的一句：「……番茄汁……」');return true}
+    F.mtalk.kaicho=1;
+    await n('你（蝙蝠）的耳朵抖了一下。');
+    await n('會長的身體一動也不動。可是……你聽見了一個很細、很高的聲音。普通人的耳朵，大概聽不到。');
+    await say('kaicho','……好餓……');
+    await say('kaicho','……冰箱裡的番茄汁……一瓶也……沒有了……只剩下……草莓牛奶……');
+    await say('kaicho','……不用……抓誰……我只是……肚子餓……而已……');
+    await say('kaicho','……還有……剛剛……冰箱旁邊……好像有誰在笑……嘻嘻嘻的……');
+    await n('聲音斷了。……只有你的蝙蝠耳朵，還在嗡嗡作響。');
+    ach('h_batear');return true;
+  }
+  if(k==='bat'&&id==='batk'){
+    if(F.mtalk.batk){await say('batk','……番茄汁。拜託。……還有，那隻老鼠又來了。');await n('小蝙蝠一蹦一蹦地逃走了。');return true}
+    F.mtalk.batk=1;addEv('batseen');ach('h_batk');
+    await n('兩隻飛不起來的蝙蝠，在地上對看了一眼。');
+    await n('小蝙蝠愣了一下，然後用只有蝙蝠聽得見的聲音，跟你說話——');
+    await say('batk','……你也變成蝙蝠了？……是薊的藥吧。');
+    await say('batk','我是會長。……別用那種眼神看我。我也不知道為什麼會變成這樣。只記得肚子很餓，然後眼前一黑……');
+    await say('batk','醒來就是這副模樣了。翅膀也不聽話，飛不起來。');
+    await say('batk','那隻老鼠一直追著我。牠身上……有一股南瓜的味道。這棟宅邸裡，有誰在惡作劇。');
+    await say('batk','……拜託，別告訴大家我是這副模樣。尤其是司書。他會笑一整年。');
+    await say('batk','還有……如果找到番茄汁，分我一點。……真的，很餓。');
+    await n('——錐齒獸又追上來了！小蝙蝠一蹦一蹦地逃走了。');
+    ach('h_batchat');return true;
+  }
+  const line=MORPH_LINE[k]&&MORPH_LINE[k][id],key=k+'_'+id;
+  if(line&&!F.mtalk[key]&&!['down','sleep','pile','nohead','upper'].includes(o.state)){F.mtalk[key]=1;await say(id,line)}
+  return false;
+}
 async function takeBath(){
   const F=S.flags,L=F.dirt||[];
   if(P.morph){await n(P.morph.k==='pumpkin'?'你（南瓜）跳進了浴缸。……咕嘟。南瓜浮在水面上，慢慢轉了兩圈。':'你（蝙蝠）跳進了浴缸。拍了拍翅膀……還是飛不起來，只好用狗爬式。')}
@@ -2759,6 +2820,7 @@ async function discovery(){
 }
 async function talk(id){
   const F=S.flags;
+  if(await morphTalk(id))return;
   await noseTalk(id);
   if(chOf()===0)return talk0(id);
   if(await sideTalk(id))return;
