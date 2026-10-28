@@ -176,6 +176,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 /* Setup */
 .field{margin-bottom:14px}
 .field label{display:block;color:var(--gold);font-family:var(--f-disp);margin-bottom:4px;letter-spacing:.08em}
+#optGender{display:flex;gap:6px;flex-wrap:wrap}#optGender button{font:inherit;padding:4px 12px;background:#1a0d0c;color:var(--cream);border:2px solid var(--dim);border-radius:2px;cursor:pointer}#optGender button.on{border-color:var(--cream);background:#5a1e1e}
+.flab{display:block;margin-bottom:4px}
 #nm{width:100%;max-width:280px;box-sizing:border-box;background:#1a0d0c;border:2px solid var(--dim);color:var(--cream);padding:6px 10px;font:inherit;border-radius:2px}
 .opts{display:flex;gap:8px;flex-wrap:wrap}
 .opts button{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--brown);border:2px solid var(--brown);padding:6px 10px;border-radius:2px;font-size:13px}
@@ -261,6 +263,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
       <canvas id="pv" width="72" height="30" aria-label="角色預覽"></canvas>
       <div style="flex:1;min-width:180px">
         <div class="field"><label for="nm">你的名字</label><input id="nm" maxlength="10" placeholder="輸入角色名稱" autocomplete="off"></div>
+        <div class="field"><span class="flab">性別</span><div id="optGender" class="genders" role="radiogroup" aria-label="性別"></div></div>
         <button type="button" id="rndBtn" class="btn">🎲 隨機搭配</button>
       </div>
     </div>
@@ -397,7 +400,7 @@ function dk(hex,a=.25){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&25
 const hsh=(x,y,s=0)=>(((x*73856093)^(y*19349663)^(s*83492791))>>>0);
 
 /* ---------------- 角色像素 ---------------- */
-const NAMES={kaicho:'會長',shisho:'司書',sui:'翠',lala:'拉拉',boss:'首領',ian:'IAN',ji:'薊',po:'小波',horse:'幽靈駱馬',batk:'小蝙蝠',cone:'錐齒獸',legs:'IAN 的下半身',ghost:'南瓜幽靈',radio:'廣播頭'};
+const NAMES={kaicho:'會長',shisho:'司書',sui:'翠',lala:'拉拉',boss:'首領',ian:'IAN',ji:'薊',po:'小波',horse:'幽靈羊駝',batk:'小蝙蝠',cone:'錐齒獸',legs:'IAN 的下半身',ghost:'南瓜幽靈',radio:'廣播頭'};
 function O(o){o.shade=o.shade||dk(o.cloth,.3);return o}
 const CH={
   kaicho:{o:O({skin:'#e8e2f2',hair:'#211c2e',eye:'#e0213a',cloth:'#1d1824',cloth2:'#d8d2e4',pants:'#1d1824'}),
@@ -611,7 +614,7 @@ function drawCone(g,t){
   R(g,12,16,1,1,K);R(g,12,19,1,2,'#efe8dc');R(g,14,19,1,2,'#efe8dc');R(g,13,19,1,1,'#efe8dc');
   R(g,5,20,1,f?1:2,Bd);R(g,8,20,1,f?2:1,Bd);R(g,10,20,1,f?1:2,Bd);
 }
-/* 幽靈駱馬 */
+/* 幽靈羊駝 */
 function drawHorse(g,t){
   const b=Math.round(Math.sin(t/14));g.save();g.globalAlpha=.7;g.translate(0,b);
   const c='#e8f4f0',m='#b8e0d8',d='#8ac8bc';
@@ -621,7 +624,7 @@ function drawHorse(g,t){
   R(g,10,-1,1,2,d);R(g,12,-1,1,2,d);R(g,13,2,1,1,K);R(g,15,4,1,1,d);
   g.restore();
 }
-/* 中庭彈幕用的大駱馬（嘴巴位置要跟 llamaMouth 一致） */
+/* 中庭彈幕用的大羊駝（嘴巴位置要跟 llamaMouth 一致） */
 function drawLlamaBig(g,e,X,Y){
   g.save();g.translate(X,Y);if(e.face<0)g.scale(-1,1);g.translate(-16,-30);g.scale(2,2);
   drawHorse(g,e.t);
@@ -1339,12 +1342,23 @@ function showPort(who){
 function fitPorts(){const st=$('stage');st.style.setProperty('--dlgH',dlg.hidden?'0px':(st.clientHeight-dlg.offsetTop)+'px')}
 new ResizeObserver(fitPorts).observe(dlg);new ResizeObserver(fitPorts).observe($('stage'));
 function clearPorts(){for(const s of Object.values(ports)){s.id=null;s.el.hidden=true}lastNpc=null}
+/* 拉拉的稱呼：會長、研究部長、翠小姐、小波、夜鷺的首領、唐先生、薊小姐；
+   玩家依性別是「名字＋先生／小姐」，不確定的話一律用「您」 */
+const LALA_SKIP_YOU=['會長，你','原來是你','就是你？','那你為什麼'];
+function lalaSpeak(t){
+  t=t.replace(/夜鷺的首領/g,'\u0001').replace(/首領/g,'夜鷺的首領').replace(/\u0001/g,'夜鷺的首領')
+    .replace(/阿北|IAN/g,'唐先生').replace(/司書/g,'研究部長').replace(/翠(?!小姐)/g,'翠小姐').replace(/薊(?!小姐)/g,'薊小姐');
+  const g=(S&&S.gender)||'x',addr=g==='m'?S.name+'先生，':g==='f'?S.name+'小姐，':'';
+  t=t.replace(/\{LC\}/g,addr);
+  if(g==='x'&&!LALA_SKIP_YOU.some(k=>t.includes(k)))t=t.replace(/你們/g,'\u0002').replace(/你/g,'您').replace(/\u0002/g,'你們');
+  return t;
+}
 function say(who,text){
   return new Promise(res=>{
     dlg.hidden=false;fitPorts();dlg.classList.toggle('narr',who==='n');showPort(who);
     face.hidden=!!PORTRAITS[who];
     if(who!=='n'){dname.textContent=who==='me'?myName():NAMES[who];drawFace(who)}
-    const full=text.replace(/\{me\}/g,S.name);let i=0;dtext.textContent='';
+    const full=(who==='lala'?lalaSpeak(text):text).replace(/\{me\}/g,S.name);let i=0;dtext.textContent='';
     clearInterval(typing);
     typing=setInterval(()=>{i+=1;dtext.textContent=full.slice(0,i);if(i>=full.length){clearInterval(typing);typing=null}},22);
     dlgRes=()=>{if(typing){clearInterval(typing);typing=null;dtext.textContent=full;return}dlgRes=null;res()};
@@ -1400,7 +1414,7 @@ const ACHS=[
   {id:'q_lala',side:1,t:'鬆餅牧羊人',d:'抓回六坨逃跑的史萊姆鬆餅。',lk:'廚房的鬆餅，好像不太安分。'},
   {id:'q_shisho',side:1,t:'靈魂保住了',d:'幫司書找齊宅邸裡的書。',lk:'有人的點心，散落在宅邸各處。'},
   {id:'q_ji',side:1,t:'薊的研究助理',d:'完成神秘試作藥水的所有實驗。',lk:'溫室的主人，需要一隻白老鼠。'},
-  {id:'q_sui',side:1,t:'駱馬馴養師',d:'餵飽幽靈駱馬，讓牠願意親近翠。',lk:'中庭那隻駱馬，看起來肚子很餓。'},
+  {id:'q_sui',side:1,t:'羊駝馴養師',d:'餵飽幽靈羊駝，讓牠願意親近翠。',lk:'中庭那隻羊駝，看起來肚子很餓。'},
   {id:'q_ian',side:1,t:'怪物全壘打',d:'在怪物棒球打出三支全壘打。',lk:'大個子想玩一場不太一樣的棒球。'},
   {id:'q_kaicho',side:1,t:'番茄汁收藏家',d:'幫會長找齊五瓶番茄汁。',lk:'某人的冰箱，永遠不夠滿。'},
   {id:'q_boss',side:1,t:'南瓜邊的發呆大師',d:'陪首領在大南瓜旁邊發呆三輪。',lk:'有些事，什麼都不做才能完成。'},
@@ -1409,7 +1423,7 @@ const ACHS=[
   {id:'f_lala',side:1,secret:1,t:'偷吃',d:'偷吃了一坨史萊姆鬆餅。卡士達口味。',hint:'那些鬆餅，聞起來好香……'},
   {id:'f_shisho',side:1,secret:1,t:'被咬了一口',d:'推薦了別本書，靈魂被司書輕輕咬了一小口。',hint:'別人推薦的書，比較好吃嗎？'},
   {id:'f_ji',side:1,secret:1,t:'亂報藥水',d:'實驗結果報得一團亂，卻意外發現了全新的藥效。',hint:'實驗報告，一定要寫對嗎？'},
-  {id:'f_sui',side:1,secret:1,t:'森林裡的駱馬',d:'駱馬跑進了森林，在那裡過得很開心。',hint:'有些動物，比較喜歡自由。'},
+  {id:'f_sui',side:1,secret:1,t:'森林裡的羊駝',d:'羊駝跑進了森林，在那裡過得很開心。',hint:'有些動物，比較喜歡自由。'},
   {id:'f_ian',side:1,secret:1,t:'換你揮棒',d:'三振之後，換你拿起鏟子把怪物打飛。',hint:'球棒，不一定只有一個人能拿。'},
   {id:'f_kaicho',side:1,secret:1,t:'又被喝掉了',d:'會長的番茄汁，被小波喝光了。',hint:'有個睡迷糊的人，也很口渴。'},
   {id:'f_boss',side:1,secret:1,t:'坐著也不錯',d:'躺不住，改成坐著陪首領聊天。',hint:'躺著、坐著，都是陪伴。'},
@@ -1419,7 +1433,7 @@ const ACHS=[
   {id:'h_kaichovine',t:'玫瑰的擁抱',d:'讓玫瑰觸手怪纏住了正在種花的會長。',hint:'溫室裡的花，很喜歡擁抱。'},
   {id:'h_pillowfirst',t:'睡教的神諭',d:'親自試躺過五個以上的枕頭，選出了正確的那一個。',hint:'好枕頭，要親自躺過才知道。'},
   {id:'h_morph2',t:'變身大師',d:'喝了藥水，變成過蝙蝠也變成過南瓜。',hint:'同一瓶藥，不同的自己。'},
-  {id:'h_llama_nohit',t:'一滴口水都沒沾到',d:'餵駱馬的時候，一次都沒被口水噴到。',hint:'乾乾淨淨地吃完一頓飯。'},
+  {id:'h_llama_nohit',t:'一滴口水都沒沾到',d:'餵羊駝的時候，一次都沒被口水噴到。',hint:'乾乾淨淨地吃完一頓飯。'},
   {id:'h_pitch3',t:'完美投手',d:'怪物棒球連續三次正中紅心。',hint:'一、二、三，都在同一個地方。'},
   {id:'h_kaicho_can',t:'晚點喝',d:'在序幕就把番茄汁交給了會長本人。',hint:'有些東西，越早送到越好。'},
   {id:'h_bat_can',t:'吱！',d:'把番茄汁給了那隻飛不起來的小蝙蝠。',hint:'紅色的眼睛，紅色的飲料。'},
@@ -1478,9 +1492,9 @@ const ACHS=[
   {id:'h_pfclean',t:'一次到位',d:'第三塊田一次都沒重來就解開了。',hint:'最難的那塊田，不靠重來。'},
   {id:'h_pfpush',t:'南瓜推推樂',d:'在南瓜田裡推了 15 次南瓜。',hint:'擋路的南瓜，也可以推回去。'},
   {id:'h_wude',t:'武德豐沛',d:'集齊阿鳳姨的鍋鏟、土製手槍、鐵圍裙和鏡面鍋蓋，獲得稱號「武德豐沛」。',hint:'宅邸裡到處都是「鳳」的痕跡。把它們全部帶在身上。'},
-  {id:'h_garden',t:'園丁的接班人',d:'讓花園迷宮五個角落的花圃全部開花。',hint:'迷宮入口旁的工具箱，是某個人的。'},
-  {id:'h_race',t:'比駱馬還快',d:'在花園迷宮的賽跑中贏過了翠和駱馬。',hint:'有人騎著駱馬，想找人比賽。'},
-  {id:'h_horse',t:'幽靈駱馬的噴嚏',d:'和幽靈駱馬打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
+  {id:'h_garden',t:'園丁的接班人',d:'讓花園迷宮裡的花圃全部開花，連那朵古怪的向日葵也是。',hint:'迷宮入口旁的工具箱，是某個人的。'},
+  {id:'h_race',t:'比羊駝還快',d:'在花園迷宮的賽跑中贏過了翠和羊駝。',hint:'有人騎著羊駝，想找人比賽。'},
+  {id:'h_horse',t:'幽靈羊駝的噴嚏',d:'和幽靈羊駝打了招呼。',hint:'雨裡的那位，也是宅邸的一份子。'},
   {id:'h_dress',t:'盛裝出席',d:'戴著 3 樣以上的配件開始調查。',hint:'萬聖節，越誇張越好。'},
   {id:'h_vampfan',t:'會長的同好',d:'穿著吸血鬼襯衫、戴著尖牙開始調查。',hint:'跟某位會長撞衫。'},
 ];
@@ -1546,7 +1560,7 @@ const QUESTS={
   lala:  {t:'逃跑的史萊姆鬆餅',who:'拉拉'},
   shisho:{t:'美味的書',who:'司書'},
   ji:    {t:'神秘試作藥水',who:'薊'},
-  sui:   {t:'駱馬的糧草',who:'翠'},
+  sui:   {t:'羊駝的糧草',who:'翠'},
   ian:   {t:'怪物棒球',who:'IAN'},
   kaicho:{t:'番茄汁',who:'會長'},
   boss:  {t:'陪大南瓜發呆',who:'首領'},
@@ -1625,7 +1639,7 @@ const BOOKS={
   mirror: {t:'《鏡子保養手冊》',d:'「鏡子裡的東西動得比你慢的時候，請不要跟它對看。」'},
   sutra:  {t:'《睡教經典》',d:'「想睡就睡，睡醒再睡。」封面上有一圈口水漬。'},
   plants: {t:'《會動的植物圖鑑》',d:'「玫瑰澆了奇怪的藥水之後，可能會長出觸手。請勿嘗試。」旁邊用粉紅色墨水補了一句：「一定要試。——薊」'},
-  bath:   {t:'《泡澡的一百種方法》',d:'「第一種：先把身上的駱馬口水洗掉。」第二種以後，都被水泡爛了。'},
+  bath:   {t:'《泡澡的一百種方法》',d:'「第一種：先把身上的羊駝口水洗掉。」第二種以後，都被水泡爛了。'},
   attic:  {t:'《閣樓怪談》',d:'「深夜的閣樓裡，有一塊白布會自己飄來飄去。」……旁邊有人用鉛筆補了一句：「是小波。」'},
   maze:   {t:'《迷宮攻略本》',d:'「迷路的時候，把頭轉向宅邸的方向就對了。——翠（親筆）」……頭要怎麼轉？'},
   prank:  {t:'《惡作劇大全》',d:'作者：南瓜幽靈。「第一章：如何讓大家以為是拉拉幹的。」……第二章被撕掉了。'},
@@ -1640,7 +1654,7 @@ const BOOK_QUIZ=[
   ['mirror','《鏡子保養手冊》說，鏡子裡的東西怎麼樣的時候不要對看？',['動得比你慢','動得比你快','在對你笑'],0],
   ['sutra','《睡教經典》寫了什麼？',['早睡早起','想睡就睡，睡醒再睡','不睡也沒關係'],1],
   ['maze','《迷宮攻略本》說，迷路的時候要怎麼做？',['一直往右轉','把頭轉向宅邸的方向','原地睡一覺'],1],
-  ['attic','《閣樓怪談》裡會飄的白布，其實是？',['幽靈駱馬','小波','會長的披風'],1],
+  ['attic','《閣樓怪談》裡會飄的白布，其實是？',['幽靈羊駝','小波','會長的披風'],1],
 ];
 function bookToast(q){
   const n0=q.got.length,all=Object.keys(BOOKS).length;
@@ -1684,7 +1698,7 @@ async function takeProp(p){
     await n(CANS[p.id]);toast(`番茄汁 ${q.got.length}/${CANS_N}`);
     if(q.got.length>=CANS_N)await n(cansDoneHint('五瓶都找齊了。'));
   }else{
-    const N=Object.keys(FEEDS).length;await n(`找到了${FEEDS[p.id]}！駱馬應該會喜歡。`);
+    const N=Object.keys(FEEDS).length;await n(`找到了${FEEDS[p.id]}！羊駝應該會喜歡。`);
     toast(`糧草 ${q.got.length}/${N}`);
     if(q.got.length>=N)await n('糧草都找齊了。去屋外找翠吧。');
   }
@@ -1757,21 +1771,21 @@ async function preEnd(){
 }
 async function talk0(id){
   const F=S.flags,first=!F['p_'+id];
-  if(id==='horse'){ach('h_horse');await n('半透明的幽靈駱馬斜眼看著你，嘴巴嚼個不停。');await n('「呸！」——一團冰冰涼涼的口水黏在你臉上。');addDirt('spit');return}
+  if(id==='horse'){ach('h_horse');await n('半透明的幽靈羊駝斜眼看著你，嘴巴嚼個不停。');await n('「呸！」——一團冰冰涼涼的口水黏在你臉上。');addDirt('spit');return}
   if(!F.gathered){return say(id,'大家都在 餐廳 集合喔，快過去吧！')}
   if(!first){
     if(await sideTalk(id))return;
     if(id==='po'&&NPCS.po.state==='sleep')return say('po','……枕頭……祭壇……Zzz……管他的……');
-    const again={kaicho:'我沒事，只是有點貧血。……晚點喝杯番茄汁就好。',shisho:'書的事，拜託你了。……別學會長拿書當枕頭。',sui:'駱馬還是不讓我靠近……糧草就拜託你啦！',
+    const again={kaicho:'我沒事，只是有點貧血。……晚點喝杯番茄汁就好。',shisho:'書的事，拜託你了。……別學那傢伙拿書當枕頭。',sui:'羊駝還是不讓我靠近……糧草就拜託你啦！',
       lala:'史萊姆鬆餅很快喔！用跑的追！',boss:'……嗯。大南瓜很安靜。不像你。',ian:'怪物抓來丟給我，我全部揮出去！',ji:'試完要回來報告喔～別試到一半就逃跑。',po:'最舒服的枕頭……要軟軟的、涼涼的、甜甜的，還要可以抱……Zzz……'};
     return say(id,again[id]);
   }
   F['p_'+id]=1;
   {const rc=F.realCh??F.ch??0,PRE={
-    shisho:[0,'會長倒下的事，我聽說了。……他倒下又不是第一次。','小波不見了？……大概躲在哪裡睡覺吧。','首領被懷疑了？……他懶到連作案都嫌麻煩。','阿北斷成兩半？……縫起來就好了。','要走了？……走之前，總得把這裡的書吃完。'],
+    shisho:[0,'那傢伙倒下的事，我聽說了。……他倒下又不是第一次。','小波不見了？……大概躲在哪裡睡覺吧。','首領被懷疑了？……他懶到連作案都嫌麻煩。','阿北斷成兩半？……縫起來就好了。','要走了？……走之前，總得把這裡的書吃完。'],
     ji:[0,'會長倒下了？……該不會是聞到我的玫瑰香，興奮過頭吧～開玩笑的。','小波不見了？我的玫瑰可沒有吃掉他喔～','首領被懷疑？哈，他要是有那個力氣作案，我就把溫室送給你～','說拉拉把阿北弄斷的？……我看是有人亂倒藥水吧。先說，不是我喔～','要走了？走之前，再幫我做一次實驗嘛～'],
     boss:[0,'……會長倒了？……他本來就一副隨時會倒的樣子。','……小波不見了？……睡在哪都一樣。','……大家都在懷疑我。……懶得解釋。','……拉拉被冤枉了？……這間屋子的人，真的很愛冤枉別人。','……要走了。……大南瓜也要一起走嗎。'],
-    sui:[0,'會長倒下了？好可怕……可是駱馬更可怕，牠一直對我吐口水！','小波不見了？我騎駱馬去找！……如果牠肯讓我騎的話。',0,'阿北斷了？我的頭也常常掉，習慣就好啦！','要走了？在那之前，我想再騎一次駱馬！']}[id];
+    sui:[0,'會長倒下了？好可怕……可是羊駝更可怕，牠一直對我吐口水！','小波不見了？我騎羊駝去找！……如果牠肯讓我騎的話。',0,'阿北斷了？我的頭也常常掉，習慣就好啦！','要走了？在那之前，我想再騎一次羊駝！']}[id];
    if(PRE&&PRE[rc])await say(id,PRE[rc])}
   switch(id){
     case 'kaicho':
@@ -1798,9 +1812,9 @@ async function talk0(id){
       await say('shisho','……開玩笑的。大概。');
       qStart('shisho',{got:[]});break;
     case 'sui':
-      if(S.flags.realCh===3&&S.flags.suiBack)await n('翠把剛找回來、還沾著南瓜籽的頭夾在腋下，正伸手想摸一隻半透明的駱馬——');
-      else await n('翠把頭夾在腋下，正伸手想摸一隻半透明的駱馬——');
-      await n('駱馬「呸」地噴了她一臉口水，甩甩尾巴跑遠了。');
+      if(S.flags.realCh===3&&S.flags.suiBack)await n('翠把剛找回來、還沾著南瓜籽的頭夾在腋下，正伸手想摸一隻半透明的羊駝——');
+      else await n('翠把頭夾在腋下，正伸手想摸一隻半透明的羊駝——');
+      await n('羊駝「呸」地噴了她一臉口水，甩甩尾巴跑遠了。');
       await say('sui','嗚哇……牠今天心情超差的！平常明明都讓我騎的說！');
       await say('sui','一定是肚子餓了。可是這附近的草，牠一口都不吃……');
       await say('sui','欸，新來的！可以幫我到處找找看有沒有好吃的糧草嗎？乾草、燕麥、紅蘿蔔……什麼都好！');
@@ -1889,7 +1903,7 @@ async function sideTalk(id){
 /* 第二個支線選項（跟主要選項並列） */
 function sideExtra(id){
   if(id==='lala'&&chOf()>0&&!qGet('kaicho'))return['會長的番茄汁？',lalaOfferCans];
-  if(id==='sui'&&qGet('sui')&&qGet('sui').st==='done'&&NPCS.sui.state!=='nohead')return['跟翠和駱馬賽跑（花園迷宮）',suiRace];
+  if(id==='sui'&&qGet('sui')&&qGet('sui').st==='done'&&NPCS.sui.state!=='nohead')return['跟翠和羊駝賽跑（花園迷宮）',suiRace];
   return null;
 }
 function sideOption(id){
@@ -1915,7 +1929,7 @@ function sideOption(id){
   if(id==='ji'&&q.tested.some(k=>!q.rep.includes(k)))return['報告藥水的實驗結果',jiReport];
   if(id==='ji'&&!hasItem('potion'))return['再要一瓶藥水',async()=>{await say('ji','弄丟了？……你的手是裝飾品嗎？真拿你沒辦法，這瓶給你。');addItem('potion')}];
   if(id==='ian'&&(q.sack||[]).length)return[`怪物棒球（怪物袋 ${q.sack.length} 隻）`,pitchSession];
-  if(id==='sui'&&(q.got||[]).length>=Object.keys(FEEDS).length)return['去中庭餵駱馬',llamaStart];
+  if(id==='sui'&&(q.got||[]).length>=Object.keys(FEEDS).length)return['去中庭餵羊駝',llamaStart];
   return null;
 }
 /* 舊存檔（已經過了序幕）也能接到支線 */
@@ -2024,13 +2038,15 @@ async function pumpkinEvent(){
   if(NPCS.boss.scene==='outside'){await say('boss','……大南瓜變大了。');await say('boss','……很好。總算有人做了一件有用的事。')}
 }
 
-/* ---------------- 翠：駱馬的糧草（中庭彈幕） ---------------- */
+/* ---------------- 翠：羊駝的糧草（中庭彈幕） ---------------- */
 const LL={goal:6,hay:18};
 const COURT={x0:11,y0:16,x1:23,y1:24};
 async function llamaStart(){
-  if(S.flags.riot&&!S.flags.riotDone){await say('sui','糧草都找齊了？太好了～！……可是外面南瓜精靈正在暴動，駱馬嚇得不敢出來。');await say('sui','先把那些南瓜精靈收拾掉吧！');return}
+  if(S.flags.riot&&!S.flags.riotDone){await say('sui','糧草都找齊了？太好了～！……可是外面南瓜精靈正在暴動，羊駝嚇得不敢出來。');await say('sui','先把那些南瓜精靈收拾掉吧！');return}
   await say('sui',chOf()===3&&S.flags.suiBack?'糧草都找齊了？太好了～！我的頭也剛回來，正好一起慶祝！':'糧草都找齊了？太好了～！');
   await say('sui','我把牠叫到 中庭 去！你對準牠的嘴巴丟糧草，丟進嘴巴裡牠才會吃喔！');
+  await n('羊駝慢吞吞地走了過來，瞥了翠一眼，「哼」地噴了一口氣。');
+  await say('sui','……看什麼看。今天是看在糧草的份上，才讓你吃的喔。');
   await say('sui','啊，牠心情不好的時候會一直吐口水……小心點！');
   clearCombat();
   for(const id of['horse','batk','cone'])NPCS[id].scene=null;
@@ -2039,8 +2055,8 @@ async function llamaStart(){
   CB.lock=lk;CB.lockKind='llama';CB.mini='llama';
   const e=spawnFoe('llama',17*T+8,19*T,true);e.sat=0;e.cd=90;e.munch=0;e.noLaunch=1;
   CB.hay=LL.hay;S.flags.llamaHurt=0;
-  $('bossbar').querySelector('span').textContent='幽靈駱馬的滿足度';$('bossfill').style.width='0%';$('bossbar').hidden=false;
-  toast(isTouch?'按「砍」或「射」丟糧草！':'J／K 丟糧草，對準駱馬的嘴巴！');toastT=300;
+  $('bossbar').querySelector('span').textContent='幽靈羊駝的滿足度';$('bossfill').style.width='0%';$('bossbar').hidden=false;
+  toast(isTouch?'按「砍」或「射」丟糧草！':'J／K 丟糧草，對準羊駝的嘴巴！');toastT=300;
 }
 function throwHay(){
   if(P.gcd>0||P.mcd>0)return;P.gcd=P.mcd=16;
@@ -2068,7 +2084,7 @@ function hayHit(b){
   if(Math.hypot(b.x-mx,b.y-my)<8){
     e.sat++;e.munch=70;e.flash=6;CB.eshots=[];spark(mx,my,'#d9b860',8);
     $('bossfill').style.width=Math.min(100,e.sat/LL.goal*100)+'%';
-    toast(e.sat>=LL.goal?'駱馬滿足了！':['嚼嚼嚼……','駱馬吃得很開心！','好吃！再來一口！','駱馬的眼睛瞇起來了'][e.sat%4]);
+    toast(e.sat>=LL.goal?'羊駝滿足了！':['嚼嚼嚼……','羊駝吃得很開心！','好吃！再來一口！','羊駝的眼睛瞇起來了'][e.sat%4]);
     if(e.sat>=LL.goal)setTimeout(llamaWin,500);
     return true;
   }
@@ -2084,15 +2100,17 @@ function endLlama(){
 function llamaWin(){
   if(CB.mini!=='llama')return;endLlama();
   run(async()=>{
-    await n('駱馬嚼著最後一口糧草，慢慢停了下來，滿足地瞇起眼睛。');
+    await n('羊駝嚼著最後一口糧草，慢慢停了下來，滿足地瞇起眼睛。');
     qGet('sui').st='done';applyWorld();
-    await n('翠一走近，駱馬就把頭靠在她的肩膀上蹭了蹭。');
+    await n('翠一走近，羊駝就把頭靠在她的肩膀上蹭了蹭。');
     await say('sui','牠、牠讓我摸了！！嗚嗚……謝謝你！');
+    await n('……羊駝一邊讓翠摸，一邊用一種「看在糧草的份上」的眼神斜睨著她。');
+    await say('sui','……那個眼神還是很欠揍就是了。');
     await say('sui',[
       '以後我騎著牠到處巡邏，有怪物就交給我們！',
       '會長倒下了……我騎著牠到處巡邏，幫你找出犯人！',
       '小波不見了……我騎著牠去找！牠的鼻子說不定很靈！',
-      chOf()===3&&S.flags.suiBack?'頭回來了，駱馬也願意讓我摸了！今天是我的幸運日！':'以後我騎著牠到處巡邏，有怪物就交給我們！',
+      chOf()===3&&S.flags.suiBack?'頭回來了，羊駝也願意讓我摸了！今天是我的幸運日！':'以後我騎著牠到處巡邏，有怪物就交給我們！',
       '阿北斷掉的那晚，牠一直在墓園附近徘徊……牠大概也很擔心吧。我們一起去巡邏！',
       '要走了……牠會跟我們一起走嗎？……牠說會！大概！'][chOf()]||'以後我騎著牠到處巡邏，有怪物就交給我們！');
     if(!S.flags.llamaHurt)ach('h_llama_nohit');
@@ -2113,8 +2131,8 @@ function racePath(){
 async function suiRace(){
   const F=S.flags;
   if(!F.bossMaze){await say('sui','我們去花園迷宮比賽吧！……啊，可是迷宮中間好像有個好可怕的稻草人。');return say('sui','等它不見了再比！你、你先去把它趕走嘛！')}
-  await say('sui',F.raceWin?'再比一次？好啊！這次駱馬吃飽了，不會再停下來吃花了！……大概。':'欸欸，我們來比賽吧！從花園迷宮的入口，跑到正中央的噴泉！');
-  await say('sui',isTouch?'我騎駱馬，你用跑的！不准抄近路喔……雖然迷宮也沒有近路！':'我騎駱馬，你用跑的！按住 Shift 可以跑比較快喔～');
+  await say('sui',F.raceWin?'再比一次？好啊！這次羊駝吃飽了，不會再停下來吃花了！……大概。':'欸欸，我們來比賽吧！從花園迷宮的入口，跑到正中央的噴泉！');
+  await say('sui',isTouch?'我騎羊駝，你用跑的！不准抄近路喔……雖然迷宮也沒有近路！':'我騎羊駝，你用跑的！按住 Shift 可以跑比較快喔～');
   const c=await choose('要比賽嗎？',['來比！','下次吧']);if(c===1)return say('sui','好吧～隨時都可以來找我喔！');
   clearCombat();changeScene('maze',1,10,'right');CB.foes=[];CB.eshots=[];CB.lock=new Set();CB.mini='race';
   const path=racePath(),n0=path.length,stops=[Math.floor(n0*(.3+Math.random()*.15)),Math.floor(n0*(.6+Math.random()*.15))];
@@ -2130,7 +2148,7 @@ function raceTick(){
   const tg=R0.path[R0.i];if(!tg)return raceEnd(false);
   const tx=tg[0]*T,ty=tg[1]*T,dx=tx-R0.fx,dy=ty-R0.fy,sp=2.8;
   if(Math.abs(dx)+Math.abs(dy)<=sp){R0.fx=tx;R0.fy=ty;R0.i++;
-    if(R0.stops.includes(R0.i)){R0.stop=50+((Math.random()*30)|0);toast(['駱馬停下來，啃了一口迷宮的樹籬……','駱馬突然不想跑了，「呸」地噴了翠一臉口水！','駱馬被路邊的花吸引，停下來聞了聞……'][(Math.random()*3)|0])}
+    if(R0.stops.includes(R0.i)){R0.stop=50+((Math.random()*30)|0);toast(['羊駝停下來，啃了一口迷宮的樹籬……','羊駝突然不想跑了，「呸」地噴了翠一臉口水！','羊駝被路邊的花吸引，停下來聞了聞……'][(Math.random()*3)|0])}
     if(R0.i>=R0.path.length)return raceEnd(false);return}
   R0.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
   R0.fx+=Math.sign(dx)*Math.min(sp,Math.abs(dx));R0.fy+=Math.sign(dy)*Math.min(sp,Math.abs(dy));
@@ -2141,15 +2159,16 @@ function raceEnd(win){
     const F=S.flags,sec=(t/60).toFixed(1);
     if(win){
       await n(`你先衝到了噴泉旁邊！（${sec} 秒）`);
-      await say('sui','咦咦咦！？輸、輸了！？駱馬，都是你一直停下來啦！');
-      await n('駱馬「呸」地噴了翠一臉口水。……好像在說：是妳太重了。');
+      await say('sui','咦咦咦！？輸、輸了！？都是你啦，你這隻只會吃的毛球！一直停下來！');
+      await n('羊駝「呸」地噴了翠一臉口水。……好像在說：是妳太重了。');
       if(!F.raceWin){F.raceWin=1;gainLoot({pine:1,candy:2});ach('h_race')}
       if(!F.raceBest||t<F.raceBest){F.raceBest=t;toast(`最佳紀錄：${sec} 秒`)}
     }else{
-      await n('翠和駱馬「咻」地衝過了噴泉！');
-      await say('sui','呀呼～～！我贏啦！駱馬最快了！');
-      await n('駱馬得意地甩了甩尾巴……然後順便把翠甩了下來。');
-      await say('sui','……嗚，牠是不是其實不喜歡我啊。');
+      await n('翠和羊駝「咻」地衝過了噴泉！');
+      await say('sui','呀呼～～！我贏啦！羊駝最快了！');
+      await n('羊駝得意地甩了甩尾巴……然後順便把翠甩了下來。');
+      await say('sui','……贏了還把我甩下來！你到底站哪一邊的啦！');
+      await n('羊駝斜眼看著翠，慢慢地、很故意地嚼著草。');
       await say('sui','總、總之！想雪恥的話，再來找我比喔！');
     }
     applyWorld();
@@ -2160,20 +2179,20 @@ function drawRacer(cx,cy){
   if(run&&(tick>>2)%2){R(g,X-2,Y+13,3,2,'rgba(200,190,170,.5)');R(g,X+15,Y+13,3,2,'rgba(200,190,170,.5)')}
   drawRide(g,X,Y,RACE.dir,run?(tick>>2)%2:0);
 }
-/* 翠騎在駱馬身上 */
+/* 翠騎在羊駝身上 */
 function drawRide(g,X,Y,dir,f){g.save();g.translate(X,Y);drawChar(g,'horse',dir==='left'?'left':'right',f,tick);g.restore();
   g.save();g.translate(X+(dir==='left'?1:-1),Y-9+(f?1:0));drawChar(g,'sui',dir==='up'?'up':'down',0,tick);g.restore()}
-/* 翠偶爾會騎著駱馬在草地上飆車，偶爾會被甩下來 */
+/* 翠偶爾會騎著羊駝在草地上飆車，偶爾會被甩下來 */
 const SUI={mode:'walk',t:60*25};
 function suiAmbient(){
   if(!S||mode!=='play'||busy||S.scene!=='outside'||CB.mini||chOf()>=5)return;
   const o=NPCS.sui,q=qGet('sui');if(!q||q.st!=='done'||o.scene!=='outside'||o.state==='nohead')return;
   if(--SUI.t>0)return;
   if(SUI.mode==='walk'){SUI.mode='ride';SUI.t=60*12;o.state='ride';o.follower=null;NPCS.horse.scene=null;o.patrol=[[25,13],[31,13],[31,24],[25,24]];o.pspd=2.4;o.pwait=0;o.pi=0;
-    toast('翠跳上了駱馬：「呀呼～～！」');}
+    toast(['翠跳上了羊駝：「給我好好跑！你這顆毛球！」','翠跳上了羊駝：「呀呼～～！……喂，不准偷看我！」','翠跳上了羊駝：「今天敢把我甩下來，就把你剃成禿頭！」'][(Math.random()*3)|0]);toastT=200;}
   else if(SUI.mode==='ride'){
     if(Math.random()<.4){SUI.mode='fall';SUI.t=60*5;o.state='fall';o.patrol=null;o.mv=null;
-      Object.assign(NPCS.horse,{scene:'outside',x:o.x+1<=31?o.x+1:o.x-1,y:o.y,state:undefined,mv:null,queue:[],patrol:null});toast('駱馬突然不爽，把翠甩了下來！');}
+      Object.assign(NPCS.horse,{scene:'outside',x:o.x+1<=31?o.x+1:o.x-1,y:o.y,state:undefined,mv:null,queue:[],patrol:null});toast('羊駝突然不爽，把翠甩了下來！翠：「你這顆臭毛球，絕對是故意的！」');toastT=220;}
     else{SUI.mode='walk';SUI.t=60*(25+Math.random()*20);suiStand()}}
   else{SUI.mode='walk';SUI.t=60*(25+Math.random()*20);suiStand()}
 }
@@ -2491,14 +2510,14 @@ async function lalaDone(){
     qAlt('lala',{candy:3});return;
   }
   await n('你把六坨扭來扭去的麵糊放回攪拌碗裡。');
-  await say('lala','太好了！謝謝你～！');
+  await say('lala','太好了！{LC}謝謝你～！');
   if(chOf()===4&&!S.flags.ded4)await say('lala','……大家都在說是我把阿北弄斷的。可是你還願意幫我抓鬆餅……嗚，謝謝你。');
   await n('拉拉抓起打蛋器，「啪啪啪啪啪啪」地打了起來，快到看不見手。');
   await say('lala','……三百九十八、三百九十九、四百！');
   await say('lala','好，這次一定安分了！煎好了第一片給你吃！');
   await n('……麵糊在鍋子裡，又扭了一下。');
   await say('lala','……');
-  await say('lala','總、總之謝謝你啦！這些糖果給你！');
+  await say('lala','總、總之{LC}謝謝你啦！這些糖果給你！');
   qFinish('lala',{candy:3});
 }
 async function shishoDone(){
@@ -2506,7 +2525,7 @@ async function shishoDone(){
   await n('司書把書一本一本攤開，用指尖輕輕撫過書頁。');
   await say('shisho','《荒中小屋施工日誌》……「這棟小屋，會自己把需要它的人請進來」。');
   await say('shisho','所以，我們是被這棟房子「請」來的。……有意思。後面幾頁被撕掉了，可惜。');
-  {const L=[0,'……會長倒下，也是這棟房子「請」來的一部分？……不，那應該只是他太餓。',
+  {const L=[0,'……那傢伙倒下，也是這棟房子「請」來的一部分？……不，那應該只是他太餓。',
     '書上還寫：「這棟房子裡，沒有東西是真正消失的，只是被藏起來了。」……小波的事，你去高的地方找過了嗎？',
     '……首領的事，你也覺得奇怪吧。書上說，暴動的南瓜旁邊，總會有誰在偷笑。',
     '……拉拉不是會把人弄斷的人，她只會把冰箱舉起來。書上寫：「突然長大的東西，最先撐不住的是縫線。」',
@@ -2516,7 +2535,7 @@ async function shishoDone(){
     const[,qq,opts,right]=qs[(Math.random()*qs.length)|0];
     await say('shisho','……先考你一題。你有好好讀過嗎？');
     const c0=await choose(qq,opts);
-    if(c0===right){await say('shisho','……嗯。你是懂書的人。');ach('h_bookquiz')}else await say('shisho','……你只是撿，沒有讀。跟會長一樣，翻兩頁就睡著。');
+    if(c0===right){await say('shisho','……嗯。你是懂書的人。');ach('h_bookquiz')}else await say('shisho','……你只是撿，沒有讀。跟那傢伙一樣，翻兩頁就睡著。');
   }
   await say('shisho','那麼——你覺得哪一本最好吃？');
   const ks=Object.keys(BOOKS).filter(k=>!BOOKS[k].secret&&qGet('shisho').got.includes(k));
@@ -2586,18 +2605,18 @@ function llamaFail(){
   if(q.fails>=3){
     q.st='alt';applyWorld();q.st='on';
     run(async()=>{
-      await n('糧草又丟完了。駱馬氣呼呼地噴了最後一口口水——');
+      await n('糧草又丟完了。羊駝氣呼呼地噴了最後一口口水——');
       await n('然後頭也不回地，跑進了森林的濃霧裡。');
       await say('sui','……牠跑掉了。');
       await say('sui','……沒關係！我就用走的巡邏！');
       await n('翠把頭夾在腋下，大步走向森林邊緣。');
-      await n('遠遠的濃霧裡，好像有一隻半透明的駱馬，正在跟森林裡的什麼東西玩耍。');
+      await n('遠遠的濃霧裡，好像有一隻半透明的羊駝，正在跟森林裡的什麼東西玩耍。');
       await say('sui','……看起來，牠在森林裡過得很開心。那就好！');
       qAlt('sui',{candy:2,ammo:4});
     });return;
   }
   applyWorld();
-  run(async()=>{await n('糧草都丟完了，駱馬還是氣呼呼的。');await say('sui',`沒關係！我這裡還有備用的糧草……不過牠快要不耐煩了，再丟完 ${3-q.fails} 次的話，牠大概會跑掉喔。`)});
+  run(async()=>{await n('糧草都丟完了，羊駝還是氣呼呼的。');await say('sui',`沒關係！我這裡還有備用的糧草……不過牠快要不耐煩了，再丟完 ${3-q.fails} 次的話，牠大概會跑掉喔。`)});
 }
 async function pitchSession(){
   const q=qGet('ian');q.strikes=q.strikes||0;
@@ -2691,7 +2710,7 @@ async function cansToPo(){
 }
 /* 每條支線都有兩條路線：done 是第一條、alt 是另一條，兩種都算完成 */
 const ROUTES={po:['好夢路線','失眠路線'],lala:['歸還路線','偷吃路線'],shisho:['美食家路線','點心路線'],ji:['正確報告路線','新發現路線'],
-  sui:['駱馬伙伴路線','森林自由路線'],ian:['全壘打路線','換你揮棒路線'],kaicho:['送達路線','小波路線'],boss:['發呆大師路線','聊天路線']};
+  sui:['羊駝伙伴路線','森林自由路線'],ian:['全壘打路線','換你揮棒路線'],kaicho:['送達路線','小波路線'],boss:['發呆大師路線','聊天路線']};
 function qAlt(id,loot){const q=qGet(id);if(!q||q.st!=='on')return;q.st='alt';toast(`完成支線：${QUESTS[id].t}（${ROUTES[id][1]}）`);ach('f_'+id);checkAllQ();if(loot)setTimeout(()=>gainLoot(loot),1800);save();updateHUD()}
 function checkAllQ(){
   const ids=Object.keys(QUESTS),st=ids.map(id=>(qGet(id)||{}).st);
@@ -2700,7 +2719,7 @@ function checkAllQ(){
   if(st.every(s=>s==='done'||s==='alt')&&st.includes('done')&&st.includes('alt'))ach('h_mixed');
 }
 const ALT_NOTE={po:'供奉了另一個枕頭，大家一起熬夜聊到了天亮。',lala:'偷吃了一坨，拉拉決定下次做卡士達口味。',shisho:'推薦了別本書，靈魂被輕輕咬了一小口。',
-  ji:'實驗報告亂成一團，卻發現了「亂報藥水」。',sui:'駱馬跑進森林，在那裡過得很開心。',ian:'三振之後，換你揮棒把怪物打飛。',kaicho:'番茄汁被小波喝光了，他說會跟會長道歉。',boss:'躺不住，改成坐著陪首領聊天。'};
+  ji:'實驗報告亂成一團，卻發現了「亂報藥水」。',sui:'羊駝跑進森林，在那裡過得很開心。',ian:'三振之後，換你揮棒把怪物打飛。',kaicho:'番茄汁被小波喝光了，他說會跟會長道歉。',boss:'躺不住，改成坐著陪首領聊天。'};
 
 /* ---------------- 章節存檔 ---------------- */
 /* 每一章開始時自動存一份，可以從標題或選單的「章節選擇」回到那一章重玩 */
@@ -2835,7 +2854,7 @@ function drawDecor(cx,cy){
 }
 
 /* ---------------- 浴室：把身上的髒東西洗掉 ---------------- */
-const DIRT={spit:{t:'駱馬口水',c:'#d8f0f6'},pumpkin:{t:'南瓜汁',c:'#e2741c'},batter:{t:'鬆餅麵糊',c:'#f6e3a1'},dust:{t:'墓室的灰塵和蜘蛛網',c:'#9a9ea6'},petal:{t:'玫瑰花瓣',c:'#c8202a'}};
+const DIRT={spit:{t:'羊駝口水',c:'#d8f0f6'},pumpkin:{t:'南瓜汁',c:'#e2741c'},batter:{t:'鬆餅麵糊',c:'#f6e3a1'},dust:{t:'墓室的灰塵和蜘蛛網',c:'#9a9ea6'},petal:{t:'玫瑰花瓣',c:'#c8202a'}};
 function addDirt(k){
   if(!S)return;const F=S.flags;F.dirt=F.dirt||[];P.fresh=0;
   if(F.dirt.includes(k))return;F.dirt.push(k);F.dirtTalk=1;toast(`身上沾到了${DIRT[k].t}……（可以去 2F 右客房旁的浴室洗掉）`);
@@ -2857,14 +2876,14 @@ const NOSE_SKIP=['horse','batk','cone','legs','ghost'];
 async function noseTalk(id){
   const F=S.flags,o=NPCS[id];if(NOSE_SKIP.includes(id)||['down','sleep','pile','nohead'].includes(o.state))return;
   if(F.dirtTalk&&F.dirt&&F.dirt.length){F.dirtTalk=0;const k=F.dirt[F.dirt.length-1];
-    const line={spit:'……你臉上那個，是駱馬的口水嗎？',pumpkin:'你身上……怎麼有南瓜的味道？首領會很開心吧。',batter:'你身上黏著鬆餅麵糊耶。……它是不是在動？',dust:'你剛從哪裡爬出來的？全身都是灰。',petal:'你頭上卡著好多玫瑰花瓣喔。'}[k];
+    const line={spit:'……你臉上那個，是羊駝的口水嗎？',pumpkin:'你身上……怎麼有南瓜的味道？首領會很開心吧。',batter:'你身上黏著鬆餅麵糊耶。……它是不是在動？',dust:'你剛從哪裡爬出來的？全身都是灰。',petal:'你頭上卡著好多玫瑰花瓣喔。'}[k];
     await say(id,line);if(F.dirt.length>=3)await say(id,'……而且，你是不是該去洗個澡了？');}
   else if(P.fresh>0&&!F.freshTalk){F.freshTalk=1;await say(id,'咦？好香喔！是玫瑰跟香草的味道？')}
 }
 /* 變身時跟人說話：首領×南瓜、會長×蝙蝠有專屬對話，其他人只會嚇一跳 */
 const MORPH_LINE={
   pumpkin:{kaicho:'……南瓜？……是薊的藥吧。快去給首領看看，他會很高興的。',lala:'哇！好大的南瓜！可以做南瓜鬆餅——咦？你、你是新來的那位？對不起！我差點就拿電鋸了！',
-    shisho:'……南瓜在說話。嗯，至少比會長的報告有趣一點。',ji:'噗哈哈！好適合你～看吧，我的藥水是天才的傑作。順便一提，首領看到你應該會想把你帶回家喔。',
+    shisho:'……南瓜在說話。嗯，至少比那傢伙的報告有趣一點。',ji:'噗哈哈！好適合你～看吧，我的藥水是天才的傑作。順便一提，首領看到你應該會想把你帶回家喔。',
     ian:'喲，好大一顆南瓜！要打嗎？——喔，是你啊！哈哈，抱歉抱歉，手有點癢！',sui:'哇，你也變成南瓜啦？我的頭也很常被當成南瓜喔～',po:'……南瓜在走路。……管他的，大概是在作夢吧。'},
   bat:{kaicho:'……蝙蝠嗎。……不知道為什麼，覺得有點親切。',lala:'呀！蝙蝠！……啊、是你嗎？好可愛！要不要吃一小口鬆餅？',
     shisho:'又一隻飛不起來的蝙蝠。這宅邸是蝙蝠的養老院嗎。',ji:'噗——蝙蝠耶～會長看到一定會把你當成同類。',
@@ -2933,9 +2952,9 @@ async function espresso(){
     if(F.espresso===1){
       await say('shisho','……你喝了我的咖啡。');
       await say('shisho','香菜三倍濃縮。提神、醒腦、順便驅邪。我一天喝十七杯，所以從來不睡覺。');
-      await say('shisho','會長喝過一口，當場倒地。……那次不是貧血，是咖啡。');
+      await say('shisho','那傢伙——會長喝過一口，當場倒地。……那次不是貧血，是咖啡。');
       if(chOf()===1)await say('shisho','……這次倒下的那次不是。我確認過了，我的咖啡一杯都沒少。');
-      await say('shisho','你還站著。不錯，比會長強。');
+      await say('shisho','你還站著。不錯，比那傢伙強。');
     }else await say('shisho','還喝？……你是第二個喜歡這味道的人。第一個是我。');
   }
   P.hp=Math.min(MAXHP,P.hp+2);updateHUD();toast('精神百倍！（回復一顆心）');ach('h_cilantro');
@@ -2947,14 +2966,14 @@ async function shishoNoEntry(){
   if(F.shishoNo){await say('shisho','還沒洗？浴室在二樓右客房。洗乾淨再來。')}
   else{F.shishoNo=1;
     await say('shisho','站住。一步都別踏進來。');
-    await say('shisho',{spit:'你身上那是駱馬的口水吧。滴到書上，書頁會黏在一起，我吃的時候會黏牙。',
+    await say('shisho',{spit:'你身上那是羊駝的口水吧。滴到書上，書頁會黏在一起，我吃的時候會黏牙。',
       pumpkin:'一身南瓜汁。我的書會變成南瓜口味的。……我不喜歡加料。',
       batter:'麵糊，還是會動的那種。你是想讓我的書長出鬆餅嗎。',
       dust:'全身都是灰。我的書已經夠舊了，不需要你幫它們做舊。',
       petal:'滿頭花瓣。薊的花粉沾到書上，我吃了會打噴嚏。'}[k]||'你身上髒兮兮的。');
     await say('shisho','書會被你弄髒。二樓右客房有浴缸，快去洗澡。');
     const ch=chOf();
-    await say('shisho',ch===1?'……順便一提，會長就算倒在一灘番茄汁裡，都比你現在乾淨。':ch>=2&&ch<=4?'……順便一提，外面那隻被老鼠追著跑的小蝙蝠，都比你現在乾淨。':'……順便一提，會長就算三天沒洗，都比你現在乾淨。他只是臉色差而已。');
+    await say('shisho',ch===1?'……順便一提，那傢伙就算倒在一灘番茄汁裡，都比你現在乾淨。':ch>=2&&ch<=4?'……順便一提，外面那隻被老鼠追著跑的小蝙蝠，都比你現在乾淨。':'……順便一提，那傢伙就算三天沒洗，都比你現在乾淨。他只是臉色差而已。');
     ach('h_shishono');
   }
   const[dx,dy]=DV[back];P.x+=dx;P.y+=dy;P.dir=back;
@@ -3049,19 +3068,22 @@ const GARDEN=[
   {id:'hyd',x:8,y:20,t:'藍色繡球花',c:'#5f8ad8',c2:'#a8c4ff',want:2,done:'繡球花「啵、啵、啵」地冒出一整球藍色的小花，好像在說：我可以的！'},
   {id:'tomato',x:17,y:20,t:'番茄花',c:'#ffd25a',c2:'#c8202a',want:3,done:'小小的黃色番茄花開了，旁邊還結出一顆紅通通的小番茄。'},
   {id:'bat',x:29,y:20,t:'蝙蝠蘭',c:'#7a3ab0',c2:'#2a2238',want:4,done:'蝙蝠蘭張開了深紫色的「翅膀」，在黑暗裡輕輕晃了晃。'},
+  {id:'sun',x:11,y:16,t:'向日葵',c:'#ffd25a',c2:'#6b4a2a',want:5,odd:1,done:'向日葵用力地點了點頭，花盤轉了一圈——最後停下來，直直地對著地下墓室的方向。……那邊明明沒有太陽。'},
 ];
-const GARDEN_TALK=['你好漂亮','……（安靜地澆水）','加油，你可以的！','等一下請你喝番茄汁','晚安，好好睡'];
-ITEMS.can={t:'會長的澆花壺',d:'銀色的澆花壺，把手上刻著一隻小蝙蝠。迷宮五個角落的花圃都枯掉了。日記說：澆水的時候，要對它們說它們想聽的話。'};
+const GARDEN_TALK=['你好漂亮','……（安靜地澆水）','加油，你可以的！','等一下請你喝番茄汁','晚安，好好睡','今天天氣真好呢'];
+ITEMS.can={t:'會長的澆花壺',d:'銀色的澆花壺，把手上刻著一隻小蝙蝠。迷宮角落的花圃都枯掉了。日記說：澆水的時候，要對它們說它們想聽的話。'};
 const bedAt=(x,y)=>S&&S.scene==='maze'?GARDEN.find(b=>b.x===x&&b.y===y)||null:null;
 async function gardenShed(){
   const F=S.flags,ch=chOf();
   if(F.garden){await n('會長的園藝工具箱。日記攤開在最後一頁：');
-    return n('「玫瑰愛聽讚美。百合喜歡安靜。繡球花需要人家替它加油。番茄花……只要聽到番茄汁就會很開心（跟我一樣）。蝙蝠蘭白天想睡覺，要跟它說晚安。」')}
+    await n('「玫瑰愛聽讚美。百合喜歡安靜。繡球花需要人家替它加油。番茄花……只要聽到番茄汁就會很開心（跟我一樣）。蝙蝠蘭白天想睡覺，要跟它說晚安。」');
+    return n('「再備註：迷宮裡多了一朵向日葵。……我沒有種向日葵。在這種見不到太陽的地方，它到底在開心什麼？」')}
   await n('樹籬旁有一個小小的園藝工具箱。蓋子上用工整的字寫著：「花園迷宮・管理人：會長」');
   await n('裡面放著一個銀色的澆花壺，和一本園藝日記。');
   await n('「第一天：在迷宮的五個角落，種了五種花。」');
   await n('「第二天：……花都快枯了。也許它們需要的不只是水。」');
   await n('「備註：玫瑰愛聽讚美。百合喜歡安靜。繡球花需要人家替它加油。番茄花……只要聽到番茄汁就會很開心（跟我一樣）。蝙蝠蘭白天想睡覺，要跟它說晚安。」');
+  await n('「再備註：迷宮裡多了一朵向日葵。……我沒有種向日葵。」');
   if(ch===0)await n('……原來會長每天早上，都偷偷跑來這裡照顧花。');
   else if(ch===1)await n('日記的最後一行寫著：「明天要記得澆水。」……會長倒下之前，還惦記著這些花。');
   else if(ch<=4)await n('日記的最後一頁，有一個小小的、像蝙蝠腳印的污漬。……好像是最近才印上去的。');
@@ -3071,14 +3093,20 @@ async function gardenShed(){
 async function gardenBed(b){
   const F=S.flags,G=F.garden;
   if(G&&G.beds.includes(b.id))return n(`${b.t}開得好好的。花瓣上還掛著水珠。`);
+  if(b.odd){
+    await n('一朵向日葵。在這暗無天日、連太陽都看不到的日子裡，只有它精神得不得了，花盤抬得高高的。');
+    await n('……精神得，反而讓人覺得有點古怪。旁邊沒有會長的小木牌。');
+    if(!hasItem('can'))return;
+    await n('你拿起澆花壺，一邊澆水——向日葵好像在等你開口。');
+  }else{
   if(!hasItem('can'))return n(`一個小小的花圃。花都枯掉了，垂著頭。\n旁邊插著一塊工整的小木牌：「${b.t}」。……字跡跟會長的好像。`);
-  await n(`枯掉的${b.t}。你拿起澆花壺，一邊澆水——`);
+  await n(`枯掉的${b.t}。你拿起澆花壺，一邊澆水——`);}
   const c=await choose(`要對${b.t}說什麼？`,GARDEN_TALK);
-  if(c!==b.want){await n('花抬了一下頭，又慢慢垂了下去。……好像不是它想聽的話。');return}
+  if(c!==b.want){await n(b.odd?'向日葵歪了歪花盤，好像在說：不對、不對。……它的笑容一點都沒有變。':'花抬了一下頭，又慢慢垂了下去。……好像不是它想聽的話。');return}
   G.beds.push(b.id);shake=3;await n(b.done);
   toast(`開花的花圃 ${G.beds.length} / ${GARDEN.length}`);
   if(G.beds.length===GARDEN.length){
-    await n('五個花圃都開花了。迷宮裡飄起了淡淡的花香，連噴泉的水聲都好像變溫柔了。');
+    await n('六個花圃都開花了。迷宮裡飄起了淡淡的花香，連噴泉的水聲都好像變溫柔了。');
     await n('工具箱裡的日記，自己翻到了新的一頁——上面多了一行小字：「謝謝。」');
     F.gardenDone=1;rmItem('can');gainLoot({pine:1,candy:2});ach('h_garden');
   }
@@ -3088,6 +3116,8 @@ function drawGarden(cx,cy){
   {const X=SHED.x*T-cx,Y=SHED.y*T-cy;R(g,X+2,Y+6,12,9,K);R(g,X+3,Y+7,10,7,'#6b4a2a');R(g,X+3,Y+7,10,2,'#8a6a3a');R(g,X+6,Y+9,4,2,'#c9ced4');R(g,X+7,Y+5,2,2,'#c9ced4')}
   for(const b of GARDEN){const X=b.x*T-cx,Y=b.y*T-cy,on=G&&G.beds.includes(b.id);
     R(g,X+1,Y+10,14,5,'#3a2a1c');R(g,X+2,Y+11,12,3,'#4a3420');
+    if(b.odd){const nod=Math.round(Math.sin(tick/9));R(g,X+7,Y-2,2,13,'#3f8a3a');R(g,X+4,Y+5,3,2,'#5fae3a');R(g,X+9,Y+3,3,2,'#5fae3a');
+      R(g,X+3,Y-8+nod,10,10,'#ffd25a');R(g,X+2,Y-6+nod,12,6,'#ffd25a');R(g,X+5,Y-6+nod,6,6,'#6b4a2a');R(g,X+6,Y-4+nod,1,1,K);R(g,X+9,Y-4+nod,1,1,K);R(g,X+6,Y-2+nod,4,1,K);continue}
     if(on){const sw=Math.round(Math.sin((tick+b.x*9)/20));for(const[fx,fy]of[[3,6],[8,4],[12,7]]){R(g,X+fx+1,Y+fy+2,1,9-fy,'#3f8a3a');R(g,X+fx+sw,Y+fy,3,3,b.c);R(g,X+fx+1+sw,Y+fy+1,1,1,b.c2)}}
     else for(const fx of[4,8,11]){R(g,X+fx,Y+7,1,4,'#6a5a3a');R(g,X+fx+1,Y+7,2,1,'#5a4a2a');R(g,X+fx+2,Y+8,1,1,'#7a5a3a')}}
   if(F.gardenDone){const X=MZ.qx*T-cx,Y=MZ.qy*T-cy;for(let i=0;i<10;i++){const a=i/10*6.28,c=GARDEN[i%5].c;R(g,X+8+Math.round(Math.cos(a)*22),Y+8+Math.round(Math.sin(a)*16),2,2,c)}}
@@ -3211,7 +3241,7 @@ function questRows(){
     else if(id==='lala')d=`抓回跑掉的史萊姆鬆餅：${q.got.length}/${SLIMES.length}（還差 ${SLIMES.length-q.got.length} 坨）。牠們在廚房、餐廳、大廳。用跑的追（按住 Shift）。`+(q.got.length>=SLIMES.length?'全部抓到了，回去找拉拉！':'');
     else if(id==='shisho')d=q.got.length>=BOOK_N?`找到的書：${q.got.length} 本（全部共 ${Object.keys(BOOKS).length} 本）。夠了，拿去 展覽室 給司書！司書喜歡酸酸甜甜的味道。`:`找到的書：${q.got.length}/${BOOK_N}（還差 ${BOOK_N-q.got.length} 本，全部共 ${Object.keys(BOOKS).length} 本）。宅邸各處、浴室、閣樓、迷宮，連一些秘密的地方都有書。有一本好像會咬人。`;
     else if(id==='ji'){const left=Object.keys(POTION_T).filter(k=>!q.tested.includes(k));d=`已報告 ${q.rep.length}/${Object.keys(POTION_T).length}。`+(left.length?'還沒試過：'+left.map(k=>POTION_T[k]).join('、')+'。':'')+(left.includes('self')?'想自己喝的話，在「道具」裡按「喝一口」。':'')+(q.tested.some(k=>!q.rep.includes(k))?'　有實驗結果還沒跟薊報告！':'')}
-    else if(id==='sui')d=q.got.length>=Object.keys(FEEDS).length?'糧草找齊了！去屋外找翠，到 中庭 餵駱馬。':`找到的糧草：${q.got.length}/${Object.keys(FEEDS).length}（還差 ${Object.keys(FEEDS).length-q.got.length} 份）。屋外、廚房和儲藏室都找找看。`;
+    else if(id==='sui')d=q.got.length>=Object.keys(FEEDS).length?'糧草找齊了！去屋外找翠，到 中庭 餵羊駝。':`找到的糧草：${q.got.length}/${Object.keys(FEEDS).length}（還差 ${Object.keys(FEEDS).length-q.got.length} 份）。屋外、廚房和儲藏室都找找看。`;
     else if(id==='kaicho'){const k=kq();d=`真的番茄汁：${k.real}/${CANS_N}（還差 ${Math.max(0,CANS_N-k.real)} 瓶）。還沒檢查：${k.unk.length} 瓶。被換成草莓牛奶的：${k.fake} 瓶。`+(k.real>=CANS_N?(chOf()===0?'找齊了，拿去溫室給會長！':'找齊了！交給拉拉，或是那隻飛不起來的小蝙蝠。'):'有些瓶子被換了標籤，撿到時聞一聞、看看顏色或搖一搖就能分辨。打倒災獸也可能掉番茄汁。')}
     else if(id==='boss')d=`跟首領一起躺在大南瓜旁邊發呆，什麼按鍵都不要按。已撐過 ${q.round||0}/3 輪。`
     else if(id==='ian')d=`全壘打：${q.hr||0}/3。怪物袋：${(q.sack||[]).length}/3。打倒災獸會自動收進怪物袋，抓到後回去找 IAN。`;
@@ -3257,14 +3287,14 @@ async function discovery(){
   await say('boss','……好麻煩。反正又不是我的事。我回去陪大南瓜了。');
   await say('shisho','我回展覽室。……反正會長倒下又不是第一次。吃點東西比較好思考。');
   await n('大家七嘴八舌了一陣，又各自散去。看來要查清楚真相，只能靠你自己了。');
-  await say('lala','我、我先回廚房冷靜一下……你有什麼想問的，再來找我。');
+  await say('lala','我、我先回廚房冷靜一下……{LC}有什麼想問的，再來找我。');
   applyWorld();
 }
 async function talk(id){
   const F=S.flags;
   if(await morphTalk(id))return;
   if(id==='sui'&&NPCS.sui.state==='ride')return say('sui','呀呼～～！停、停不下來啦～！等我繞完這圈——哇啊啊啊！');
-  if(id==='sui'&&NPCS.sui.state==='fall'){await say('sui','……被甩下來了。牠今天又不喜歡我了。嗚……');return n('旁邊的駱馬「呸」地吐了一口口水，看起來一點都不抱歉。')}
+  if(id==='sui'&&NPCS.sui.state==='fall'){await say('sui','……被甩下來了。牠今天又不喜歡我了。嗚……');await n('旁邊的羊駝「呸」地吐了一口口水，看起來一點都不抱歉。');return say('sui','看什麼看！你那是什麼眼神！明天就把你的草料換成青椒！')}
   if(id==='batk'&&S.flags.gardenDone&&!S.flags.gardenBat){S.flags.gardenBat=1;await n('小蝙蝠的身上，沾著一點點五顏六色的花粉。……牠好像，偷偷去看過迷宮裡的花了。')}
   if(id==='kaicho'&&chOf()===5&&S.flags.gardenDone&&!S.flags.gardenKai){S.flags.gardenKai=1;await say('kaicho','……迷宮的花，是你照顧的？');await say('kaicho','……謝謝。我還以為，它們等不到我回來了。');return}
   {const F=S.flags;if(F.wude&&WUDE_LINE[id]&&!(F.wudeTalk||{})[id]&&!['down','sleep','pile','nohead'].includes(NPCS[id].state)){(F.wudeTalk=F.wudeTalk||{})[id]=1;await say(id,WUDE_LINE[id])}}
@@ -3276,12 +3306,14 @@ async function talk(id){
   if(chOf()===3)return talk3(id);
   if(chOf()===4)return talk4(id);
   if(!F.discovered){
-    const pre={shisho:'……剛剛那是尖叫聲？大概是會長又貧血昏倒了吧。我在用餐，你去看。',sui:'喲，新面孔？剛才宅邸裡好像有人在叫，我的頭聽得很清楚喔。',boss:'……好吵。要看就去，別拖我下水。',ian:'餐廳那邊有動靜！如果是怪物就叫我，我幫你揮出去！',ji:'哎呀，好像有誰在尖叫？……反正一定是拉拉。快樂藥水要不要來一瓶～',po:'Zzz……',horse:'幽靈駱馬噴了一口白霧，好像在叫你快去餐廳。'};
+    const pre={shisho:'……剛剛那是尖叫聲？大概是那傢伙——會長又貧血昏倒了吧。我在用餐，你去看。',sui:'喲，新面孔？剛才宅邸裡好像有人在叫，我的頭聽得很清楚喔。',boss:'……好吵。要看就去，別拖我下水。',ian:'餐廳那邊有動靜！如果是怪物就叫我，我幫你揮出去！',ji:'哎呀，好像有誰在尖叫？……反正一定是拉拉。快樂藥水要不要來一瓶～',po:'Zzz……',horse:'幽靈羊駝噴了一口白霧，好像在叫你快去餐廳。'};
     if(!pre[id])return;
     return id==='horse'||id==='po'?n(pre[id]):say(id,pre[id]);
   }
   switch(id){
-    case 'horse':return n('半透明的幽靈駱馬斜眼看著你，嘴巴嚼個不停。……好像隨時會吐口水。');
+    case 'horse':
+      if(NPCS.sui.scene===S.scene&&NPCS.sui.state!=='nohead'){await n('半透明的幽靈羊駝斜眼看了看翠，「哼」地噴了一口白霧。');return say('sui','喂！我聽到了喔！你剛剛是不是在笑我！')}
+      return n('半透明的幽靈羊駝斜眼看著你，嘴巴嚼個不停。……好像隨時會吐口水。');
     case 'kaicho':return kaicho1();
     case 'po':return po1();
     case 'lala':
@@ -3294,7 +3326,7 @@ async function talk(id){
         await n('拉拉單手把電鋸舉高給你看，另一隻手順便把旁邊的櫥櫃整個抬了起來。');
         await say('lala','啊、抱歉，習慣了。番茄汁的話，都冰在冰箱裡，那是會長專用的。');
         addEv('lala');
-        await say('lala','對了！肚子餓沒辦法推理，這份鬆餅你帶著吧。');
+        await say('lala','對了！{LC}肚子餓沒辦法推理，這份鬆餅你帶著吧。');
         addItem('pancake');return;
       }
       if(!hasItem('pancake')&&!F.poFell){await say('lala','鬆餅吃完了？這裡還有，拿去吧！');addItem('pancake');return}
@@ -3315,7 +3347,7 @@ async function talk(id){
       return say('shisho','你要不要也吃一頁？這本《宅邸修繕指南》有木頭的香味。');
     case 'sui':
       if(!hasEv('sui')){
-        await n('翠抱著自己的頭，像甩溜溜球一樣甩著。旁邊的幽靈駱馬噴了一口白霧。');
+        await n('翠抱著自己的頭，像甩溜溜球一樣甩著。旁邊的幽靈羊駝噴了一口白霧。');
         await say('sui','喲～要跟我的頭說話，還是跟我的身體說話？');
         await say('me','會長出事了。你剛才有看到什麼嗎？');
         await say('sui','有喔！我剛把頭甩到半空中的時候，剛好從餐廳的窗戶看進去。');
@@ -3520,7 +3552,7 @@ async function talkChase(id){
 }
 async function talk2(id){
   const F=S.flags;
-  if(id==='horse'){ach('h_horse');return n('幽靈駱馬在雨裡打了個噴嚏。噴出來的是霧。')}
+  if(id==='horse'){ach('h_horse');return n('幽靈羊駝在雨裡打了個噴嚏。噴出來的是霧。')}
   if(id==='batk'||id==='cone')return talkChase(id);
   if(id==='po')return po2();
   if(!F.disc2){
@@ -3534,7 +3566,7 @@ async function talk2(id){
         await say('me','翠說，閣樓的窗戶裡有一塊白布在飄。');
         await say('lala','閣樓！？那裡平常都鎖著……咦，鑰匙是哪一把？是這把嗎？還是這把？');
         await n('拉拉從腰上解下一大串鑰匙，叮叮噹噹地翻找。');
-        await say('lala','這把！我不敢上去，上面好黑……拜託你了！');
+        await say('lala','這把！我不敢上去，上面好黑……{LC}拜託你了！');
         addItem('atticKey');return;
       }
       await say('lala','我真的沒有放他出去……鑰匙一直都掛在我身上！你看！');
@@ -3559,8 +3591,8 @@ async function talk2(id){
         await n('司書遞來一本被啃掉一角的書——《床單幽靈生態圖鑑》。');
         await n('「床單幽靈睡著時會失去形體，只留下一塊布，連牆壁也擋不住。醒來時，會出現在牠『最想待的地方』。」');
         addEv('ghost2');
-        await say('shisho','另外，書架角落有一本《吸血鬼生理學》。我不吃那本，太腥了。……跟會長一樣。');
-        await say('shisho','……會長不見的事，你也許該翻翻看。');return;
+        await say('shisho','另外，書架角落有一本《吸血鬼生理學》。我不吃那本，太腥了。……跟那傢伙一樣。');
+        await say('shisho','……那傢伙不見的事，你也許該翻翻看。');return;
       }
       return say('shisho','《宅邸修繕指南》還剩半本。有木頭的香味。');
     case 'sui':
@@ -3634,7 +3666,7 @@ async function act3Scene(){
   S.flags.a3seen=true;
   await n('大南瓜旁邊，翠的身體正慌張地轉著圈圈，雙手在空氣裡亂抓。');
   await n('……她的頭不見了。');
-  await n('幽靈駱馬不安地繞著大南瓜打轉，一直用鼻子去頂南瓜。');
+  await n('幽靈羊駝不安地繞著大南瓜打轉，一直用鼻子去頂南瓜。');
   await say('boss','……吵死了。');
   await say('ji','首領～翠的頭在大南瓜旁邊不見了耶。該不會……是你把它藏進南瓜裡了吧？');
   await n('大家的視線，全落在南瓜頭的首領身上。');
@@ -3656,7 +3688,7 @@ async function talk3(id){
         addEv('gesture');return;
       }
       return n('翠的身體對著大南瓜拚命點頭……點的是脖子。');
-    case 'horse':ach('h_horse');return n('幽靈駱馬用鼻子頂了頂大南瓜，南瓜裡傳出「哎唷」一聲。');
+    case 'horse':ach('h_horse');return n('幽靈羊駝用鼻子頂了頂大南瓜，南瓜裡傳出「哎唷」一聲。');
     case 'boss':
       if(!F.riot){await say('boss','……你們要對大南瓜做什麼？');return say('boss','不准欺負大南瓜。')}
       if(!F.riotDone)return say('boss','……大南瓜被吵醒了，南瓜精靈們很生氣。');
@@ -3808,7 +3840,7 @@ async function talk4(id){
         await say('lala','你看，電鋸上只有麵糊！而且我切東西都是「唰」地一刀切斷，才不會切得這麼……毛毛的！');
         addEv('lala4');return;
       }
-      return say('lala','拜託你了……幫我洗清冤屈！');
+      return say('lala','{LC}拜託你了……幫我洗清冤屈！');
     case 'ji':
       if(!hasEv('notji')&&hasEv('bottle')){
         await say('ji','這個瓶子？不是我的喔！我的作品都會畫上漂亮的荊棘標誌，才不會用這種俗氣的南瓜。');
@@ -3852,7 +3884,7 @@ async function talk4(id){
       }
       return say('sui','地下墓室好像很深喔，小心點！');
     case 'po':return n(F.riddle?'小波在說夢話：「……十二盒……草莓牛奶……好好喝……」':'小波睡得很熟。床單上沾著幾顆南瓜籽。');
-    case 'horse':return n('幽靈駱馬一直盯著墓園的地面，耳朵豎得直直的。');
+    case 'horse':return n('幽靈羊駝一直盯著墓園的地面，耳朵豎得直直的。');
     case 'batk':case 'cone':return talkChase(id);
   }
 }
@@ -3872,7 +3904,7 @@ async function deduction4(){
   await say('me','《縫合怪物保養手冊》寫著：身體突然長大時，最先撐不住的就是腰部的縫線。');
   await ask('讓 IAN 突然長大的是？',['薊的藥水','畫著南瓜標誌的「超級長大藥水」','拉拉的鬆餅'],1,{0:['ji','我的藥水瓶上，是荊棘的標誌喔～那麼醜的南瓜，我才不畫。'],2:['lala','鬆餅不會讓人長大……應該吧？']});
   await say('me','有人趁 IAN 睡著的時候，把「超級長大藥水」淋在他身上。所以——拉拉不是犯人！');
-  await say('lala','嗚哇啊啊……謝謝你！！');
+  await say('lala','嗚哇啊啊……{LC}謝謝你！！');
   await n('拉拉激動地抱住你。你的骨頭發出了「喀啦」一聲。');
   await say('ian','那這個南瓜標誌是誰的？');
   await say('boss','……不是我。我的南瓜，才不需要那種俗氣的標誌。');
@@ -4384,7 +4416,7 @@ const FOES={
   boss:{name:'南瓜稻草人',hp:30,r:10,spd:.32,dmg:2},
   sprite:{name:'南瓜精靈',hp:2,r:5,spd:.8,dmg:1},
   vine:{name:'玫瑰觸手怪',hp:8,r:7,spd:0,dmg:1},
-  llama:{name:'幽靈駱馬',hp:99,r:12,spd:.45,dmg:1},
+  llama:{name:'幽靈羊駝',hp:99,r:12,spd:.45,dmg:1},
   book:{name:'書本怪',hp:4,r:5,spd:.75,dmg:1},
   ghost:{name:'南瓜幽靈',hp:44,r:11,spd:.5,dmg:2},
 };
@@ -4449,7 +4481,7 @@ const INDOOR_FOES=['hall','f2','roomL','roomR','exhibit','kitchen','chapel','gre
 const ALLIES={
   legs:{reach:28,cd:60,lines:['IAN 的下半身一記飛踢，把{f}踢飛了！','「咚！」下半身把{f}踢到了牆上。','下半身踢完，還帥氣地抖了抖腳。']},
   ian:{reach:30,cd:70,lines:['IAN 掄起鏟子，把{f}揮成了一記全壘打！','「鏘！」IAN 又把{f}打飛了。','IAN：「下一個！」']},
-  sui:{reach:30,cd:80,lines:['翠把自己的頭甩出去，把{f}砸飛了！','幽靈駱馬一個後踢，{f}飛出了圍牆。','翠：「欸嘿～打中了！」']},
+  sui:{reach:30,cd:80,lines:['翠把自己的頭甩出去，把{f}砸飛了！','幽靈羊駝一個後踢，{f}飛出了圍牆。','翠：「欸嘿～打中了！」']},
 };
 let meleeHeld=false,gunHeld=false,meleeQ=0,gunQ=0;  /* Q：冷卻中按下的那一下先記著，冷卻一結束就補發 */
 const isTouch=matchMedia('(hover:none) and (pointer:coarse)').matches;
@@ -5067,7 +5099,7 @@ function drawChandelier(X,Y){
 function updateHUD(){
   if(!S)return;
   const F=S.flags,ch=chOf();let t;
-  if(CB.mini==='llama'){$('obj').innerHTML=`支線｜對準駱馬的 <b>嘴巴</b> 丟糧草（攻擊鍵），躲開口水！剩下的糧草 <b>${CB.hay}</b>`;return}
+  if(CB.mini==='llama'){$('obj').innerHTML=`支線｜對準羊駝的 <b>嘴巴</b> 丟糧草（攻擊鍵），躲開口水！剩下的糧草 <b>${CB.hay}</b>`;return}
   if(ch===0){
     const k=PRE_IDS.filter(id=>F['p_'+id]).length;
     t=!F.gathered?'序幕｜大廳右上角的 <b>餐廳</b> 傳來說話聲，去看看。':`序幕｜在宅邸裡走走，跟每個人聊一聊。已聊過 <b>${k}/${PRE_IDS.length}</b>`;
@@ -5142,7 +5174,7 @@ function renderNote(){
       d.querySelector('.t').textContent=t;d.querySelector('.tag').textContent=tag;d.querySelector('.d').textContent=dd;l.appendChild(d)});
     body.appendChild(l);
   }else{
-    const groups=[['協會',[['kaicho','吸血鬼。平常不太喝血，要有人逼才肯喝，所以常常貧血發呆。熱愛番茄汁。'],['shisho','長角的惡魔。比起收集靈魂，更喜歡吃書，總是待在有書的地方。'],['sui','無頭騎士杜拉罕。常騎著幽靈駱馬在森林外圍徘徊，抱著自己的腦袋甩來甩去，似乎不會頭暈。'],['lala','德州電鋸殺人魔。能舉起來的不只電鋸，還有古典壁畫和大理石雕像。平常在廚房做好吃的鬆餅。']]],
+    const groups=[['協會',[['kaicho','吸血鬼。平常不太喝血，要有人逼才肯喝，所以常常貧血發呆。熱愛番茄汁。'],['shisho','長角的惡魔。比起收集靈魂，更喜歡吃書，總是待在有書的地方。'],['sui','無頭騎士杜拉罕。常騎著幽靈羊駝在森林外圍徘徊，抱著自己的腦袋甩來甩去，似乎不會頭暈。'],['lala','德州電鋸殺人魔。能舉起來的不只電鋸，還有古典壁畫和大理石雕像。平常在廚房做好吃的鬆餅。']]],
       ['夜鷺',[['boss','傑克南瓜。失去了讀取資訊的超能力，顯得特別懶洋洋，只想跟外面的大南瓜待在一起。'],['ian','大塊頭科學怪人。豪爽又愛照顧人，是大家可靠的四十五歲大叔。拿鏟子當武器，把怪物當棒球揮出去，同時小心別把自己弄散架。'],['ji','身纏荊棘的花草女巫。玻璃藥劑叮噹作響，藥水會讓人快樂，似乎加了某種葉子有七片尖角的草。問她是什麼，只會笑著說是「個人秘方」。'],['po','披著床單的小幽靈。隨處倒頭就睡，有時從樓梯滾下來變成一坨布，睡飽了又披著床單亂晃。']]]];
     for(const [gname,list] of groups){
       const h=document.createElement('h3');h.textContent=gname;body.appendChild(h);
@@ -5191,6 +5223,8 @@ function renderSetup(){
     const s=document.createElement('span');s.textContent=o.label;b.append(c,s);
     b.onclick=()=>{if(key==='accs'){const a=setupSel.accs;if(a.includes(o.id))setupSel.accs=a.filter(x=>x!==o.id);else setupSel.accs=[...a.filter(x=>!ACC_GROUP[o.id]||ACC_GROUP[x]!==ACC_GROUP[o.id]),o.id]}
       else{setupSel[key]=o.id;if(key==='outfit')setupSel.cloth=null}renderSetup()};box.appendChild(b)})};
+  {const box=$('optGender');box.innerHTML='';for(const[id,lab]of[['m','男生'],['f','女生'],['x','不透露']]){const b=document.createElement('button');b.type='button';b.textContent=lab;
+    const on=(setupSel.gender||'x')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.gender=id;renderSetup()};box.appendChild(b)}}
   thumbs('optCut',HAIRCUTS,'cut',1);thumbs('optOutfit',OUTFITS,'outfit');thumbs('optEars',EARS,'ears',1);thumbs('optAcc',ACCS,'accs',1);
   const cur={...setupSel};if(!cur.cloth)cur.cloth=(OUTFITS.find(x=>x.id===cur.outfit)||OUTFITS[0]).o.cloth;
   for(const key of['skin','hair','eye','cloth']){const box=$('sw_'+key);box.innerHTML='';
@@ -5214,7 +5248,7 @@ $('goBtn').onclick=()=>{
   const name=$('nm').value.trim()||'新來的你';clearInterval(pvTimer);
   ls.set(LOOK_KEY,JSON.stringify(setupSel));
   const{outfit,ears,look}=selLook();
-  $('setup').hidden=true;S=newState(name,outfit,ears,look);startPlay(true);chapterSave(0);
+  $('setup').hidden=true;S=newState(name,outfit,ears,look);S.gender=setupSel.gender||'x';startPlay(true);chapterSave(0);
   if(look.accs.length>=3)ach('h_dress');if(outfit==='vamp'&&look.accs.includes('fang'))ach('h_vampfan');
 };
 $('nm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('goBtn').click()}e.stopPropagation()});
