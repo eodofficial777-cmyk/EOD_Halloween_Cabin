@@ -1352,8 +1352,10 @@ Object.assign(EV,{
   bottle:{t:'南瓜標誌的藥水瓶',d:'墓園裡摔破的玻璃瓶。標籤畫著咧嘴笑的南瓜，寫著「超級長大藥水（試作品）」，聞起來涼涼甜甜的。',key:1},
   growth:{t:'《縫合怪物保養手冊》',d:'「縫合怪物的身體若是突然長大，最先撐不住的，是腰部的縫線。」',key:1},
   lala4:{t:'拉拉的證詞（二）',d:'拉拉整晚都在廚房做鬆餅，電鋸上只有麵糊。他說電鋸切出來的斷口，不會那麼「毛毛的」。'},
-  notji:{t:'不是薊的藥水',d:'薊的藥水瓶上都畫著荊棘標誌。咧嘴笑的南瓜標誌，她從來沒看過。'},
-  laugh:{t:'首領聽到的笑聲',d:'首領說，墓園的地底下好像一直有東西在嘻嘻嘻地笑。'},
+  notji:{t:'不是薊的藥水',d:'薊的藥水瓶上都畫著荊棘標誌。咧嘴笑的南瓜標誌，她從來沒看過。',key:1},
+  laugh:{t:'首領聽到的笑聲',d:'首領說，墓園的地底下好像一直有東西在嘻嘻嘻地笑。',key:1},
+  shoe:{t:'撐裂的鞋子',d:'IAN 下半身的鞋子從腳尖裂開，鞋底沾著墓園的泥巴，旁邊的泥地上留著一個比平常大三倍的腳印。',key:1},
+  dream:{t:'小波的夢話',d:'小波說夢話：「……亮亮的瓶子……南瓜在笑……嘻嘻嘻……往大叔身上倒……咕嚕咕嚕……大叔在打呼……」',key:1},
   seed1:{t:'番茄汁旁的南瓜籽',d:'第一幕結束時，會長倒下的那灘番茄汁旁邊掉著一顆南瓜籽。小波真的是犯人嗎？'},
   seed2:{t:'閣樓裡的南瓜籽',d:'閣樓坐墊旁也散著南瓜籽。閣樓窗戶裡一閃一閃的燈光，不是小波。'},
   seed3:{t:'錐齒獸腳印旁的南瓜籽',d:'錐齒獸跑過的地上，掉著一排南瓜籽。牠是被誰放進宅邸的？'},
@@ -3774,6 +3776,13 @@ async function po2(){
   await say('po','儲藏室好黑好冷……我一直打瞌睡……一睡著，就什麼都不知道了。');
   await say('po','醒來的時候在閣樓……然後又睡著了……然後……');
   await say('po','……我是不是又從樓梯滾下來了？……不痛，算了。');
+  await n('……等等。先把事情理一理。');
+  await ask('小波是怎麼離開上鎖的儲藏室的？',['拉拉偷偷放他出去','睡著的時候穿過了牆壁','從儲藏室的窗戶爬出去'],1,{0:['n','拉拉的鑰匙一直掛在腰上，IAN 也說拉拉整晚都沒離開廚房。'],2:['n','儲藏室根本沒有窗戶。……而且小波懶得爬。']});
+  await say('me','《床單幽靈生態圖鑑》寫著：床單幽靈睡著時會失去形體，連牆壁也擋不住。');
+  await ask('小波為什麼會一直睡、一直醒、又一直睡？',['他本來就很愛睡','喝了薊的「一覺到天亮」','吃了太多鬆餅'],1,{0:['po','……這個也對。……可是今天特別睏。'],2:['po','……鬆餅？……我沒吃到。……好可惜。']});
+  await say('me','第一天晚上，小波把冰箱裡紅紅的東西全部抱走，裡面還混著一瓶甜甜的藥水——就是薊的「一覺到天亮」。');
+  await ask('醒來之後，小波出現在閣樓，是因為？',['閣樓是他「最想待的地方」','有人把他扛上去','他在躲大家'],0,{1:['po','……扛？……我很輕的。……可是沒有人扛。'],2:['po','……躲？……好麻煩。']});
+  await say('po','……閣樓很安靜。……又有舊坐墊。');
   await n('……原來，根本沒有人放小波出去。他是睡著睡著，自己穿過了儲藏室的牆。');
   await n('拉拉是被冤枉的。');
   addEv('found');
@@ -3994,7 +4003,7 @@ async function riotEnd(){
 }
 
 /* ===== 第四幕：裂成兩半的科學怪人 ===== */
-const REQ4=['cut','seam','bottle','growth'];
+const REQ4=['cut','seam','shoe','bottle','notji','growth','laugh','dream'];
 /* 伏筆：為什麼南瓜幽靈沒對拉拉、司書、薊、首領下手（終幕會揭曉） */
 const HINT_SPOTS=[
   {sc:'kitchen',x:16,y:10,id:'tea',until:5,
@@ -4004,7 +4013,7 @@ const HINT_SPOTS=[
 ];
 function hintSpot(x,y){return S?HINT_SPOTS.find(h=>h.sc===S.scene&&h.x===x&&h.y===y&&chOf()<h.until):null}
 function hintSeen(id){achSeen('hints',id,4,'h_hints')}
-const HINT4={cut:'墓園裡 IAN 的上半身',seam:'IAN 的下半身（看看斷口）',bottle:'IAN 旁邊草地上發亮的東西',growth:'展覽室的司書'};
+const HINT4={cut:'墓園裡 IAN 的上半身',seam:'IAN 的下半身（看看斷口）',shoe:'IAN 的下半身（再看看腳上）',bottle:'IAN 旁邊草地上發亮的東西',notji:'溫室裡的薊（給她看看藥水瓶）',growth:'展覽室的司書',laugh:'屋外的首領',dream:'睡著的小波（湊近聽聽）'};
 const BOTTLE={x:20,y:5};
 async function disc4(){
   S.flags.disc4=true;
@@ -4050,6 +4059,21 @@ async function talk4(id){
         addEv('seam');
         await n('下半身「咚」地踢了一下地面，跟在你後面走了起來。');
         F.legsFollow=1;toast('IAN 的下半身成為你的伙伴！靠近的災獸會被牠踢飛。');toastT=300;return;
+      }
+      if(!hasEv('shoe')){
+        await n('你想看看下半身的鞋子，可是它一直原地踏步，怎麼也停不下來。');
+        for(;;){
+          const c=await choose('要怎麼讓它停下來？',['喊「立正！」','搔它的腳底板','算了']);
+          if(c===2)return;
+          if(c===0){await n('你大喊：「立正！」');await n('下半身啪地併攏腳跟……然後踢起了正步，繞著你走了一圈。');await n('……好像更興奮了。');continue}
+          break;
+        }
+        await n('你蹲下去，往它的腳底板輕輕一搔——');shake=6;
+        await n('下半身「咚」地一腳把你踢翻，然後笑得整個癱坐在地上，兩隻腳在空中亂蹬。');
+        await n('趁這個機會一看：鞋子從腳尖整個裂開了，鞋底還沾著墓園的泥巴。');
+        await n('你回頭一看，旁邊的泥地上留著一個巨大的腳印——比 IAN 平常的腳，足足大了三倍。');
+        addEv('shoe');
+        await n('下半身爬了起來，假裝什麼事都沒發生，繼續跟在你後面。');return;
       }
       return n('IAN 的下半身原地踏步了兩下。好像在說：走吧。');
     case 'lala':
@@ -4101,7 +4125,16 @@ async function talk4(id){
         addEv('gate');return;
       }
       return say('sui','地下墓室好像很深喔，小心點！');
-    case 'po':return n(F.riddle?'小波在說夢話：「……十二盒……草莓牛奶……好好喝……」':'小波睡得很熟。床單上沾著幾顆南瓜籽。');
+    case 'po':
+      if(!hasEv('dream')){
+        await n('小波睡得很熟。床單上沾著幾顆南瓜籽。……嘴巴好像在動。');
+        if(await choose('',['湊近聽聽看','別吵他']))return;
+        await say('po','……Zzz……亮亮的瓶子……南瓜在笑……嘻嘻嘻……');
+        await say('po','……往大叔身上倒……咕嚕咕嚕……大叔在打呼……好吵……Zzz……');
+        await n('……小波昨晚半夢半醒的時候，好像看到了什麼。');
+        addEv('dream');return;
+      }
+      return n(F.riddle?'小波在說夢話：「……十二盒……草莓牛奶……好好喝……」':'小波翻了個身，把枕頭抱得更緊了。');
     case 'horse':return n('幽靈羊駝一直盯著墓園的地面，耳朵豎得直直的。');
     case 'batk':case 'cone':return talkChase(id);
   }
@@ -4121,6 +4154,14 @@ async function deduction4(){
   await ask('縫線為什麼會被撐斷？',['揮棒太用力','身體突然長大','吃了太多鬆餅'],1,{0:['ian','揮棒也不會斷！'],2:['lala','我的鬆餅不會讓人斷掉啦！']});
   await say('me','《縫合怪物保養手冊》寫著：身體突然長大時，最先撐不住的就是腰部的縫線。');
   await ask('讓 IAN 突然長大的是？',['薊的藥水','畫著南瓜標誌的「超級長大藥水」','拉拉的鬆餅'],1,{0:['ji','我的藥水瓶上，是荊棘的標誌喔～那麼醜的南瓜，我才不畫。'],2:['lala','鬆餅不會讓人長大……應該吧？']});
+  await say('me','薊的藥水瓶上畫的是荊棘。這個咧嘴笑的南瓜標誌，是另一個人的。');
+  await ask('藥水是什麼時候倒在 IAN 身上的？',['揮棒的時候','吃鬆餅的時候','睡著的時候'],2,{0:['ian','揮棒的時候大叔我可清醒得很！'],1:['lala','唐先生吃鬆餅的時候，一直醒著啦！而且吃得好快！']});
+  await say('me','IAN 說他睡覺的時候，有人往他身上倒了涼涼甜甜的東西。小波的夢話也說：「大叔在打呼」。');
+  await say('ian','大叔我會打呼？……好啦，會。');
+  await ask('倒藥水的是誰？',['拉拉','薊','咧嘴笑的南瓜標誌的主人'],2,{0:['lala','就說不是我了啦！！我連藥水瓶都打不開！……應該打得開，可是不是我！'],1:['ji','我才不會用那麼醜的瓶子～']});
+  await say('me','小波說夢話時聽到了「嘻嘻嘻」的笑聲。那個笑聲的主人，就是南瓜標誌的主人。');
+  await ask('那個「嘻嘻嘻」的傢伙，躲在哪裡？',['薊的溫室','首領的大南瓜裡','墓園的地底下'],2,{0:['ji','溫室裡只有我的寶貝們喔～要不要讓它們抱你一下？'],1:['boss','大南瓜裡只有翠留下的南瓜籽。']});
+  await say('me','首領說，墓園的地底下一直有東西在嘻嘻嘻地笑。');
   await say('me','有人趁 IAN 睡著的時候，把「超級長大藥水」淋在他身上。所以——拉拉不是犯人！');
   await say('lala','嗚哇啊啊……{LC}謝謝你！！');
   await n('拉拉激動地抱住你。你的骨頭發出了「喀啦」一聲。');
@@ -5481,7 +5522,7 @@ function render(){
   // markers
   if(mode==='play'&&S.flags.discovered&&!busy){
     const F=S.flags,ch=chOf(),sp=[];
-    const pend=ch===4?{ian:'cut',legs:'seam',lala:'lala4',shisho:'growth',boss:'laugh',sui:'gate',ji:hasEv('bottle')?'notji':null}:ch===1?{lala:'lala',shisho:'ghost',sui:'sui',boss:'boss',ian:'ian',ji:'potion'}:ch===2?{ian:'alibi',shisho:'ghost2',sui:'sight',boss:'boss2',ji:'potion2'}:{sui:'gesture',ji:'witness',ian:'ianhr'};
+    const pend=ch===4?{ian:'cut',legs:hasEv('seam')?'shoe':'seam',po:'dream',lala:'lala4',shisho:'growth',boss:'laugh',sui:'gate',ji:hasEv('bottle')?'notji':null}:ch===1?{lala:'lala',shisho:'ghost',sui:'sui',boss:'boss',ian:'ian',ji:'potion'}:ch===2?{ian:'alibi',shisho:'ghost2',sui:'sight',boss:'boss2',ji:'potion2'}:{sui:'gesture',ji:'witness',ian:'ianhr'};
     for(const [id,o] of Object.entries(NPCS)){
       if(o.scene!==key)continue;
       let need=pend[id]&&!hasEv(pend[id]);
