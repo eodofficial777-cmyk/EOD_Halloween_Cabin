@@ -1353,7 +1353,7 @@ const ACHS=[
   {id:'q_ji',side:1,t:'薊的研究助理',d:'完成神秘試作藥水的所有實驗。'},
   {id:'q_sui',side:1,t:'駱馬馴養師',d:'餵飽幽靈駱馬，讓牠願意親近翠。'},
   {id:'q_ian',side:1,t:'怪物全壘打',d:'在怪物棒球打出三支全壘打。'},
-  {id:'q_kaicho',side:1,t:'番茄罐頭收藏家',d:'幫會長找齊五罐番茄罐頭。'},
+  {id:'q_kaicho',side:1,t:'番茄汁收藏家',d:'幫會長找齊五瓶番茄汁。'},
   {id:'q_boss',side:1,t:'南瓜邊的發呆大師',d:'陪首領在大南瓜旁邊發呆三輪。'},
 
   {id:'f_po',side:1,secret:1,t:'失眠之夜',d:'供奉了另一個枕頭，大家一起熬夜聊到了天亮。',hint:'小波的支線，還有另一條路線。'},
@@ -1362,7 +1362,7 @@ const ACHS=[
   {id:'f_ji',side:1,secret:1,t:'亂報藥水',d:'實驗結果報得一團亂，卻意外發現了全新的藥效。',hint:'薊的支線，還有另一條路線。'},
   {id:'f_sui',side:1,secret:1,t:'森林裡的駱馬',d:'駱馬跑進了森林，在那裡過得很開心。',hint:'翠的支線，還有另一條路線。'},
   {id:'f_ian',side:1,secret:1,t:'換你揮棒',d:'三振之後，換你拿起點滴架把怪物打飛。',hint:'IAN的支線，還有另一條路線。'},
-  {id:'f_kaicho',side:1,secret:1,t:'又被喝掉了',d:'會長的番茄罐頭，被小波喝光了。',hint:'會長的支線，還有另一條路線。'},
+  {id:'f_kaicho',side:1,secret:1,t:'又被喝掉了',d:'會長的番茄汁，被小波喝光了。',hint:'會長的支線，還有另一條路線。'},
   {id:'f_boss',side:1,secret:1,t:'坐著也不錯',d:'躺不住，改成坐著陪首領聊天。',hint:'首領的支線，還有另一條路線。'},
   {id:'h_allwin',t:'標準答案',d:'在同一次調查中，八條支線都走了第一條路線。',hint:'每個人都得到了他們想要的。'},
   {id:'h_allfail',t:'我行我素',d:'在同一次調查中，八條支線都走了另一條路線。',hint:'不按照別人的期待走。'},
@@ -1372,8 +1372,8 @@ const ACHS=[
   {id:'h_morph2',t:'變身大師',d:'喝了藥水，變成過蝙蝠也變成過南瓜。',hint:'藥水的效果，每次都不太一樣。'},
   {id:'h_llama_nohit',t:'一滴口水都沒沾到',d:'餵駱馬的時候，一次都沒被口水噴到。',hint:'駱馬心情不好的時候很會吐口水。'},
   {id:'h_pitch3',t:'完美投手',d:'怪物棒球連續三次正中紅心。',hint:'IAN 說，要丟得很準很準。'},
-  {id:'h_kaicho_can',t:'晚點喝',d:'在序幕就把番茄罐頭交給了會長本人。',hint:'趁他還醒著的時候……'},
-  {id:'h_bat_can',t:'吱！',d:'把番茄罐頭給了那隻飛不起來的小蝙蝠。',hint:'那隻小蝙蝠的眼睛，紅得跟番茄一樣。'},
+  {id:'h_kaicho_can',t:'晚點喝',d:'在序幕就把番茄汁交給了會長本人。',hint:'趁他還醒著的時候……'},
+  {id:'h_bat_can',t:'吱！',d:'把番茄汁給了那隻飛不起來的小蝙蝠。',hint:'那隻小蝙蝠的眼睛，紅得跟番茄一樣。'},
   {id:'h_idle_perfect',t:'不動如山',d:'一次都沒動，就撐完了三輪發呆。',hint:'連停電都不能讓你動一下。'},
   {id:'h_trick',t:'不給糖就搗蛋',d:'沒有給南瓜幽靈糖果。',hint:'南瓜幽靈會問你要不要給糖。'},
   {id:'h_treat',t:'給糖也導彈',d:'給了南瓜幽靈糖果……結果還是被導彈追著跑。',hint:'給了糖，就不會被搗蛋了吧？'},
@@ -1481,7 +1481,7 @@ const QUESTS={
   ji:    {t:'神秘試作藥水',who:'薊'},
   sui:   {t:'駱馬的糧草',who:'翠'},
   ian:   {t:'怪物棒球',who:'IAN'},
-  kaicho:{t:'番茄罐頭',who:'會長'},
+  kaicho:{t:'番茄汁',who:'會長'},
   boss:  {t:'陪大南瓜發呆',who:'首領'},
 };
 const QS=()=>S.flags.q||(S.flags.q={});
@@ -1537,7 +1537,7 @@ const BOOKS={
   plants: {t:'《會動的植物圖鑑》',d:'「玫瑰澆了奇怪的藥水之後，可能會長出觸手。請勿嘗試。」旁邊用粉紅色墨水補了一句：「一定要試。——薊」'},
   log:    {t:'《荒中小屋施工日誌》',d:'署名只有一個「鳳」字。「這棟小屋不在任何地圖上。每到萬聖節，它會自己把『需要它的人』請進來……」後面好幾頁被撕掉了。',secret:1},
 };
-const CANS={c1:'小教堂冷藏箱旁邊，夾在兩袋血袋中間的番茄罐頭。……放錯地方了吧。',c2:'閣樓的玩具堆裡，一隻泰迪熊抱著一罐番茄罐頭。',c3:'大南瓜底下壓著一罐番茄罐頭。首領應該沒發現。',c4:'司書的書堆旁邊，一罐番茄罐頭被拿來當書擋。',c5:'番茄苗旁邊埋著一罐番茄罐頭，上面寫著「肥料？」。'};
+const CANS={c1:'小教堂冷藏箱旁邊，夾在兩袋血袋中間的一瓶番茄汁。……放錯地方了吧。',c2:'閣樓的玩具堆裡，一隻泰迪熊抱著一瓶番茄汁。',c3:'大南瓜底下壓著一瓶番茄汁。首領應該沒發現。',c4:'司書的書堆旁邊，一瓶番茄汁被拿來當書擋。',c5:'番茄苗旁邊埋著一瓶番茄汁，瓶子上寫著「肥料？」。'};
 const FEEDS={hay1:'一捆乾草',hay2:'一捆乾草',hay3:'一捆乾草',clover:'一把苜蓿',carrot:'一袋紅蘿蔔',oats:'一袋燕麥'};
 Object.assign(ITEMS,{potion:{t:'薊的神秘試作藥水',d:'冒著粉紅色泡泡的藥水。薊說什麼都可以試：玫瑰、南瓜田、首領的大南瓜、IAN，或是你自己。'}});
 for(const k in PILLOWS)ITEMS['p_'+k]={t:PILLOWS[k].t,d:PILLOWS[k].d};
@@ -1559,8 +1559,8 @@ async function takeProp(p){
     toast(`找到書了！（${q.got.length}/${Object.keys(BOOKS).length}）`);
     if(q.got.length>=Object.keys(BOOKS).length)await n('書都找齊了。拿回 展覽室 給司書吧。');
   }else if(p.k==='can'){
-    await n(CANS[p.id]);toast(`番茄罐頭 ${q.got.length}/${CANS_N}`);
-    if(q.got.length>=CANS_N)await n(chOf()===0?'五罐都找齊了。拿去 溫室 給會長吧。':'五罐都找齊了。交給拉拉，或是……那隻小蝙蝠？');
+    await n(CANS[p.id]);toast(`番茄汁 ${q.got.length}/${CANS_N}`);
+    if(q.got.length>=CANS_N)await n(chOf()===0?'五瓶都找齊了。拿去 溫室 給會長吧。':'五瓶都找齊了。交給拉拉，或是……那隻小蝙蝠？');
   }else{
     const N=Object.keys(FEEDS).length;await n(`找到了${FEEDS[p.id]}！駱馬應該會喜歡。`);
     toast(`糧草 ${q.got.length}/${N}`);
@@ -1580,7 +1580,7 @@ function drawProps(cx,cy){
       const cs=['#7a2b2b','#2b4a6a','#5a6a2a','#a88a3a','#4a2a5a'];
       for(let i=0;i<4;i++){const c=cs[(i+p.x)%5];R(g,X+2+(i%2),Y+12-i*3,11,3,K);R(g,X+3+(i%2),Y+12-i*3,9,2,c);R(g,X+3+(i%2),Y+13-i*3,9,1,'#efe3c8')}
       if(p.id==='log')R(g,X+6,Y+2,3,1,'#d9a640');
-    }else if(p.k==='can'){R(g,X+4,Y+5,8,10,K);R(g,X+5,Y+6,6,8,'#c8ccd2');R(g,X+5,Y+8,6,4,'#c8202a');R(g,X+7,Y+9,2,2,'#3f6b2a');R(g,X+5,Y+6,6,1,'#e0e4ea')
+    }else if(p.k==='can'){R(g,X+6,Y+1,4,3,K);R(g,X+7,Y+1,2,2,'#efe8dc');R(g,X+4,Y+4,8,11,K);R(g,X+5,Y+5,6,9,'#c8202a');R(g,X+5,Y+5,6,2,'rgba(220,235,245,.6)');R(g,X+6,Y+8,4,4,'#efe8dc');R(g,X+7,Y+9,2,2,'#e0213a');R(g,X+7,Y+8,2,1,'#3f6b2a');R(g,X+10,Y+6,1,6,'rgba(255,255,255,.35)')
     }else{
       if(p.id==='carrot'){R(g,X+3,Y+6,10,9,K);R(g,X+4,Y+7,8,7,'#b89a6a');R(g,X+5,Y+3,2,4,'#e2741c');R(g,X+8,Y+2,2,5,'#e2741c');R(g,X+5,Y+1,2,2,'#3f6b2a');R(g,X+8,Y,2,2,'#3f6b2a')}
       else if(p.id==='oats'){R(g,X+3,Y+5,10,10,K);R(g,X+4,Y+6,8,8,'#c9b08a');R(g,X+5,Y+4,6,2,'#a8905a');R(g,X+6,Y+9,4,2,'#8a6a3a')}
@@ -1652,8 +1652,8 @@ async function talk0(id){
       await say('me','你的臉色很差耶。');
       await say('kaicho','老毛病了。有點貧血而已。等一下回餐廳喝杯番茄汁就好。');
       await n('他站起來的時候，晃了一下。');
-      await say('kaicho','……對了。如果你在宅邸裡看到番茄罐頭，可以幫我留著嗎？');
-      await say('kaicho','我總覺得這裡藏了好幾罐。……沒什麼，只是想囤一點。');
+      await say('kaicho','……對了。如果你在宅邸裡看到番茄汁，可以幫我留著嗎？');
+      await say('kaicho','冰箱那一打……不太夠。我總覺得宅邸裡還藏了好幾瓶。……沒什麼，只是想囤一點。');
       qStart('kaicho',{got:[]});break;
     case 'shisho':
       await n('司書坐在書堆裡，正翻著一本封面發黑的書。');
@@ -1737,12 +1737,12 @@ function sideOption(id){
   {const lo=LOST.find(l=>l.owner===id&&hasItem('lost_'+l.id));if(lo&&NPCS[id].state!=='nohead')return['把'+lo.t+'還給'+NAMES[id],()=>returnLost(lo)]}
   const F=S.flags;
   if(cansOk()){
-    if(id==='kaicho'&&ch===0)return['把番茄罐頭交給會長',cansToKaicho];
-    if(id==='lala')return['把番茄罐頭交給拉拉',cansToLala];
-    if(id==='batk')return['把番茄罐頭給小蝙蝠',cansToBat];
-    if(id==='po'&&NPCS.po.state==='stand')return['小波好像一直盯著你手上的罐頭',cansToPo];
+    if(id==='kaicho'&&ch===0)return['把番茄汁交給會長',cansToKaicho];
+    if(id==='lala')return['把番茄汁交給拉拉',cansToLala];
+    if(id==='batk')return['把番茄汁給小蝙蝠',cansToBat];
+    if(id==='po'&&NPCS.po.state==='stand')return['小波好像一直盯著你手上的番茄汁',cansToPo];
   }
-  if(id==='lala'&&ch>0&&!qGet('kaicho')&&qGet('lala'))return['會長的番茄罐頭？',lalaOfferCans];
+  if(id==='lala'&&ch>0&&!qGet('kaicho')&&qGet('lala'))return['會長的番茄汁？',lalaOfferCans];
   if(id==='boss'&&qOn('boss'))return F.riot&&!F.riotDone?null:['一起躺在大南瓜旁邊發呆',idleSession];
   const avail={lala:1,shisho:1,ji:1,ian:1,boss:!(F.riot&&!F.riotDone),sui:NPCS.sui.state!=='nohead',po:NPCS.po.state==='stand'};
   if(!avail[id])return null;
@@ -1979,36 +1979,36 @@ function drawPitch(){
   g.textAlign='left';
 }
 
-/* ---------------- 會長：番茄罐頭（交給會長本人、拉拉或小蝙蝠都可以） ---------------- */
+/* ---------------- 會長：番茄汁（交給會長本人、拉拉或小蝙蝠都可以） ---------------- */
 const CANS_N=5;
 const cansOk=()=>qOn('kaicho')&&(qGet('kaicho').got||[]).length>=CANS_N;
 async function lalaOfferCans(){
-  await say('lala','對了……會長最喜歡番茄了。番茄汁、番茄醬、番茄罐頭……');
-  await say('lala','他之前拜託大家幫忙找番茄罐頭，說宅邸裡好像藏了好幾罐。');
-  await say('lala','你如果看到的話，就幫他找回來吧！找到五罐再拿來給我，我幫他冰起來。');
+  await say('lala','對了……會長最喜歡番茄了。番茄汁、番茄醬、番茄湯……');
+  await say('lala','他之前拜託大家幫忙找番茄汁，說宅邸裡好像藏了好幾瓶。');
+  await say('lala','你如果看到的話，就幫他找回來吧！找到五瓶再拿來給我，我幫他冰起來。');
   qStart('kaicho',{got:[]});
 }
 async function cansToKaicho(){
-  await say('me','番茄罐頭，找到五罐了！');
+  await say('me','番茄汁，找到五罐了！');
   await say('kaicho','……這麼多。');
   await say('kaicho','……謝謝。晚點喝。');
-  await n('會長把罐頭整整齊齊地排在玫瑰花叢旁邊，一罐都沒有打開。');
+  await n('會長把番茄汁整整齊齊地排在玫瑰花叢旁邊，一瓶都沒有打開。');
   ach('h_kaicho_can');qFinish('kaicho',{candy:2});
 }
 async function cansToLala(){
-  await say('me','會長要的番茄罐頭，找到五罐了。');
-  await say('lala','哇！番茄罐頭！會長最喜歡這個了……');
-  await say('lala','我先幫他冰起來！等他好起來，就可以一口氣喝五罐了！');
-  await n('拉拉單手把整台冰箱抬起來，把罐頭塞進最裡面，再輕輕放回去。');
+  await say('me','會長要的番茄汁，找到五罐了。');
+  await say('lala','哇！番茄汁！會長最喜歡這個了……');
+  await say('lala','我先幫他冰起來！等他好起來，就可以一口氣喝五瓶了！');
+  await n('拉拉單手把整台冰箱抬起來，把番茄汁塞進最裡面，再輕輕放回去。');
   qFinish('kaicho',{candy:2});
 }
 async function cansToBat(){
-  await n('你打開一罐番茄罐頭，放在小蝙蝠面前。');
-  await n('小蝙蝠愣了一下，然後整顆頭埋進罐頭裡，咕嘟咕嘟地喝了起來。');
+  await n('你打開一瓶番茄汁，放在小蝙蝠面前。');
+  await n('小蝙蝠愣了一下，然後把整顆頭塞進瓶口，咕嘟咕嘟地喝了起來。');
   await n('……吱！');
   await n('牠的眼睛閃了一下紅光，翅膀用力拍呀拍——');
   await n('……還是飛不起來。');
-  await n('不過牠看起來很滿足。後面的錐齒獸也停了下來，好奇地聞了聞空罐子。');
+  await n('不過牠看起來很滿足。後面的錐齒獸也停了下來，好奇地聞了聞空瓶子。');
   ach('h_bat_can');qFinish('kaicho',{candy:2});
 }
 
@@ -2279,15 +2279,15 @@ async function idleSession(){
 }
 async function cansToPo(){
   await say('po','……那是……草莓牛奶嗎？紅紅的，好多罐……');
-  await say('po','可以……給我一罐嗎……？');
+  await say('po','可以……給我一瓶嗎……？');
   const c=await choose('要給小波嗎？',['……給他','不行，這是會長的']);
   if(c===1){await say('po','……嗚。好吧……');return}
-  await n('小波一把抱住五罐罐頭，咕嘟咕嘟咕嘟——');
+  await n('小波一把抱住五瓶番茄汁，咕嘟咕嘟咕嘟——');
   await n('……全部喝光了。');
   await say('po','……好好喝……可是，是番茄的味道……');
   await n('會長的番茄，又一次被小波喝掉了。');
   await say('po','……我會跟會長道歉的……還有，謝謝你……');
-  await n('小波打了一個大大的嗝，抱著空罐子，滿足地睡著了。');
+  await n('小波打了一個大大的嗝，抱著空瓶子，滿足地睡著了。');
   qAlt('kaicho',{candy:2});
 }
 /* 每條支線都有兩條路線：done 是第一條、alt 是另一條，兩種都算完成 */
@@ -2301,7 +2301,7 @@ function checkAllQ(){
   if(st.every(s=>s==='done'||s==='alt')&&st.includes('done')&&st.includes('alt'))ach('h_mixed');
 }
 const ALT_NOTE={po:'供奉了另一個枕頭，大家一起熬夜聊到了天亮。',lala:'偷吃了一坨，拉拉決定下次做卡士達口味。',shisho:'推薦了別本書，靈魂被輕輕咬了一小口。',
-  ji:'實驗報告亂成一團，卻發現了「亂報藥水」。',sui:'駱馬跑進森林，在那裡過得很開心。',ian:'三振之後，換你揮棒把怪物打飛。',kaicho:'番茄罐頭被小波喝光了，他說會跟會長道歉。',boss:'躺不住，改成坐著陪首領聊天。'};
+  ji:'實驗報告亂成一團，卻發現了「亂報藥水」。',sui:'駱馬跑進森林，在那裡過得很開心。',ian:'三振之後，換你揮棒把怪物打飛。',kaicho:'番茄汁被小波喝光了，他說會跟會長道歉。',boss:'躺不住，改成坐著陪首領聊天。'};
 
 /* ---------------- 章節存檔 ---------------- */
 /* 每一章開始時自動存一份，可以從標題或選單的「章節選擇」回到那一章重玩 */
@@ -2613,7 +2613,7 @@ function questRows(){
     else if(id==='shisho')d=`找到的書：${q.got.length}/${Object.keys(BOOKS).length}。宅邸裡到處都有發亮的書堆。`+(q.got.length>=Object.keys(BOOKS).length?'找齊了，拿去 展覽室 給司書！':'');
     else if(id==='ji'){const left=Object.keys(POTION_T).filter(k=>!q.tested.includes(k));d=`已報告 ${q.rep.length}/${Object.keys(POTION_T).length}。`+(left.length?'還沒試過：'+left.map(k=>POTION_T[k]).join('、')+'。':'')+(left.includes('self')?'想自己喝的話，在「道具」裡按「喝一口」。':'')+(q.tested.some(k=>!q.rep.includes(k))?'　有實驗結果還沒跟薊報告！':'')}
     else if(id==='sui')d=q.got.length>=Object.keys(FEEDS).length?'糧草找齊了！去屋外找翠，到 中庭 餵駱馬。':`找到的糧草：${q.got.length}/${Object.keys(FEEDS).length}。屋外、廚房和儲藏室都找找看。`;
-    else if(id==='kaicho')d=`找到的番茄罐頭：${q.got.length}/${CANS_N}。`+(q.got.length>=CANS_N?(chOf()===0?'找齊了，拿去溫室給會長！':'找齊了！交給拉拉，或是那隻飛不起來的小蝙蝠。'):'宅邸裡意想不到的地方都找找看。')
+    else if(id==='kaicho')d=`找到的番茄汁：${q.got.length}/${CANS_N}。`+(q.got.length>=CANS_N?(chOf()===0?'找齊了，拿去溫室給會長！':'找齊了！交給拉拉，或是那隻飛不起來的小蝙蝠。'):'宅邸裡意想不到的地方都找找看。')
     else if(id==='boss')d=`跟首領一起躺在大南瓜旁邊發呆，什麼按鍵都不要按。已撐過 ${q.round||0}/3 輪。`
     else if(id==='ian')d=`全壘打：${q.hr||0}/3。怪物袋：${(q.sack||[]).length}/3。打倒災獸會自動收進怪物袋，抓到後回去找 IAN。`;
     rows.push([Qd.t+'（'+Qd.who+'）',d,q.st,q.st==='done'?ROUTES[id][0]:q.st==='alt'?ROUTES[id][1]:'進行中']);
@@ -3355,7 +3355,7 @@ async function finalEnding(){
   await n('……變回了會長。');
   await say('kaicho','……我睡了多久？');
   await say('kaicho','……好渴。有番茄汁嗎？');
-  if(qDoneP('kaicho'))await say('lala','有！我幫你冰了五罐番茄罐頭！');
+  if(qDoneP('kaicho'))await say('lala','有！我幫你冰了五瓶番茄汁！');
   else await say('lala','我、我馬上去煎鬆餅！番茄口味的！');
   await n('拉拉用她驚人的力氣，三兩下就把 IAN 的上半身和下半身縫了回去。');
   await say('ian','……縫好了。腳，回來了。');
