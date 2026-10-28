@@ -1244,6 +1244,9 @@ Object.assign(EV,{
   lala4:{t:'拉拉的證詞（二）',d:'拉拉整晚都在廚房做鬆餅，電鋸上只有麵糊。她說電鋸切出來的斷口，不會那麼「毛毛的」。'},
   notji:{t:'不是薊的藥水',d:'薊的藥水瓶上都畫著荊棘標誌。咧嘴笑的南瓜標誌，她從來沒看過。'},
   laugh:{t:'首領聽到的笑聲',d:'首領說，墓園的地底下好像一直有東西在嘻嘻嘻地笑。'},
+  seed1:{t:'番茄汁旁的南瓜籽',d:'第一幕結束時，會長倒下的那灘番茄汁旁邊掉著一顆南瓜籽。小波真的是犯人嗎？'},
+  seed2:{t:'閣樓裡的南瓜籽',d:'閣樓坐墊旁也散著南瓜籽。閣樓窗戶裡一閃一閃的燈光，不是小波。'},
+  seed3:{t:'錐齒獸腳印旁的南瓜籽',d:'錐齒獸跑過的地上，掉著一排南瓜籽。牠是被誰放進宅邸的？'},
   riddle:{t:'封印上的紙條',d:'「想見我？先把四盞南瓜燈點亮吧！」一、睡教的祭壇前，說出唯一的教義。二、迷宮裡的騎士，把頭轉向回家的方向。三、小波床邊的盒子，密碼是那天晚上喝掉的「草莓牛奶」數量。四、首領最好的朋友身邊，有一顆會發光的弟弟。',key:1},
   hint_sui:{t:'翠的迷路秘訣',d:'翠在迷宮裡迷路時，都會把頭轉向宅邸的方向。宅邸在迷宮的西邊。'},
   hint_boss:{t:'大南瓜的弟弟',d:'首領說，田裡第三排、最右邊那顆南瓜，是大南瓜的弟弟。敲一敲就會亮。'},
@@ -2965,6 +2968,10 @@ async function deduction1(){
   await say('lala','會、會長的屍體……不見了啦啊啊啊！！');
   await say('ji','剛剛那隻蝙蝠……是不是長得有點眼熟？');
   await say('boss','……好麻煩。明天再說。');
+  await n('……大家都說，事情解決了。');
+  await n('可是你回頭看了一眼——會長倒下的那灘番茄汁旁邊，掉著一顆南瓜籽。');
+  addEv('seed1');
+  await n('小波真的是犯人嗎？你總覺得，哪裡怪怪的。');
   await chapterCard('第二幕　消失的小波');
   S.flags.ch=2;ach('m_act1');applyWorld();changeScene('hall',10,8,'down');chapterSave(2);
   await n('深夜。雷雨一直沒有停。');
@@ -3092,6 +3099,8 @@ async function po2(){
   await say('po','儲藏室好黑好冷……我一直打瞌睡……一睡著，就什麼都不知道了。');
   await say('po','醒來的時候在閣樓……然後又睡著了……然後……');
   await say('po','……我是不是又從樓梯滾下來了？');
+  await n('……原來，根本沒有人放小波出去。他是睡著睡著，自己穿過了儲藏室的牆。');
+  await n('拉拉是被冤枉的。');
   addEv('found');
   await n('樓梯口傳來沉重的腳步聲。');
   Object.assign(NPCS.ian,{scene:'hall',x:toNew('hall',10,11)[0],y:toNew('hall',10,11)[1],dir:'up',mv:null,queue:[],patrol:null});
@@ -3118,6 +3127,12 @@ async function act3Scene(){
   await n('……她的頭不見了。');
   await n('幽靈駱馬不安地繞著大南瓜打轉，一直用鼻子去頂南瓜。');
   await say('boss','……吵死了。');
+  await say('ji','首領～翠的頭在大南瓜旁邊不見了耶。該不會……是你把它藏進南瓜裡了吧？');
+  await n('大家的視線，全落在南瓜頭的首領身上。');
+  await say('ian','南瓜頭的，最可疑。');
+  await say('boss','……不是我。');
+  await say('boss','……大南瓜也說不是牠。好麻煩。');
+  await n('首領一臉不想解釋的樣子。……看來得自己查清楚，翠的頭到底是怎麼掉進去的。');
 }
 async function talk3(id){
   const F=S.flags;
@@ -3205,6 +3220,10 @@ async function riotEnd(){
   await say('boss','……大南瓜沒事吧。');
   const away=Promise.all([walkTo('batk',10,22,1.8,true),sleep(300).then(()=>walkTo('cone',10,22,1.8,true))]);
   await n('錐齒獸晃了晃腦袋，又追著那隻不會飛的小蝙蝠跑走了。');
+  await say('ji','原來是錐齒獸撞的啊～首領，剛剛懷疑你，對不起嘛～');
+  await say('boss','……好麻煩。原諒你們。');
+  await n('錐齒獸跑過的泥地上，掉著一排南瓜籽。……牠到底是從哪裡跑進宅邸的？');
+  addEv('seed3');
   await away;
   await say('sui','欸……剛剛那隻蝙蝠，是不是長得有點像會長？');
   await n('……所有人都沉默了。');
@@ -3417,6 +3436,11 @@ async function finalEnding(){
   await say('ghost','這棟房子，一直都只有我一個。每年萬聖節，我都會把「需要這棟房子的人」請進來……');
   await say('ghost','冰箱裡的番茄汁，是我偷偷貼上「草莓牛奶」標籤的喔。拉拉的麵糊會動，也是我施的小魔法。');
   await say('ghost','大家的超能力，也是我先借走的。不然你們一下子就把我抓到了嘛！');
+  await say('ghost','薊少掉的那瓶「一覺到天亮」，也是我拿去放在番茄汁旁邊的。小波喝了，就一直睡、一直睡……');
+  await say('ghost','所以會長才會餓到倒下、變成小蝙蝠。小波只是喝了「草莓牛奶」而已喔。');
+  await say('ghost','閣樓窗戶裡一閃一閃的燈，是我在陪睡著的小波玩捉迷藏！');
+  await say('ghost','那隻錐齒獸，是我從森林裡放進來的。看牠追著小蝙蝠跑，好好笑喔！');
+  await say('ghost','迷宮裡的稻草人也是我做的。還有 IAN 的長大藥水……每一件事旁邊，我都不小心掉了南瓜籽，嘻嘻。');
   await say('ghost','……對不起啦。很好玩嗎？');
   await n('墓室的階梯傳來一陣腳步聲——宅邸裡的大家都追下來了。');
   await say('lala','原來是你搞的鬼！');
@@ -3435,6 +3459,13 @@ async function finalEnding(){
   await say('lala','那、那你為什麼要讓大家一直誤會是我啦！！');
   await say('ghost','……因為你力氣最大，大家一下子就相信了嘛。嘻嘻。');
   await n('拉拉氣得把旁邊的棺材整個舉了起來。……大家默默退後了一步。');
+  await n('真相大白之後，大家互相看了看。');
+  await say('ian','……第一天被關進儲藏室的小波，是冤枉的。');
+  await say('ji','拉拉被懷疑了兩次呢～放走小波一次，砍斷 IAN 一次。');
+  await say('lala','兩次！！整整兩次！！');
+  await say('sui','還有首領～我們還說他把我的頭藏起來……');
+  await say('boss','……好麻煩。已經原諒你們了。');
+  await n('大家一個一個，向被錯怪的人道了歉。');
   await say('boss','……原來，這棟房子在等的人，是我們啊。');
   await say('sui','欸～那明年還可以再來玩嗎？');
   await say('ghost','……真的嗎！？');
@@ -3448,6 +3479,8 @@ async function finalEnding(){
   await n('……變回了會長。');
   await say('kaicho','……我睡了多久？');
   await say('kaicho','……好渴。有番茄汁嗎？');
+  await say('po','……會長……那天的番茄汁，是我喝掉的……對不起……');
+  await say('kaicho','……不是你的錯。是標籤的錯。');
   if(qDoneP('kaicho'))await say('lala','有！我幫你冰了五瓶番茄汁！');
   else await say('lala','我、我馬上去煎鬆餅！番茄口味的！');
   await n('拉拉用她驚人的力氣，三兩下就把 IAN 的上半身和下半身縫了回去。');
@@ -3640,7 +3673,7 @@ function objectAt(nx,ny){
     else await n('一灘番茄汁。浪費食物是不對的。')};
   if(s==='outside'&&chOf()===3&&x>=5&&x<=6&&y>=9&&y<=10)return pumpkin3;
   if(s==='attic'&&x===10&&y===3&&chOf()===2)return async()=>{
-    if(!hasEv('trail')){await n('角落的舊坐墊被壓出一個小小的凹痕，摸起來還溫溫的，上面有一點口水。');await n('……小波剛剛還睡在這裡。');await n('地板上有一道床單拖過的痕跡，一路通往樓梯口。');addEv('trail')}
+    if(!hasEv('trail')){await n('角落的舊坐墊被壓出一個小小的凹痕，摸起來還溫溫的，上面有一點口水。');await n('……小波剛剛還睡在這裡。');await n('地板上有一道床單拖過的痕跡，一路通往樓梯口。');addEv('trail');await n('坐墊旁邊，還散著幾顆南瓜籽。……閣樓窗戶裡那一閃一閃的燈光，又是誰？');addEv('seed2')}
     else await n('坐墊上的凹痕還在。床單的痕跡一路通往樓梯口。')};
   if(s==='chapel'&&x===14&&y===10)return async()=>{
     if(!hasEv('blood')){await n('角落擺著一個小冷藏箱，上面貼著協會的紅十字。');await n('裡面整整齊齊放著好幾袋醫療用血袋。標籤寫著：「會長的備用口糧——他不會自己喝，請大家盯著他喝。」');await n('……一袋都沒少。');addEv('blood')}
