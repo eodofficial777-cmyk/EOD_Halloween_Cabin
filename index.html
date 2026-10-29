@@ -1958,6 +1958,7 @@ const PROPS=[
   {q:'po',k:'pillow',id:'pumpkinp',sc:'outside',   x:6, y:23},
   {q:'po',k:'pillow',id:'sponge',  sc:'bath',      x:10,y:5},
   {q:'po',k:'pillow',id:'coffin',  sc:'crypt',     x:2, y:10},
+  {q:'po',k:'pillow',id:'pancake', sc:'dining',    x:17,y:9},
   {q:'shisho',k:'book',id:'rules',  sc:'hall',      x:4, y:12},
   {q:'shisho',k:'book',id:'batter', sc:'kitchen',   x:15,y:4},
   {q:'shisho',k:'book',id:'manners',sc:'dining',    x:17,y:8},
@@ -1995,6 +1996,7 @@ const PILLOWS={
   ghost:   {a:[1,1,1,1],t:'會飄的白色抱枕',d:'閣樓角落一顆自己飄在半空中的抱枕。軟軟的、涼涼的，有淡淡的洛神花香，大小剛好可以整個抱住。',sl:'你抱著會飄的抱枕躺下去。軟軟的、涼涼的、甜甜的……\n……回過神來，你已經睡了一小覺。'},
   pumpkinp:{a:[0,1,1,1],t:'南瓜抱枕',d:'被丟在南瓜田邊的南瓜造型抱枕。涼涼的、有南瓜香，抱起來剛好……可是硬梆梆的。',no:'南瓜抱枕一放上去，「噗」地噴出一堆南瓜籽。',sl:'你枕在南瓜抱枕上。涼涼香香的……一翻身，「噗」地噴出了一堆南瓜籽。'},
   sponge:  {a:[1,1,1,0],t:'泡泡海綿枕',d:'泡在浴缸邊的海綿枕，聞起來有玫瑰泡泡的香味。軟軟涼涼的……可是濕答答的。',no:'海綿枕一放上去，就在祭壇上積了一灘水。',sl:'你枕上海綿枕。軟軟涼涼香香的……然後你的後腦勺濕透了。'},
+  pancake: {a:[1,0,1,1],t:'鬆餅枕頭',d:'餐廳角落一片比臉還大的史萊姆鬆餅，被拉拉拿來當午睡的枕頭。軟綿綿、香噴噴，大小剛好可以抱住……可是剛出爐，熱呼呼的。偶爾還會自己抖一下。',no:'鬆餅枕頭一放上祭壇，就「啾」地彈了起來，滾到神像背後躲起來了。……而且還熱熱的。',sl:'你抱著鬆餅枕頭躺下去。軟軟的、甜甜的……可是好熱。\n……睡到一半，枕頭還自己偷偷往外爬了一點。'},
   coffin:  {a:[1,1,0,1],t:'棺材裡的絲綢枕',d:'地下墓室棺材裡的絲綢枕頭。又軟又涼，大小也剛好……就是有一股陳年的霉味。',no:'絲綢枕一放上去，祭壇上飄起一股霉味。蠟燭都熄了一根。',sl:'你枕上棺材裡的絲綢枕。又軟又涼……可是那股霉味，讓你夢到了一整晚的蜘蛛。'},
 };
 function pillowRate(k){const a=PILLOWS[k].a,m=v=>v?'○':'×';return`軟${m(a[0])}　涼${m(a[1])}　香甜${m(a[2])}　能抱${m(a[3])}`}
@@ -2066,6 +2068,7 @@ async function takeProp(p){
   if(p.k==='pillow'){
     await n(PILLOWS[p.id].d);addItem('p_'+p.id);
     if(p.id==='ghost')await n('抱枕在你懷裡輕輕蹭了一下。……好像很想睡。');
+    if(p.id==='pancake')await n('鬆餅枕頭在你懷裡「啾」地抖了一下。……拉拉應該不會介意吧。');
     const N=Object.keys(PILLOWS).length;toast(`找到枕頭了！（${q.got.length}/${N}，還差 ${N-q.got.length} 個）　可以拿到床上試躺`);
   }else if(p.k==='book'){
     const b=BOOKS[p.id];await n('一疊書裡，有一本特別顯眼——'+b.t+'。');await n(b.d);
@@ -2085,7 +2088,8 @@ function drawProps(cx,cy){
     if(p.sc!==S.scene||!propActive(p))continue;
     const X=p.x*T-cx,Y=p.y*T-cy,g=ctx;
     if(p.k==='pillow'){
-      if(p.id==='ghost'){const b=Math.round(Math.sin(tick/14)*2);g.save();g.globalAlpha=.85;R(g,X+2,Y+5+b,12,8,K);R(g,X+3,Y+6+b,10,6,'#f4f6fb');R(g,X+3,Y+10+b,10,2,'#d6dcea');R(g,X+6,Y+8+b,1,1,K);R(g,X+9,Y+8+b,1,1,K);g.restore()}
+      if(p.id==='pancake'){/* 會微微彈跳的鬆餅枕頭：奶油、格子紋、一張小臉 */const b=Math.round(Math.sin(tick/9));R(g,X+1,Y+7-b,14,8+b,K);R(g,X+2,Y+8-b,12,6+b,'#e8b860');R(g,X+2,Y+8-b,12,2,'#f6d890');R(g,X+2,Y+12,12,2,'#c8903a');for(const a of[5,9])R(g,X+a,Y+9-b,1,3,'#d8a048');R(g,X+6,Y+7-b,4,2,'#fff2a0');R(g,X+5,Y+11-b,1,1,K);R(g,X+10,Y+11-b,1,1,K);R(g,X+7,Y+12-b,2,1,'#e6a0b0')}
+      else if(p.id==='ghost'){const b=Math.round(Math.sin(tick/14)*2);g.save();g.globalAlpha=.85;R(g,X+2,Y+5+b,12,8,K);R(g,X+3,Y+6+b,10,6,'#f4f6fb');R(g,X+3,Y+10+b,10,2,'#d6dcea');R(g,X+6,Y+8+b,1,1,K);R(g,X+9,Y+8+b,1,1,K);g.restore()}
       else{const c={feather:'#efe8dc',lavender:'#8aa86a',flour:'#e8dfc8',velvet:'#8e1c3a',pumpkinp:'#e2741c',sponge:'#ffd2e6',coffin:'#5a2a4a'}[p.id];R(g,X+2,Y+7,12,7,K);R(g,X+3,Y+8,10,5,c);R(g,X+3,Y+11,10,2,dk(c,.18));R(g,X+2,Y+7,1,1,c);R(g,X+13,Y+7,1,1,c);
         if(p.id==='flour'){R(g,X+5,Y+9,6,2,'#c8b890');R(g,X+6,Y+9,4,1,'#8a7a5a')}if(p.id==='velvet')R(g,X+7,Y+9,2,2,'#d9a640')}
     }else if(p.k==='book'){
@@ -2533,7 +2537,7 @@ async function suiRace(){
   await say('sui',F.raceWin?'再比一次？好啊！這次羊駝吃飽了，不會再停下來吃花了！……大概。':'欸欸，我們來比賽吧！從花園迷宮的入口，跑到正中央的噴泉！');
   await say('sui',isTouch?'我騎羊駝，你用跑的！不准抄近路喔……雖然迷宮也沒有近路！':'我騎羊駝，你用跑的！按住 Shift 可以跑比較快喔～');
   const c=await choose('要比賽嗎？',['來比！','下次吧']);if(c===1)return say('sui','不比？膽小鬼～想通了隨時來找我挑戰！');
-  clearCombat();changeScene('maze',1,10,'right');CB.foes=[];CB.eshots=[];CB.lock=new Set();CB.mini='race';
+  clearCombat();changeScene('maze',1,10,'right');CB.foes=[];CB.eshots=[];CB.lock=new Set(SCENES.maze.exitsN.map(e=>e[0]+','+e[1]));CB.lockKind='race';CB.mini='race';/* 比賽中不能走出迷宮 */
   const path=racePath(),n0=path.length,stops=[Math.floor(n0*(.3+Math.random()*.15)),Math.floor(n0*(.6+Math.random()*.15))];
   RACE={path,i:1,fx:path[0][0]*T,fy:path[0][1]*T,dir:'right',stop:0,stops,cd:200,t:0,said:0};
   P.stun=200;NPCS.sui.scene=null;NPCS.horse.scene=null;
@@ -2542,6 +2546,7 @@ function raceTick(){
   const R0=RACE;if(!R0||busy)return;
   if(R0.cd>0){R0.cd--;if(R0.cd===199)toast('3');else if(R0.cd===140)toast('2');else if(R0.cd===80)toast('1');else if(R0.cd===20){toast('衝啊！！');toastT=60}return}
   R0.t++;
+  if(S.scene!=='maze')return raceEnd(false);
   if(P.x>=MZ.x0&&P.x<=MZ.x1&&P.y>=MZ.y0&&P.y<=MZ.y1)return raceEnd(true);
   if(R0.stop>0){R0.stop--;return}
   const tg=R0.path[R0.i];if(!tg)return raceEnd(false);
@@ -2553,7 +2558,7 @@ function raceTick(){
   R0.fx+=Math.sign(dx)*Math.min(sp,Math.abs(dx));R0.fy+=Math.sign(dy)*Math.min(sp,Math.abs(dy));
 }
 function raceEnd(win){
-  const t=RACE.t;RACE=null;CB.lock=null;CB.mini=null;
+  const t=RACE.t;RACE=null;CB.lock=null;CB.lockKind=null;CB.mini=null;
   run(async()=>{
     const F=S.flags,sec=(t/60).toFixed(1);
     if(win){
@@ -4903,7 +4908,7 @@ let mode='title',tick=0,fade=0,shake=0,flash=0,cutDark=false;
 const P={x:10,y:8,dir:'down',moving:false,tx:0,ty:0,prog:0,wc:0};let runHeld=false;
 const DV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 const held=[];
-let nextBlack=60*45,blackOn=0;const BLACK_LEN=60*9;
+let nextBlack=60*180,blackOn=0;const BLACK_LEN=60*6;/* 停電：開場三分鐘後才第一次，之後每四到六分鐘一次 */
 const rain=Array.from({length:90},()=>({x:Math.random()*320,y:Math.random()*208,v:4+Math.random()*3}));
 const dark=document.createElement('canvas');dark.width=320;dark.height=208;const dctx=dark.getContext('2d');
 
@@ -5556,8 +5561,8 @@ function update(){
   for(const r of rain){r.y+=r.v;r.x-=1;if(r.y>208){r.y=-6;r.x=Math.random()*340}}
   if(mode!=='play')return;
   if(!busy&&!overlayOpen()){
-    if(--nextBlack<=0&&!blackOn){blackOn=BLACK_LEN;nextBlack=60*80;sfx('thunder');
-      if(!sc().out&&S.flags.discovered&&!CB.lock&&Math.random()<.5&&!['storage','attic','dining'].includes(S.scene)){spawnRandom(2,[foeBat()]);toast('停電了……黑暗中有東西在飛！')}
+    if(!CB.mini&&!RACE&&!PITCH&&!IDLE&&!CB.lock&&!SOKO[S.scene]&&--nextBlack<=0&&!blackOn){blackOn=BLACK_LEN;nextBlack=60*(240+Math.random()*120);sfx('thunder');
+      if(!sc().out&&S.flags.discovered&&!CB.lock&&Math.random()<.3&&!['storage','attic','dining'].includes(S.scene)){spawnRandom(2,[foeBat()]);toast('停電了……黑暗中有東西在飛！')}
       else toast('雷雨來了，宅邸停電了！')}
   }
   if(blackOn>0)blackOn--;
@@ -5912,12 +5917,20 @@ function spawnFoe(type,x,y,arena){
   const e={type,x,y,hp,max:hp,r:d.r,t:(Math.random()*100)|0,cd:60+((Math.random()*60)|0),st:0,state:'walk',kx:0,ky:0,flash:0,face:1,arena:!!arena};
   CB.foes.push(e);return e;
 }
+/* 從出口和玩家位置出發走得到的格子（怪物、史萊姆鬆餅只生在這些地方，不會卡在家具圍起來的死角） */
+function reachTiles(){
+  const s=sc(),seen=new Set(),q=[];const add=(x,y)=>{const k=x+','+y;if(!seen.has(k)){seen.add(k);q.push([x,y])}};
+  for(const e of s.exitsN)add(e[0],e[1]);if(S)add(P.x,P.y);
+  while(q.length){const[x,y]=q.shift();for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=s.w||ny>=s.h||seen.has(nx+','+ny))continue;if(walkable(nx,ny)||npcAt(nx,ny))add(nx,ny)}}
+  return seen;
+}
 function freeTile(minD,o={}){
-  const s=sc(),[cx,cy]=camOrigin(),rg=o.region||[0,0,s.w-1,s.h-1];
+  const s=sc(),[cx,cy]=camOrigin(),rg=o.region||[0,0,s.w-1,s.h-1],reach=reachTiles();
   for(let i=0;i<120;i++){
     const x=rg[0]+((Math.random()*(rg[2]-rg[0]+1))|0),y=rg[1]+((Math.random()*(rg[3]-rg[1]+1))|0),c=(s.map[y]||'')[x];
     if(!c||SOLID.has(c)||c==='X'||s.exitsN.some(e=>e[0]===x&&e[1]===y)||npcAt(x,y))continue;
     if(S.scene==='outside'&&(c==='a'||c==='e'))continue;/* 南瓜田裡不冒怪 */
+    if(!reach.has(x+','+y))continue;
     if(CB.lock&&CB.lock.has(x+','+y))continue;
     if(Math.abs(x-P.x)+Math.abs(y-P.y)<minD)continue;
     if(o.offcam&&x*T+16>cx-8&&x*T<cx+320+8&&y*T+16>cy-8&&y*T<cy+208+8)continue;
@@ -6010,7 +6023,7 @@ function gainLoot(L){
   toast('獲得：'+got.join('、'));
   if(S.flags.melee&&S.flags.gun)ach('h_arsenal');
   checkWude();
-  if((L.melee||L.gun)&&!S.flags.tut){S.flags.tut=1;setTimeout(()=>{toast(isTouch?'按「砍」近戰、「射」開槍、「糖」吃東西補血':'J／X 近戰・K／C 開槍・R 換彈・H 吃東西・V 神奇藥水');toastT=360},2600)}
+  if((L.melee||L.gun)&&!S.flags.tut){S.flags.tut=1;setTimeout(()=>{toast(isTouch?'按「砍」近戰、「射」開槍、「糖」吃東西補血，也可以直接點上方的道具':'J／X 近戰・K／C 開槍・R 換彈・H 吃東西・V 神奇藥水・1～5 用上方的道具');toastT=360},2600)}
 }
 /* 近戰：沒撿到武器時是空手（傷害 1、距離短、不能打掉鬼火） */
 function doMelee(){
@@ -6248,7 +6261,7 @@ function updateCombat(){
   CB.drops=CB.drops.filter(d=>d.t<900);
   for(const f of CB.fx){f.x+=f.vx;f.y+=f.vy;f.vy+=f.g||0;f.life--}
   CB.fx=CB.fx.filter(f=>f.life>0);
-  if(CB.lock&&!CB.foes.some(e=>e.arena)){
+  if(CB.lock&&CB.lockKind!=='race'&&!CB.foes.some(e=>e.arena)){
     if(CB.lockKind==='attic'){S.flags.atticCleared=true;toast('閣樓的災獸清光了！')}
     if(CB.lockKind==='vine')setTimeout(()=>run(vineFreed),400);
     CB.lock=null;CB.lockKind=null;save();
@@ -6376,11 +6389,16 @@ function heartAt(x,y,c){R(ctx,x+1,y,2,1,c);R(ctx,x+4,y,2,1,c);R(ctx,x,y+1,7,2,c)
 /* HUD 的數字用 3×5 的像素字，小尺寸也看得清楚 */
 const PXD={0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001111001111',4:'101101111001001',5:'111100111001111',6:'111100111101111',7:'111001001001001',8:'111101111101111',9:'111101111001111',x:'000101010101000','/':'001001010100100'};
 function pxText(t,x,y,c){for(const ch of String(t)){const m=PXD[ch];if(m)for(let i=0;i<15;i++)if(m[i]==='1')R(ctx,x+i%3,y+((i/3)|0),1,1,c);x+=4}}
+/* 上方道具欄：點一下就使用（鍵盤按 1～5） */
+let HUD_SLOTS=[];
+function useHudItem(k){if(!S||busy||mode!=='play')return;if(k==='magic')useMagic();else if(P.hp>=MAXHP)warn('體力是滿的，先留著吧。');else useCandy(k)}
+function hudTap(e){if(!HUD_SLOTS.length)return false;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*320,y=(e.clientY-r.top)/r.height*208;
+  const sl=HUD_SLOTS.find(s=>x>=s.x&&x<s.x+s.w&&y>=s.y&&y<s.y+s.h);if(!sl)return false;useHudItem(sl.k);return true}
 function drawHUD(){
   if(!S.inv)S.inv={candy:0,ammo:0};
   for(const h of['heart1','heart2'])if(S.flags['g_'+h]&&!S.items.includes('g_'+h))S.items.push('g_'+h);
   if(CB.hurt>0){ctx.fillStyle=`rgba(200,20,30,${CB.hurt*.3})`;ctx.fillRect(0,0,320,208)}
-  const itemsH=[...Object.keys(SNACK),'magic'].filter(k=>S.inv[k]>0),hw=Math.max(8+MAXHP/2*9,(S.flags.gun?50:5)+itemsH.length*27);
+  const SW=isTouch?27:31,itemsH=[...Object.keys(SNACK),'magic'].filter(k=>S.inv[k]>0),hw=Math.max(8+MAXHP/2*9,(S.flags.gun?50:5)+itemsH.length*SW);HUD_SLOTS=[];
   R(ctx,2,2,hw,itemsH.length||S.flags.gun?21:12,'rgba(14,10,12,.65)');
   ctx.font='8px DotGothic16, monospace';ctx.textBaseline='top';
   for(let i=0;i<MAXHP/2;i++){
@@ -6393,7 +6411,7 @@ function drawHUD(){
     else for(let i=0;i<GUN_MAG;i++)R(ctx,5+i*4,13,2,5,i<P.ammo?'#d9a640':'#4a3a2a');
     pxText('/'+S.inv.ammo,30,13,S.inv.ammo?'#e8d9bf':'#a05050');hx=50;
   }
-  for(const k of itemsH){drawItemIcon(ctx,k,hx+4,15);pxText('x'+S.inv[k],hx+10,13,'#e8d9bf');hx+=27}
+  itemsH.forEach((k,i)=>{HUD_SLOTS.push({k,x:hx-2,y:2,w:SW,h:22});if(!isTouch){pxText(String(i+1),hx,13,'#8a7a6a');hx+=4}drawItemIcon(ctx,k,hx+4,15);pxText('x'+S.inv[k],hx+10,13,'#e8d9bf');hx+=27})
 }
 
 /* ---------------- 繪製 ---------------- */
@@ -6693,7 +6711,7 @@ function startPlay(isNew){
   Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,light:0,napCd:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
   clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
-  applyWorld();spawnSlimes();if(SOKO[S.scene])sokoInit(S.scene);fade=1;nextBlack=60*45;blackOn=0;updateHUD();
+  applyWorld();spawnSlimes();if(SOKO[S.scene])sokoInit(S.scene);fade=1;nextBlack=60*180;blackOn=0;updateHUD();
   if(isNew)run(intro);
 }
 
@@ -6717,6 +6735,7 @@ window.addEventListener('keydown',e=>{
   if(lk==='r'){if(!busy){if(S&&SOKO[S.scene])sokoReset();else startReload()}return}
   if(lk==='u'||e.key==='Backspace'){if(!busy&&S&&SOKO[S.scene]){e.preventDefault();sokoUndo()}return}
   if(lk==='h'||lk==='q'){if(!busy)useCandy();return}
+  if(/^[1-9]$/.test(e.key)){const sl=HUD_SLOTS[+e.key-1];if(sl&&!busy)useHudItem(sl.k);return}
   if(lk==='v'){if(!busy)useMagic();return}
   if(lk==='b'){if(!busy)useSpecial();return}
   if(lk==='m'){audioInit();setSound('music',!SND.music);toast('音樂'+(SND.music?'開啟':'關閉'));toastT=90;return}
@@ -6742,7 +6761,7 @@ $('pS').addEventListener('pointerdown',e=>{e.preventDefault();if(!busy)useSpecia
 $('sokoReset').addEventListener('click',e=>{e.preventDefault();sokoReset()});$('sokoUndo').addEventListener('click',e=>{e.preventDefault();sokoUndo()});
 $('cv').addEventListener('pointerdown',e=>{if(PITCH&&dlgRes){e.preventDefault();dlgRes()}});
 $('pA').addEventListener('pointerdown',e=>{e.preventDefault();if(choiceState)pickChoice();else if(dlgRes)advance();else interact()});
-$('stage').addEventListener('click',e=>{if(mode==='play'&&!busy&&e.target===cv)interact()});
+$('stage').addEventListener('click',e=>{if(mode==='play'&&e.target===cv){if(hudTap(e))return;if(!busy)interact()}});
 
 /* 啟動 */
 function sizeStage(){
