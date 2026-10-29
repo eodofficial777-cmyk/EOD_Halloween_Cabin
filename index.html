@@ -128,6 +128,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
 .tabs button{background:var(--brown);border:2px solid var(--brown);padding:2px 12px;border-radius:2px}
 .tabs button.on{border-color:var(--cream);background:var(--rust)}
+.mbtns.snd button.on{background:var(--rust)}
 .evlist{display:flex;flex-direction:column;gap:8px}
 .ev{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 10px;background:rgba(0,0,0,.25);border-left:3px solid var(--rust)}
 .ev.key{border-left-color:var(--gold)}
@@ -329,8 +330,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
       <kbd>Z / 空白 / Enter</kbd><span>調查、對話、翻下一句</span>
       <kbd>N / Tab</kbd><span>打開調查筆記</span>
       <kbd>Esc</kbd><span>選單</span>
+      <kbd>M</kbd><span>音樂開關</span>
       <kbd>手機</kbd><span>畫面下方的方向鍵、A 鍵，「砍」「射」攻擊，「糖」吃糖果</span>
     </div>
+    <h3>聲音</h3>
+    <div class="mbtns snd"><button id="mMusic" type="button">音樂：開</button><button id="mSfx" type="button">音效：開</button></div>
     <h3>難易度</h3>
     <div id="mDiff" role="radiogroup" aria-label="難易度"></div><p class="diffNote" id="mDiffNote"></p>
     <div class="mbtns"><button id="menuAch" type="button">成就</button><button id="menuChap" type="button">章節選擇</button><button id="menuRestart" type="button">從頭開始</button><button id="toTitle" type="button">回到標題</button></div>
@@ -1375,7 +1379,7 @@ const HINT3={pvoice:'屋外的大南瓜',gesture:'大南瓜旁邊翠的身體',w
 const ITEMS={stack20:{t:'一大疊鬆餅（二十片）',d:'從梯子上收下來的史萊姆鬆餅。拉拉說，處理掉才能把梯子借你。'},ladder:{t:'長梯子',d:'拉拉借你的梯子。上面還黏著一點麵糊。'},pancake:{t:'拉拉的鬆餅',d:'熱騰騰、香噴噴。拉拉說肚子餓沒辦法推理。'},atticKey:{t:'閣樓鑰匙',d:'拉拉鑰匙圈上的一把舊鑰匙，上面刻著「閣樓」。'}};
 const hasEv=k=>S.ev.includes(k), hasItem=k=>S.items.includes(k);
 function addEv(k){if(!hasEv(k)){S.ev.push(k);toast('獲得線索：'+EV[k].t);updateHUD();if(Object.keys(EV).every(hasEv))ach('h_clues')}}
-function addItem(k){if(!hasItem(k)){S.items.push(k);toast('獲得道具：'+ITEMS[k].t)}}
+function addItem(k){if(!hasItem(k)){S.items.push(k);sfx('pickup');toast('獲得道具：'+ITEMS[k].t)}}
 function rmItem(k){S.items=S.items.filter(x=>x!==k)}
 
 /* ---------------- 對話系統 ---------------- */
@@ -1425,7 +1429,7 @@ function say(who,text){
     if(who!=='n'){dname.textContent=who==='me'?myName():NAMES[who];dname.style.color=who==='me'?FAC_COLOR[myFac()]:FACTION[who]?FAC_COLOR[FACTION[who]]:'';drawFace(who)}
     const full=(who==='lala'?lalaSpeak(text):text).replace(/\{NEWP\}/g,S.name).replace(/\{NEW\}/g,S.name).replace(/\{me\}/g,S.name);let i=0;dtext.textContent='';
     clearInterval(typing);
-    typing=setInterval(()=>{i+=1;dtext.textContent=full.slice(0,i);if(i>=full.length){clearInterval(typing);typing=null}},22);
+    typing=setInterval(()=>{i+=1;dtext.textContent=full.slice(0,i);if(who!=='n'&&i%3===1)sfx('blip');if(i>=full.length){clearInterval(typing);typing=null}},22);
     dlgRes=()=>{if(typing){clearInterval(typing);typing=null;dtext.textContent=full;return}dlgRes=null;res()};
   });
 }
@@ -1446,7 +1450,7 @@ function choose(q,opts){
 }
 function markChoice(){choiceState.btns.forEach((b,i)=>b.classList.toggle('sel',i===choiceState.sel))}
 function moveChoice(d){choiceState.sel=(choiceState.sel+d+choiceState.opts.length)%choiceState.opts.length;markChoice()}
-function pickChoice(){const c=choiceState;choiceState=null;$('choices').hidden=true;c.res(c.sel)}
+function pickChoice(){sfx('select');const c=choiceState;choiceState=null;$('choices').hidden=true;c.res(c.sel)}
 async function run(fn){
   if(busy)return;busy=true;
   try{await fn()}catch(e){console.error(e)}
@@ -1520,7 +1524,7 @@ const ACHS=[
   {id:'h_cilantro',t:'香菜三倍',d:'偷喝了司書的香菜口味三倍濃縮咖啡。',hint:'有些味道，有人愛得要命，有人一口都不能碰。'},
   {id:'h_pfield',t:'南瓜田之王',d:'把三塊田的南瓜寶寶都推回苗床，見到了南瓜田之王。',hint:'田埂的盡頭，有誰在等你。'},
   {id:'h_pfclean',t:'一次到位',d:'第三塊田一次都沒重來就解開了。',hint:'最難的那塊田，不靠重來。'},
-  {id:'h_wude',t:'武德豐沛',d:'集齊阿鳳姨的鍋鏟、土製手槍、鐵圍裙和鏡面鍋蓋，獲得稱號「武德豐沛」。',hint:'那位阿姨留下的東西，全部帶在身上。'},
+  {id:'h_wude',t:'武德豐沛',d:'集齊改造鍋鏟、土製手槍、鐵圍裙和鏡面鍋蓋，獲得稱號「武德豐沛」。',hint:'那位阿姨留下的東西，全部帶在身上。'},
   {id:'h_garden',t:'園丁的接班人',d:'讓花園迷宮裡的花圃全部開花，連那朵古怪的向日葵也是。',hint:'迷宮入口旁的工具箱，是某個人的。'},
   {id:'h_race',t:'比羊駝還快',d:'在花園迷宮的賽跑中贏過了翠和羊駝。',hint:'有人騎著羊駝，想找人比賽。'},
   {id:'h_organ',t:'午夜演奏會',d:'用大廳的管風琴，彈完了所有的曲子。',hint:'大廳裡有一座會唱歌的大傢伙。'},
@@ -1542,7 +1546,7 @@ let AD=achData();
 function achSave(){ls.set(ACH_KEY,JSON.stringify(AD))}
 function ach(id){
   if(AD.got[id])return;const a=ACHS.find(x=>x.id===id);if(!a)return;
-  AD.got[id]=Date.now();achSave();achPop(a);
+  AD.got[id]=Date.now();achSave();achPop(a);sfx('ach');
 }
 /* 累計數字：加完順便檢查有沒有達成門檻 */
 function achAdd(stat,n=1){
@@ -1705,7 +1709,7 @@ function bookCaught(){
 }
 const CANS={c1:'小教堂冷藏箱旁邊，夾在兩袋血袋中間的一瓶番茄汁。……放錯地方了吧。',c2:'閣樓的玩具堆裡，一隻泰迪熊抱著一瓶番茄汁。',c3:'大南瓜底下壓著一瓶番茄汁。首領應該沒發現。',c4:'司書的書堆旁邊，一瓶番茄汁被拿來當書擋。',c5:'番茄苗旁邊埋著一瓶番茄汁，瓶子上寫著「肥料？」。',c6:'浴缸旁邊泡著一瓶「番茄汁」。瓶子裡的紅色清清透透的，好像少了點番茄的濃稠……是泡太久了嗎？',c7:'儲藏室的麵粉袋後面，藏著一瓶番茄汁。瓶蓋上寫著「會長的備用」。'};
 const FEEDS={hay1:'一捆乾草',hay2:'一捆乾草',hay3:'一捆乾草',clover:'一把苜蓿',carrot:'一袋紅蘿蔔',oats:'一袋燕麥'};
-Object.assign(ITEMS,{potion:{t:'薊的神秘試作藥水',d:'冒著粉紅色泡泡的藥水。薊說什麼都可以試：玫瑰、南瓜田、首領的大南瓜、IAN，或是你自己。'}});
+Object.assign(ITEMS,{potion:{t:'薊的神秘試作藥水',d:'冒著粉紅色泡泡的藥水。薊說什麼都可以試：玫瑰、南瓜田、首領的大南瓜、大叔，或是你自己。'}});
 for(const k in PILLOWS)ITEMS['p_'+k]={t:PILLOWS[k].t,d:PILLOWS[k].d};
 
 function propActive(p){
@@ -3121,7 +3125,7 @@ const GEAR=[
   {id:'heart1',sc:'chapel',x:18,y:3,ch:3,t:['教堂角落的燭台下，多了一個發著微光的小鐵箱。','裡面是一塊扁扁的南瓜史萊姆鬆餅，被打得服服貼貼，一動也不動，聞起來好香。','你把它當成護身符掛在脖子上——胸口暖了起來，好像多了一點力氣。']},
   {id:'heart2',sc:'outside',x:41,y:24,ch:4,t:['花園最角落的草叢裡，藏著一個發著微光的小鐵箱。','裡面又是一塊被打服的南瓜史萊姆鬆餅。這塊還多灑了肉桂粉。','你把它也掛上了。……心跳變得好有精神。']},
 ];
-ITEMS.g_apron={t:'阿鳳姨的鐵圍裙',d:'受到的重擊會減輕，偶爾還能把攻擊整個擋下來。'};
+ITEMS.g_apron={t:'鐵圍裙',d:'受到的重擊會減輕，偶爾還能把攻擊整個擋下來。'};
 ITEMS.g_lid={t:'鏡面鍋蓋',d:'飛過來的東西，有機會被彈回去打怪物。用鍋鏟打掉的東西，也會反彈回去。'};
 ITEMS.g_heart1={t:'南瓜鬆餅護身符',d:'似乎是被暴力給打服的南瓜史萊姆鬆餅，正扁扁的飄散香氣。體力上限多了一顆心。可以的話應該是不會想吃吧。'};
 ITEMS.g_heart2={t:'肉桂南瓜鬆餅護身符',d:'似乎是被暴力給打服的南瓜史萊姆鬆餅，這塊還灑了肉桂粉，正扁扁的飄散香氣。體力上限又多了一顆心。可以的話應該是不會想吃吧。'};
@@ -4532,7 +4536,7 @@ function walkable(x,y){
 function changeScene(to,x,y,dir){
   [x,y]=toNew(to,x,y);
   if(SCENES[to].out&&P.light>0){P.light=0;setTimeout(()=>toast('雨一淋，蠟燭就熄了。'),300)}
-  S.scene=to;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(SOKO[to]){sokoInit(to);setTimeout(()=>run(()=>sokoIntro(to)),60)}legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
+  S.scene=to;sfx('door');Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(SOKO[to]){sokoInit(to);setTimeout(()=>run(()=>sokoIntro(to)),60)}legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
   if(to==='dining'&&chOf()===0&&!S.flags.gathered)run(gatherScene);
   else if(to==='dining'&&chOf()===1&&!S.flags.discovered)run(discovery);
   if(to==='kitchen'&&chOf()===2&&!S.flags.disc2)run(discovery2);
@@ -4807,6 +4811,97 @@ function organNote(t0,f,d,vol=1){
   const out=AC.createGain();out.gain.setValueAtTime(0,t0);out.gain.linearRampToValueAtTime(.16*vol,t0+.03);out.gain.setValueAtTime(.16*vol,t0+Math.max(.04,d-.06));out.gain.linearRampToValueAtTime(0,t0+d+.08);out.connect(AC.destination);
   [[1,.5],[2,.28],[3,.14],[4,.08],[.5,.22]].forEach(([h,gv])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f*h;o.detune.value=(Math.random()-.5)*6;g.gain.value=gv;o.connect(g);g.connect(out);o.start(t0);o.stop(t0+d+.12)});
 }
+/* ---------------- 音樂與音效：全部用 Web Audio 即時合成，不需要音檔 ---------------- */
+const SND={music:true,sfx:true,cur:null,step:0,next:0,mg:null,sg:null,noise:null,rain:null};
+try{const v=JSON.parse(localStorage.getItem('eod_snd')||'{}');if(v.music===false)SND.music=false;if(v.sfx===false)SND.sfx=false}catch(e){}
+function sndSave(){try{localStorage.setItem('eod_snd',JSON.stringify({music:SND.music,sfx:SND.sfx}))}catch(e){}}
+function audioInit(){
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){AC=null;return}
+  if(SND.mg)return;
+  SND.mg=AC.createGain();SND.mg.gain.value=SND.music?.45:0;SND.mg.connect(AC.destination);
+  SND.sg=AC.createGain();SND.sg.gain.value=SND.sfx?.55:0;SND.sg.connect(AC.destination);
+  const b=AC.createBuffer(1,AC.sampleRate,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;SND.noise=b;
+}
+['keydown','pointerdown'].forEach(ev=>window.addEventListener(ev,audioInit,{passive:true}));
+function tone(f,d,o={}){
+  if(!AC||!SND.sg)return;const t=AC.currentTime+(o.at||0),osc=AC.createOscillator(),g=AC.createGain();
+  osc.type=o.type||'square';osc.frequency.setValueAtTime(f,t);if(o.slide)osc.frequency.exponentialRampToValueAtTime(Math.max(20,f*o.slide),t+d);
+  const v=o.vol??.15;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0008,t+d);
+  osc.connect(g);g.connect(o.dest||SND.sg);osc.start(t);osc.stop(t+d+.03);
+}
+function noise(d,o={}){
+  if(!AC||!SND.noise)return;const t=AC.currentTime+(o.at||0),src=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
+  src.buffer=SND.noise;f.type=o.type||'bandpass';f.frequency.value=o.freq||1200;f.Q.value=o.q??1;
+  g.gain.setValueAtTime(o.vol??.15,t);g.gain.exponentialRampToValueAtTime(.0008,t+d);src.connect(f);f.connect(g);g.connect(o.dest||SND.sg);src.start(t);src.stop(t+d+.05);
+}
+const SFX={
+  blip:()=>tone(620+Math.random()*90,.035,{vol:.035}),
+  shoot:()=>{noise(.09,{vol:.28,freq:2600});tone(340,.1,{vol:.07,slide:.4})},
+  swing:()=>noise(.1,{vol:.16,freq:900,q:.7}),
+  hit:()=>{tone(190,.08,{vol:.1,slide:.5});noise(.05,{vol:.12,freq:1800})},
+  kill:()=>{tone(523,.08,{type:'triangle',vol:.12});tone(392,.12,{type:'triangle',vol:.1,at:.07});noise(.15,{vol:.08,freq:600})},
+  hurt:()=>tone(230,.2,{type:'sawtooth',vol:.13,slide:.45}),
+  pickup:()=>{tone(784,.07,{type:'triangle',vol:.12});tone(1175,.13,{type:'triangle',vol:.12,at:.07})},
+  heal:()=>[523,659,784].forEach((f,i)=>tone(f,.13,{type:'sine',vol:.13,at:i*.07})),
+  door:()=>{noise(.2,{vol:.1,freq:380,q:2});tone(105,.16,{type:'triangle',vol:.1})},
+  select:()=>tone(900,.04,{vol:.05}),
+  ach:()=>[659,784,988,1319].forEach((f,i)=>tone(f,.2,{type:'triangle',vol:.12,at:i*.09})),
+  thunder:()=>{noise(1.8,{vol:.5,freq:160,q:.4,type:'lowpass'});noise(.25,{vol:.25,freq:900,q:.5})},
+  qte:()=>{tone(1047,.06,{vol:.1});tone(1047,.06,{vol:.1,at:.11})},
+  creak:()=>tone(140+Math.random()*40,.35,{type:'sawtooth',vol:.03,slide:1.4}),
+};
+function sfx(k){if(SND.sfx&&AC&&SFX[k])try{SFX[k]()}catch(e){}}
+/* 背景音樂：每首都是簡單的循環。數字 0 是休止符 */
+const TRACKS={
+  mansion:{bpm:84,bass:['A2',0,'E3',0,'E3',0,'F2',0,'C3',0,'C3',0,'D2',0,'A2',0,'A2',0,'E2',0,'B2',0,'G#2',0],
+    mel:['A4',0,'C5',0,'E5',0,'F5',0,'E5',0,'C5',0,'D5',0,'F5',0,'A4',0,'G#4',0,'B4',0,'E4',0,0],mt:'triangle',mv:.07},
+  outside:{bpm:60,bass:['D2',0,0,0,0,0,0,0,'A#1',0,0,0,0,0,0,0],mel:[0,0,'A4',0,0,0,'F4',0,0,0,'G4',0,0,'E4',0,0],mt:'sine',mv:.06,rain:1},
+  crypt:{bpm:50,bass:['C2',0,0,0,0,0,0,0,'C2',0,0,0,'C#2',0,0,0],mel:[0,0,0,'F#5',0,0,0,0,0,'C5',0,0,0,0,'F#4',0],mt:'sine',mv:.05},
+  battle:{bpm:140,bass:['E2','E2','G2','E2','A2','E2','B2','A2','E2','E2','G2','E2','C3','B2','A2','B2'],
+    mel:['E5',0,'G5',0,'F#5','E5',0,'B4','C5',0,'B4',0,'A4','G4','F#4',0],mt:'square',mv:.04,bt:'triangle',bv:.12},
+  boss:{bpm:150,bass:['D2','D2','D3','D2','F2','D2','G2','G#2','D2','D2','D3','D2','A2','G2','F2','E2'],
+    mel:['D5','F5','A5',0,'G#5',0,'A5',0,'D5','F5','A5','C6','B5',0,'A5',0],mt:'square',mv:.045,bt:'sawtooth',bv:.08},
+  fun:{bpm:120,bass:['C3',0,'G2',0,'A2',0,'E2',0,'F2',0,'C3',0,'G2',0,'G2',0],mel:['E5','G5','C6',0,'B5','G5','A5',0,'F5','A5','C6','A5','G5',0,'D5',0],mt:'square',mv:.035},
+  calm:{bpm:56,bass:['C3',0,0,0,'A2',0,0,0,'F2',0,0,0,'G2',0,0,0],mel:[0,0,'E5',0,0,0,0,0,0,0,'C5',0,0,0,'D5',0],mt:'sine',mv:.05},
+  ending:{bpm:76,bass:['C3',0,'G3',0,'A2',0,'E3',0,'F2',0,'C3',0,'G2',0,'D3',0],mel:['E5',0,'D5','C5','D5',0,'E5',0,'F5',0,'E5','D5','C5',0,0,0],mt:'triangle',mv:.07},
+};
+function bgmWant(){
+  if(ORGAN_T>0)return null;
+  if(mode==='title')return'mansion';
+  if(mode==='ending'||!$('credits').hidden)return'ending';
+  if(!S)return null;
+  if(PITCH||CB.mini==='llama'||RACE)return'fun';
+  if(IDLE)return'calm';
+  if(CB.lockKind==='final'||CB.lockKind==='boss')return'boss';
+  if(chOf()>=5)return'ending';
+  {const[px,py]=pCenter();if(CB.lock||CB.foes.some(f=>f.hp>0&&!f.dormant&&Math.hypot(f.x-px,f.y-py)<150))SND.battleT=150;else if(SND.battleT>0)SND.battleT--;if(SND.battleT>0)return'battle'}
+  if(S.scene==='crypt')return'crypt';
+  if(SCENES[S.scene].out||SOKO[S.scene])return'outside';
+  return'mansion';
+}
+function bgmTick(){
+  if(!AC||!SND.mg)return;
+  const want=SND.music?bgmWant():null;
+  if(want===SND.cur&&SND.pend!==null&&SND.pend!==undefined){SND.pend=null;SND.mg.gain.setTargetAtTime(SND.music?.45:0,AC.currentTime,.15)}
+  if(want!==SND.cur){if(!SND.pend||SND.pend!==want){SND.pend=want;SND.pendT=SND.cur?24:0}
+    if(--SND.pendT>0){SND.mg.gain.setTargetAtTime(.0001,AC.currentTime,.08);return}
+    SND.cur=want;SND.pend=null;SND.step=0;SND.next=AC.currentTime+.08;SND.mg.gain.setTargetAtTime(SND.music?.45:0,AC.currentTime+.05,.25)}
+  rainTick(SND.music&&want&&TRACKS[want]&&TRACKS[want].rain);
+  const tr=TRACKS[SND.cur];if(!tr)return;const sd=60/tr.bpm/2;
+  if(SND.next<AC.currentTime-.5)SND.next=AC.currentTime+.05;
+  while(SND.next<AC.currentTime+.15){const t0=SND.next-AC.currentTime,i=SND.step;
+    const b=tr.bass[i%tr.bass.length],m=tr.mel[i%tr.mel.length];
+    if(b)tone(noteHz(b),sd*1.8,{type:tr.bt||'triangle',vol:tr.bv||.11,at:t0,dest:SND.mg});
+    if(m)tone(noteHz(m),sd*1.4,{type:tr.mt,vol:tr.mv,at:t0,dest:SND.mg});
+    SND.step++;SND.next+=sd}
+}
+function rainTick(on){
+  if(on&&!SND.rain){const src=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();src.buffer=SND.noise;src.loop=true;f.type='lowpass';f.frequency.value=1400;g.gain.value=0;g.gain.setTargetAtTime(.05,AC.currentTime,.6);
+    src.connect(f);f.connect(g);g.connect(SND.mg);src.start();SND.rain={src,g}}
+  else if(!on&&SND.rain){const r=SND.rain;SND.rain=null;r.g.gain.setTargetAtTime(.0001,AC.currentTime,.3);setTimeout(()=>{try{r.src.stop()}catch(e){}},1500)}
+}
+function setSound(k,v){SND[k]=v;sndSave();if(SND.mg){SND.mg.gain.setTargetAtTime(SND.music?.45:0,AC.currentTime,.1);SND.sg.gain.setTargetAtTime(SND.sfx?.55:0,AC.currentTime,.1)}sndButtons()}
+function sndButtons(){const m=$('mMusic'),f=$('mSfx');if(m){m.textContent='音樂：'+(SND.music?'開':'關');m.classList.toggle('on',SND.music)}if(f){f.textContent='音效：'+(SND.sfx?'開':'關');f.classList.toggle('on',SND.sfx)}}
 const TUNES=[
   {t:'《觸技曲》（某位老作曲家的 D 小調）',s:[['A5',.13],['G5',.13],['A5',.7],['G5',.12],['F5',.12],['E5',.12],['D5',.12],['C#5',.45],['D5',.9],[0,.3],['A4',.13],['G4',.13],['A4',.7],['E4',.25],['F4',.25],['C#4',.25],['D4',1.1]]},
   {t:'《月光下的骷髏舞》',s:[['E4',.28],['G4',.28],['B4',.28],['A4',.28],['G4',.28],['E4',.28],['F#4',.28],['A4',.28],['C5',.28],['B4',.28],['A4',.28],['F#4',.28],['E4',.28],['G4',.28],['B4',.28],['E5',.42],['D5',.14],['B4',.28],['C5',.28],['B4',.28],['A4',.28],['E4',.9]]},
@@ -4966,6 +5061,7 @@ function update(){
   idleTick();
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
   if(mode==='play'){pfTick();raceTick();suiAmbient();chaseTick();wanderTick()}
+  bgmTick();
   sokoBarSync();
   if(ORGAN_T>0)ORGAN_T--;if(BROOM_T>0)BROOM_T--;
   if(mode==='play'&&!busy&&P.light>0&&--P.light===0)toast('蠟燭燒完了。（可以再去取火）');
@@ -4980,7 +5076,7 @@ function update(){
   for(const r of rain){r.y+=r.v;r.x-=1;if(r.y>208){r.y=-6;r.x=Math.random()*340}}
   if(mode!=='play')return;
   if(!busy&&!overlayOpen()){
-    if(--nextBlack<=0&&!blackOn){blackOn=BLACK_LEN;nextBlack=60*80;
+    if(--nextBlack<=0&&!blackOn){blackOn=BLACK_LEN;nextBlack=60*80;sfx('thunder');
       if(!sc().out&&S.flags.discovered&&!CB.lock&&Math.random()<.5&&!['storage','attic','dining'].includes(S.scene)){spawnRandom(2,[foeBat()]);toast('停電了……黑暗中有東西在飛！')}
       else toast('雷雨來了，宅邸停電了！')}
   }
@@ -5164,7 +5260,7 @@ function diffButtons(box,cur,on){box.innerHTML='';for(const id of['easy','normal
   b.classList.toggle('on',cur===id);b.setAttribute('role','radio');b.setAttribute('aria-checked',cur===id);b.onclick=()=>on(id);box.appendChild(b)}}
 const DF=()=>DIFFS[(S&&S.diff)||'normal']||DIFFS.normal;const GUN_MAG=6,MELEE_DMG=2,GUN_DMG=1;
 /* 武器名稱（都是在宅邸裡撿到的，據說是阿鳳姨的手筆） */
-const WEAPONS={melee:{name:'阿鳳姨的改造鍋鏟'},gun:{name:'阿鳳姨的土製手槍'}};
+const WEAPONS={melee:{name:'改造鍋鏟'},gun:{name:'土製手槍'}};
 /* 可以翻找的地方：「場景:x,y」→ 拿到的東西（candy 糖果、ammo 子彈、melee/gun 武器）與描述。每個地方只能翻一次。 */
 const SEARCH={
   'exhibit:5,5':{loot:{melee:1},t:['展示櫃裡，一支改造鍋鏟被隨便塞在古董盤子中間。握把纏著一圈又一圈的膠帶，鏟面上有好幾道刀痕。','標籤上寫著「展示品，請勿觸摸」。……你還是拿走了。','上面沒有名字，也沒有記號。……可是你就是知道，這是阿鳳姨的東西。','……展覽室的古董盤子中間，為什麼會塞著一支鍋鏟？']},
@@ -5284,7 +5380,7 @@ function killFx(e){
 function hitFoe(e,dmg,kx,ky){
   if(e.launch)return;e.dormant=false;
   if(e.vuln>0)dmg*=2;
-  e.hp-=dmg;e.flash=8;const m=e.type==='boss'?.15:1;e.kx+=kx*m;e.ky+=ky*m;
+  e.hp-=dmg;e.flash=8;sfx('hit');const m=e.type==='boss'?.15:1;e.kx+=kx*m;e.ky+=ky*m;
   if(e.type==='hound'&&e.state==='wind'){e.state='rest';e.st=30}
   if(e.type==='phound'&&e.state==='wind'&&dmg>=2){e.state='rest';e.st=50}
   spark(e.x,e.y,'#fff6c8');
@@ -5299,7 +5395,7 @@ function hurtP(d){
     if(d>=2)d--;
   }
   d=Math.min(d,DF().dmgCap);
-  P.hp=Math.max(0,P.hp-d);P.inv=Math.max(S.flags.g_apron?100:70,DF().inv);shake=10;CB.hurt=1;
+  P.hp=Math.max(0,P.hp-d);P.inv=Math.max(S.flags.g_apron?100:70,DF().inv);shake=10;CB.hurt=1;sfx('hurt');
 }
 let warnT=0;
 function warn(t){if(tick-warnT>90){warnT=tick;toast(t)}}
@@ -5319,7 +5415,7 @@ function useCandy(k){
   if(!has.length){warn('身上沒有可以吃的東西了。');return}
   if(P.hp>=MAXHP){warn('體力是滿的，先留著吧。');return}
   if(!k||!S.inv[k]){const miss=MAXHP-P.hp,fit=has.filter(x=>SNACK[x].heal<=miss);k=fit.length?fit.sort((a,b)=>SNACK[b].heal-SNACK[a].heal)[0]:has.sort((a,b)=>SNACK[a].heal-SNACK[b].heal)[0]}
-  const sn=SNACK[k];S.inv[k]--;P.hp=Math.min(MAXHP,P.hp+sn.heal);
+  const sn=SNACK[k];S.inv[k]--;P.hp=Math.min(MAXHP,P.hp+sn.heal);sfx('heal');
   if(k==='candy')achAdd('candy');achSeen('snack',k,3,'h_snack3');
   toast(`${sn.eat}，回復${sn.heal===2?'一':sn.heal===3?'一顆半的':'兩'}顆心（${sn.t}剩 ${S.inv[k]}）`.replace('一顆半的顆心','一顆半的心'));
   for(let i=0;i<6;i++){const[cx,cy]=pCenter();CB.fx.push({x:cx-4+Math.random()*8,y:cy,vx:0,vy:-.5-Math.random()*.5,life:24,c:sn.c})}
@@ -5360,7 +5456,7 @@ function doMelee(){
   if(P.morph&&P.morph.k==='roll'){P.mcd=10;return}
   if(CB.mini==='llama')return throwHay();
   const armed=!!S.flags.melee;
-  P.mcd=armed?22:18;CB.swing=10;CB.swingR=armed?13:9;
+  P.mcd=armed?22:18;CB.swing=10;CB.swingR=armed?13:9;sfx('swing');
   const reach=armed?12:9,rad=armed?11:8,[cx,cy]=pCenter(),[dx,dy]=DV[P.dir],hx=cx+dx*reach,hy=cy+dy*reach;
   for(const e of CB.foes)if(e.hp>0&&!e.spawn&&!untouch(e)&&Math.hypot(e.x-hx,e.y-hy)<e.r+rad){e.by=armed?'melee':'fist';hitFoe(e,armed?MELEE_DMG:1,dx*(armed?3:2),dy*(armed?3:2))}
   if(armed)for(const b of CB.eshots)if(b.life>0&&Math.hypot(b.x-hx,b.y-hy)<12){if(S.flags.g_lid)reflectShot(b);else{b.life=0;spark(b.x,b.y,'#ffd25a')}achAdd('deflect')}
@@ -5378,7 +5474,7 @@ function doFire(){
   if(!S.flags.gun){warn('身上沒有槍……');P.gcd=20;return}
   if(P.reload>0)return;
   if(P.ammo<=0){startReload();P.gcd=20;return}
-  P.ammo--;P.gcd=P.buff>0?5:11;CB.muzzle=4;
+  P.ammo--;P.gcd=P.buff>0?5:11;CB.muzzle=4;sfx('shoot');
   const[cx,cy]=pCenter(),[dx,dy]=DV[P.dir];
   CB.shots.push({x:cx+dx*9,y:cy+dy*9,vx:dx*5,vy:dy*5,life:40});
   if(P.ammo===0&&S.inv.ammo>0)startReload();
@@ -5575,7 +5671,7 @@ function updateCombat(){
   }
   CB.eshots=CB.eshots.filter(b=>b.life>0);
   for(const e of CB.foes)if(e.hp>0&&!e.spawn&&!e.launch&&!e.blink&&Math.hypot(e.x-pcx,e.y-pcy)<e.r+5)hurtP(FOES[e.type].dmg);
-  for(const e of CB.foes)if(e.hp<=0&&!e.dead&&!e.launch){
+  for(const e of CB.foes)if(e.hp<=0&&!e.dead&&!e.launch){sfx('kill');
     e.dead=1;killFx(e);achKill(e);catchFoe(e);
     if((e.by==='melee'||e.by==='fist')&&['sprite','bat','lantern','pghost','phound'].includes(e.type))addDirt('pumpkin');
     juiceDrop(e);
@@ -5952,9 +6048,10 @@ $('btnNote').onclick=()=>openNote();$('pB').onclick=()=>openNote();
 function openMenu(){
   const cur=(S&&S.diff)||'normal';
   diffButtons($('mDiff'),cur,id=>{if(!S)return;S.diff=id;syncMaxHP();P.hp=Math.min(P.hp,MAXHP);save();updateHUD();toast('難易度改成「'+DIFFS[id].name+'」了。');openMenu()});
-  $('mDiffNote').textContent=S?DIFF_NOTE[cur]:'開始遊戲後就能在這裡切換難易度。';$('menu').hidden=false;
+  $('mDiffNote').textContent=S?DIFF_NOTE[cur]:'開始遊戲後就能在這裡切換難易度。';sndButtons();$('menu').hidden=false;
 }
 $('btnMenu').onclick=openMenu;
+$('mMusic').onclick=()=>{audioInit();setSound('music',!SND.music)};$('mSfx').onclick=()=>{audioInit();setSound('sfx',!SND.sfx)};
 $('menuClose').onclick=()=>{$('menu').hidden=true};
 $('tAch').onclick=openAch;$('tChap').onclick=openChap;$('menuChap').onclick=()=>{$('menu').hidden=true;openChap()};$('chapClose').onclick=()=>{$('chapOv').hidden=true};$('menuRestart').onclick=restartGame;$('menuAch').onclick=()=>{$('menu').hidden=true;openAch()};$('achClose').onclick=()=>{$('achOv').hidden=true};
 $('toTitle').onclick=()=>{save();$('menu').hidden=true;toTitle()};
@@ -6055,6 +6152,7 @@ window.addEventListener('keydown',e=>{
   if(lk==='h'||lk==='q'){if(!busy)useCandy();return}
   if(lk==='v'){if(!busy)useMagic();return}
   if(lk==='b'){if(!busy)useSpecial();return}
+  if(lk==='m'){audioInit();setSound('music',!SND.music);toast('音樂'+(SND.music?'開啟':'關閉'));toastT=90;return}
   const d=KEYDIR[e.key];
   if(d){if(!held.includes(d))held.push(d);e.preventDefault();return}
   if(e.key==='z'||e.key==='Z'||e.key===' '||e.key==='Enter'){e.preventDefault();if(e.repeat)return;if(dlgRes)advance();else interact();return}
