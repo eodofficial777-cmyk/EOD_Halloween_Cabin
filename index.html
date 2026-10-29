@@ -4788,7 +4788,7 @@ function startFinal(){
   CB.lockKind='final';CB.lock=new Set(['9,8','10,8','11,8','12,8']);NPCS.ghost.scene=null;
   const e=spawnFoe('ghost',11*T+8,3*T+8,true);e.cd=90;e.noLaunch=1;e.spawn=40;
   $('bossbar').querySelector('span').textContent='南瓜幽靈';$('bossfill').style.width='100%';$('bossbar').hidden=false;
-  CB.allies=0;CB.assistT=0;CB.spCd=0;CB.spI=0;P.buff=0;$('pS').hidden=false;
+  CB.allies=0;CB.assistT=0;CB.spCd=0;CB.spI=0;P.buff=0;$('pS').hidden=false;CB.assisted=new Set();CB.finalT=0;
 }
 /* ---------------- 最終戰：道具技（完成支線解鎖）與大家的助陣 ---------------- */
 const ghostFoe=()=>CB.foes.find(f=>f.type==='ghost'&&!f.dead);
@@ -4825,7 +4825,7 @@ const ASSISTS={
   ji:e=>{e.stun=Math.max(e.stun||0,120);return'薊：「我的寶貝們，上吧～」荊棘從地上冒出來，纏住了南瓜幽靈！'},
   shisho:e=>{e.vuln=Math.max(e.vuln||0,300);return'司書：「書上寫，南瓜幽靈的弱點是怕癢。」……接下來的攻擊特別有效！'},
   po:e=>{e.slow=Math.max(e.slow||0,300);return'小波打了一個超大的呵欠……南瓜幽靈也跟著睏了，動作變慢了。'},
-  batk:e=>{e.reveal=360;return'小蝙蝠發出「吱——」的超音波！隱形的南瓜幽靈現形了！'},
+  batk:e=>{e.reveal=360;return e.invis>0?'小蝙蝠發出「吱——」的超音波！隱形的南瓜幽靈現形了！':'小蝙蝠發出「吱——」的超音波！南瓜幽靈嚇得連打了好幾個嗝。'},
 };
 /* 柵欄外冒出來的一般怪物，由大家負責清掉 */
 const SWEEP={ian:'IAN 的上半身一鏟子把{f}打成了全壘打！',lala:'拉拉的電鋸「唰」地一聲，{f}被切成兩半了！',sui:'翠騎著羊駝衝過去，把{f}撞飛了！',ji:'薊的荊棘一捲，把{f}拖進了地底下～',boss:'首領的大南瓜滾過去，把{f}壓扁了。',shisho:'司書闔上書，「啪」地把{f}夾扁了。',po:'小波翻了個身，正好壓在{f}身上。……{f}也睡著了。'};
@@ -4837,11 +4837,15 @@ function allySweep(){
 }
 function assistTick(e){
   allySweep();
-  if(!CB.allies){if(e.hp<e.max*.85)alliesArrive();return}
-  if(--CB.assistT>0)return;CB.assistT=60*9;
-  let ids=Object.keys(ASSISTS).filter(id=>id!=='batk');
-  const id=e.invis>0&&!(e.reveal>0)?'batk':ids[(Math.random()*ids.length)|0];
-  allyMsg(ASSISTS[id](e));
+  CB.finalT=(CB.finalT||0)+1;
+  {const lb=$('bossbar').querySelector('span'),left=Object.keys(ASSISTS).length-(CB.assisted?CB.assisted.size:0),t=e.shield?`南瓜幽靈（防護中・還有 ${left} 人沒出手）`:'南瓜幽靈';if(lb.textContent!==t)lb.textContent=t}
+  if(!CB.allies){if(e.hp<e.max*.9||CB.finalT>60*10)alliesArrive();return}
+  if(--CB.assistT>0)return;CB.assistT=e.shield?60*2:60*6;
+  /* 每個人都至少出手一次：還沒出手的人依序上場，全部出手過之後才隨機 */
+  const all=Object.keys(ASSISTS),A=CB.assisted||(CB.assisted=new Set()),todo=all.filter(id=>!A.has(id));
+  let id;if(e.invis>0&&!(e.reveal>0))id='batk';else if(todo.length)id=todo[(Math.random()*todo.length)|0];else{const ids=all.filter(x=>x!=='batk');id=ids[(Math.random()*ids.length)|0]}
+  A.add(id);allyMsg(ASSISTS[id](e));
+  if(e.shield&&all.every(x=>A.has(x))){e.shield=0;allyMsg('大家都出手了！南瓜燈的光暈「啪」地碎掉——南瓜幽靈的防護破了！');toast('防護破了！一口氣打倒南瓜幽靈！');toastT=200;shake=8}
 }
 function updGhost(e,pcx,pcy){
   const F=FOES.ghost;e.kx=e.ky=0;
@@ -5993,7 +5997,7 @@ const FOES={
   vine:{name:'玫瑰觸手怪',hp:8,r:7,spd:0,dmg:1},
   llama:{name:'幽靈羊駝',hp:99,r:12,spd:.45,dmg:1},
   book:{name:'書本怪',hp:4,r:5,spd:.75,dmg:1},
-  ghost:{name:'南瓜幽靈',hp:44,r:11,spd:.5,dmg:2},
+  ghost:{name:'南瓜幽靈',hp:80,r:11,spd:.5,dmg:2},
 };
 let MAXHP=10;
 /* 難易度：簡單（給手殘的人）／普通／困難。開頭選，之後也能在選單裡換 */
@@ -6136,7 +6140,9 @@ function killFx(e){
 function hitFoe(e,dmg,kx,ky){
   if(e.launch)return;e.dormant=false;
   if(e.vuln>0)dmg*=2;
-  e.hp-=dmg;e.flash=8;sfx('hit');const m=e.type==='boss'?.15:1;e.kx+=kx*m;e.ky+=ky*m;
+  e.hp-=dmg;e.flash=8;sfx('hit');
+  if(e.type==='ghost'&&CB.lockKind==='final'){const fl=Math.ceil(e.max*.2),A=CB.assisted||new Set();
+    if(e.hp<fl&&!Object.keys(ASSISTS).every(x=>A.has(x))){e.hp=fl;if(!CB.allies)alliesArrive();if(!e.shield){e.shield=1;CB.assistT=Math.min(CB.assistT,60);toast('南瓜幽靈：「嘻嘻嘻，還沒完呢！」它躲進了南瓜燈的光暈裡——打不動了！');toastT=240;shake=5}}}const m=e.type==='boss'?.15:1;e.kx+=kx*m;e.ky+=ky*m;
   if(e.type==='hound'&&e.state==='wind'){e.state='rest';e.st=30}
   if(e.type==='phound'&&e.state==='wind'&&dmg>=2){e.state='rest';e.st=50}
   spark(e.x,e.y,'#fff6c8');
@@ -6524,7 +6530,7 @@ function drawFoe(e,X,Y){
     R(g,X-2,y+1,1,2,K);R(g,X+1,y+1,1,2,K);R(g,X-3,y+5,6,2,'#efe3c8');
   }else if(e.type==='book'){const o=(t>>2)%2,y=Y-Math.round(Math.abs(Math.sin(t/6))*3);R(g,X-7,y-4,14,9,K);R(g,X-6,y-3-o,6,7,'#7a2b2b');R(g,X,y-3-o,6,7,'#7a2b2b');R(g,X-5,y-2-o,4,5,'#efe3c8');R(g,X+1,y-2-o,4,5,'#efe3c8');
     for(let i=0;i<4;i++)R(g,X-4+i*3,y+2,1,2,'#fff');R(g,X-3,y-1,1,1,K);R(g,X+3,y-1,1,1,K)
-  }else if(e.type==='ghost'){g.save();g.translate(X-16,Y-30);g.scale(2,2);drawGhost(g,e.t);g.restore()
+  }else if(e.type==='ghost'){g.save();g.translate(X-16,Y-30);g.scale(2,2);drawGhost(g,e.t);g.restore();if(e.shield){g.save();g.globalAlpha=.35+.15*Math.sin(tick/6);g.strokeStyle='#ffb03a';g.lineWidth=2;g.beginPath();g.arc(X,Y-10,24+Math.sin(tick/9)*2,0,6.28);g.stroke();g.fillStyle='rgba(255,176,58,.12)';g.fill();g.restore()}
   }else if(e.type==='vine'){drawVine(g,e,X,Y)
   }else if(e.type==='llama'){drawLlamaBig(g,e,X,Y)
   }else if(e.type==='sprite'){
