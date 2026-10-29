@@ -4532,7 +4532,7 @@ async function talk4(id){
         await n('旁邊的布料也被撐破了，好像身體突然變大了一圈。');
         addEv('seam');
         await n('下半身「咚」地踢了一下地面，跟在你後面走了起來。');
-        F.legsFollow=1;toast('IAN 的下半身成為你的伙伴！靠近的災獸會被牠踢飛。（它的鞋子上好像還有線索，轉身跟它說說話吧）');toastT=360;return;
+        F.legsFollow=1;toast('IAN 的下半身成為你的伙伴！靠近的災獸會被牠踢飛。（它的鞋子上好像還有線索，它在旁邊的時候按調查鍵看看吧）');toastT=360;return;
       }
       if(!hasEv('shoe')){
         await n('你想看看下半身的鞋子，可是它一直原地踏步，怎麼也停不下來。');
@@ -5641,6 +5641,8 @@ function interact(){
   const[dx,dy]=DV[P.dir],tx=P.x+dx,ty=P.y+dy;
   const id=npcAt(tx,ty);
   if(id){const o=NPCS[id];o.dir={up:'down',down:'up',left:'right',right:'left'}[P.dir];o.wait=Math.max(o.wait||0,150);return run(()=>talk(id))}
+  /* 跟在身後的下半身：還沒看過鞋子的話，只要在旁邊（或疊在同一格）就能直接調查，不用轉身面對它 */
+  if(legsOn()&&!hasEv('shoe')&&NPCS.legs.scene===S.scene){const[lx,ly]=npcPos(NPCS.legs),gx=Math.round(lx/T),gy=Math.round(ly/T);if(Math.abs(gx-P.x)+Math.abs(gy-P.y)<=1)return run(()=>talk('legs'))}
   const o=objectAt(tx,ty);if(o)return run(o);
   {const dc=decorAt(tx,ty);if(dc)return run(dc.k==='espresso'?espresso:()=>n(DECOR_T[dc.k]))}
   const t=tileText(tileAt(tx,ty),tx,ty);if(t)return run(()=>n(t));
