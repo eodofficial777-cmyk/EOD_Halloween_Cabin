@@ -5223,13 +5223,17 @@ function organNote(t0,f,d,vol=1){
   [[1,.5],[2,.28],[3,.14],[4,.08],[.5,.22]].forEach(([h,gv])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f*h;o.detune.value=(Math.random()-.5)*6;g.gain.value=gv;o.connect(g);g.connect(out);o.start(t0);o.stop(t0+d+.12)});
 }
 /* ---------------- 音樂與音效：全部用 Web Audio 即時合成，不需要音檔 ---------------- */
-const SND={music:true,sfx:true,cur:null,step:0,next:0,mg:null,sg:null,noise:null,rain:null};
+const MUSV=.4;const SND={music:true,sfx:true,cur:null,step:0,next:0,mg:null,sg:null,noise:null,rain:null};
 try{const v=JSON.parse(localStorage.getItem('eod_snd')||'{}');if(v.music===false)SND.music=false;if(v.sfx===false)SND.sfx=false}catch(e){}
 function sndSave(){try{localStorage.setItem('eod_snd',JSON.stringify({music:SND.music,sfx:SND.sfx}))}catch(e){}}
 function audioInit(){
   try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){AC=null;return}
   if(SND.mg)return;
-  SND.mg=AC.createGain();SND.mg.gain.value=SND.music?.45:0;SND.mg.connect(AC.destination);
+  SND.mg=AC.createGain();SND.mg.gain.value=SND.music?MUSV:0;SND.mg.connect(AC.destination);
+  /* 音樂專用的柔化線路：低通濾掉刺耳的高頻，再加一點迴音殘響 */
+  SND.mbus=AC.createBiquadFilter();SND.mbus.type='lowpass';SND.mbus.frequency.value=1700;SND.mbus.Q.value=.4;SND.mbus.connect(SND.mg);
+  {const dl=AC.createDelay(1),fb=AC.createGain(),lp=AC.createBiquadFilter(),wet=AC.createGain();dl.delayTime.value=.32;fb.gain.value=.32;lp.type='lowpass';lp.frequency.value=1500;wet.gain.value=.3;
+    SND.mbus.connect(dl);dl.connect(lp);lp.connect(fb);fb.connect(dl);lp.connect(wet);wet.connect(SND.mg)}
   SND.sg=AC.createGain();SND.sg.gain.value=SND.sfx?.55:0;SND.sg.connect(AC.destination);
   const b=AC.createBuffer(1,AC.sampleRate,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;SND.noise=b;
 }
@@ -5239,6 +5243,14 @@ function tone(f,d,o={}){
   osc.type=o.type||'square';osc.frequency.setValueAtTime(f,t);if(o.slide)osc.frequency.exponentialRampToValueAtTime(Math.max(20,f*o.slide),t+d);
   const v=o.vol??.15;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0008,t+d);
   osc.connect(g);g.connect(o.dest||SND.sg);osc.start(t);osc.stop(t+d+.03);
+}
+/* 音樂用的音：慢一點起音、自然消失，可以加一點顫音 */
+function mtone(f,d,o={}){
+  if(!AC||!SND.mbus)return;const t=AC.currentTime+(o.at||0),osc=AC.createOscillator(),g=AC.createGain();
+  osc.type=o.type||'sine';osc.frequency.setValueAtTime(f,t);
+  if(o.vib){const l=AC.createOscillator(),lg=AC.createGain();l.frequency.value=4.5;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(f*.005,t+d*.5);l.connect(lg);lg.connect(osc.frequency);l.start(t);l.stop(t+d*1.8+.2)}
+  const v=o.vol??.04,a=o.atk??.04;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+a);g.gain.setTargetAtTime(0,t+a,Math.max(.03,d/3));
+  osc.connect(g);g.connect(SND.mbus);osc.start(t);osc.stop(t+a+d*1.8+.1);
 }
 function noise(d,o={}){
   if(!AC||!SND.noise)return;const t=AC.currentTime+(o.at||0),src=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
@@ -5263,18 +5275,19 @@ const SFX={
 };
 function sfx(k){if(SND.sfx&&AC&&SFX[k])try{SFX[k]()}catch(e){}}
 /* 背景音樂：每首都是簡單的循環。數字 0 是休止符 */
+/* 每首另外設定裝飾：pad＝每小節鋪一層和弦、grace＝倚音的機率、chime＝休止處冒出高音鈴聲的機率、vib＝旋律顫音 */
 const TRACKS={
-  mansion:{bpm:84,bass:['A2',0,'E3',0,'E3',0,'F2',0,'C3',0,'C3',0,'D2',0,'A2',0,'A2',0,'E2',0,'B2',0,'G#2',0],
-    mel:['A4',0,'C5',0,'E5',0,'F5',0,'E5',0,'C5',0,'D5',0,'F5',0,'A4',0,'G#4',0,'B4',0,'E4',0,0],mt:'triangle',mv:.07},
-  outside:{bpm:60,bass:['D2',0,0,0,0,0,0,0,'A#1',0,0,0,0,0,0,0],mel:[0,0,'A4',0,0,0,'F4',0,0,0,'G4',0,0,'E4',0,0],mt:'sine',mv:.06,rain:1},
-  crypt:{bpm:50,bass:['C2',0,0,0,0,0,0,0,'C2',0,0,0,'C#2',0,0,0],mel:[0,0,0,'F#5',0,0,0,0,0,'C5',0,0,0,0,'F#4',0],mt:'sine',mv:.05},
+  mansion:{bpm:72,bass:['A2',0,'E3',0,'E3',0,'F2',0,'C3',0,'C3',0,'D2',0,'A2',0,'A2',0,'E2',0,'B2',0,'G#2',0],
+    mel:['A4',0,'C5',0,'E5',0,'F5',0,'E5',0,'C5',0,'D5',0,'F5',0,'A4',0,'G#4',0,'B4',0,'E4',0,0],mt:'sine',mv:.042,bv:.05,pad:1,grace:.3,chime:.45,vib:1},
+  outside:{bpm:60,bass:['D2',0,0,0,0,0,0,0,'A#1',0,0,0,0,0,0,0],mel:[0,0,'A4',0,0,0,'F4',0,0,0,'G4',0,0,'E4',0,0],mt:'sine',mv:.045,bv:.06,rain:1,pad:1,chime:.35,vib:1},
+  crypt:{bpm:50,bass:['C2',0,0,0,0,0,0,0,'C2',0,0,0,'C#2',0,0,0],mel:[0,0,0,'F#5',0,0,0,0,0,'C5',0,0,0,0,'F#4',0],mt:'sine',mv:.035,bv:.06,pad:1,chime:.25,vib:1},
   battle:{bpm:140,bass:['E2','E2','G2','E2','A2','E2','B2','A2','E2','E2','G2','E2','C3','B2','A2','B2'],
-    mel:['E5',0,'G5',0,'F#5','E5',0,'B4','C5',0,'B4',0,'A4','G4','F#4',0],mt:'square',mv:.04,bt:'triangle',bv:.12},
+    mel:['E5',0,'G5',0,'F#5','E5',0,'B4','C5',0,'B4',0,'A4','G4','F#4',0],mt:'triangle',mv:.045,bt:'triangle',bv:.065,grace:.15},
   boss:{bpm:150,bass:['D2','D2','D3','D2','F2','D2','G2','G#2','D2','D2','D3','D2','A2','G2','F2','E2'],
-    mel:['D5','F5','A5',0,'G#5',0,'A5',0,'D5','F5','A5','C6','B5',0,'A5',0],mt:'square',mv:.045,bt:'sawtooth',bv:.08},
-  fun:{bpm:120,bass:['C3',0,'G2',0,'A2',0,'E2',0,'F2',0,'C3',0,'G2',0,'G2',0],mel:['E5','G5','C6',0,'B5','G5','A5',0,'F5','A5','C6','A5','G5',0,'D5',0],mt:'square',mv:.035},
-  calm:{bpm:56,bass:['C3',0,0,0,'A2',0,0,0,'F2',0,0,0,'G2',0,0,0],mel:[0,0,'E5',0,0,0,0,0,0,0,'C5',0,0,0,'D5',0],mt:'sine',mv:.05},
-  ending:{bpm:76,bass:['C3',0,'G3',0,'A2',0,'E3',0,'F2',0,'C3',0,'G2',0,'D3',0],mel:['E5',0,'D5','C5','D5',0,'E5',0,'F5',0,'E5','D5','C5',0,0,0],mt:'triangle',mv:.07},
+    mel:['D5','F5','A5',0,'G#5',0,'A5',0,'D5','F5','A5','C6','B5',0,'A5',0],mt:'triangle',mv:.05,bt:'triangle',bv:.07,grace:.1},
+  fun:{bpm:120,bass:['C3',0,'G2',0,'A2',0,'E2',0,'F2',0,'C3',0,'G2',0,'G2',0],mel:['E5','G5','C6',0,'B5','G5','A5',0,'F5','A5','C6','A5','G5',0,'D5',0],mt:'triangle',mv:.04,bv:.06,chime:.3},
+  calm:{bpm:56,bass:['C3',0,0,0,'A2',0,0,0,'F2',0,0,0,'G2',0,0,0],mel:[0,0,'E5',0,0,0,0,0,0,0,'C5',0,0,0,'D5',0],mt:'sine',mv:.045,bv:.05,pad:1,chime:.5,vib:1},
+  ending:{bpm:76,bass:['C3',0,'G3',0,'A2',0,'E3',0,'F2',0,'C3',0,'G2',0,'D3',0],mel:['E5',0,'D5','C5','D5',0,'E5',0,'F5',0,'E5','D5','C5',0,0,0],mt:'sine',mv:.055,bv:.055,pad:1,grace:.25,chime:.4,vib:1},
 };
 function bgmWant(){
   if(ORGAN_T>0)return null;
@@ -5293,17 +5306,21 @@ function bgmWant(){
 function bgmTick(){
   if(!AC||!SND.mg)return;
   const want=SND.music?bgmWant():null;
-  if(want===SND.cur&&SND.pend!==null&&SND.pend!==undefined){SND.pend=null;SND.mg.gain.setTargetAtTime(SND.music?.45:0,AC.currentTime,.15)}
+  if(want===SND.cur&&SND.pend!==null&&SND.pend!==undefined){SND.pend=null;SND.mg.gain.setTargetAtTime(SND.music?MUSV:0,AC.currentTime,.15)}
   if(want!==SND.cur){if(!SND.pend||SND.pend!==want){SND.pend=want;SND.pendT=SND.cur?24:0}
     if(--SND.pendT>0){SND.mg.gain.setTargetAtTime(.0001,AC.currentTime,.08);return}
-    SND.cur=want;SND.pend=null;SND.step=0;SND.next=AC.currentTime+.08;SND.mg.gain.setTargetAtTime(SND.music?.45:0,AC.currentTime+.05,.25)}
+    SND.cur=want;SND.pend=null;SND.step=0;SND.next=AC.currentTime+.08;SND.mg.gain.setTargetAtTime(SND.music?MUSV:0,AC.currentTime+.05,.25)}
   rainTick(SND.music&&want&&TRACKS[want]&&TRACKS[want].rain);
   const tr=TRACKS[SND.cur];if(!tr)return;const sd=60/tr.bpm/2;
   if(SND.next<AC.currentTime-.5)SND.next=AC.currentTime+.05;
   while(SND.next<AC.currentTime+.15){const t0=SND.next-AC.currentTime,i=SND.step;
-    const b=tr.bass[i%tr.bass.length],m=tr.mel[i%tr.mel.length];
-    if(b)tone(noteHz(b),sd*1.8,{type:tr.bt||'triangle',vol:tr.bv||.11,at:t0,dest:SND.mg});
-    if(m)tone(noteHz(m),sd*1.4,{type:tr.mt,vol:tr.mv,at:t0,dest:SND.mg});
+    const b=tr.bass[i%tr.bass.length],m=tr.mel[i%tr.mel.length],fast=tr.bpm>=120;
+    if(b)mtone(noteHz(b),sd*(fast?1.2:2.2),{type:tr.bt||'triangle',vol:tr.bv||.06,at:t0,atk:fast?.015:.05});
+    if(tr.pad&&i%8===0&&b){const r=noteHz(b)*2;for(const k of[1,1.5,2])mtone(r*k,sd*7,{vol:.011,at:t0,atk:sd*2.5})}
+    if(m){const f=noteHz(m);
+      if(tr.grace&&Math.random()<tr.grace){mtone(f*1.1225,.07,{type:tr.mt,vol:tr.mv*.45,at:t0,atk:.01});mtone(f,sd*1.8,{type:tr.mt,vol:tr.mv,at:t0+.06,atk:.03,vib:tr.vib})}
+      else mtone(f,sd*(fast?1.1:1.9),{type:tr.mt,vol:tr.mv,at:t0,atk:fast?.012:.035,vib:tr.vib});SND.lastM=f}
+    else if(tr.chime&&i%4===2&&Math.random()<tr.chime&&SND.lastM){const c=SND.lastM*[1.5,2,2.52][(Math.random()*3)|0];mtone(c,1.2,{vol:.009,at:t0,atk:.008})}
     SND.step++;SND.next+=sd}
 }
 function rainTick(on){
@@ -5311,7 +5328,7 @@ function rainTick(on){
     src.connect(f);f.connect(g);g.connect(SND.mg);src.start();SND.rain={src,g}}
   else if(!on&&SND.rain){const r=SND.rain;SND.rain=null;r.g.gain.setTargetAtTime(.0001,AC.currentTime,.3);setTimeout(()=>{try{r.src.stop()}catch(e){}},1500)}
 }
-function setSound(k,v){SND[k]=v;sndSave();if(SND.mg){SND.mg.gain.setTargetAtTime(SND.music?.45:0,AC.currentTime,.1);SND.sg.gain.setTargetAtTime(SND.sfx?.55:0,AC.currentTime,.1)}sndButtons()}
+function setSound(k,v){SND[k]=v;sndSave();if(SND.mg){SND.mg.gain.setTargetAtTime(SND.music?MUSV:0,AC.currentTime,.1);SND.sg.gain.setTargetAtTime(SND.sfx?.55:0,AC.currentTime,.1)}sndButtons()}
 function sndButtons(){const m=$('mMusic'),f=$('mSfx');if(m){m.textContent='音樂：'+(SND.music?'開':'關');m.classList.toggle('on',SND.music)}if(f){f.textContent='音效：'+(SND.sfx?'開':'關');f.classList.toggle('on',SND.sfx)}}
 const TUNES=[
   {t:'《觸技曲》（某位老作曲家的 D 小調）',s:[['A5',.13],['G5',.13],['A5',.7],['G5',.12],['F5',.12],['E5',.12],['D5',.12],['C#5',.45],['D5',.9],[0,.3],['A4',.13],['G4',.13],['A4',.7],['E4',.25],['F4',.25],['C#4',.25],['D4',1.1]]},
