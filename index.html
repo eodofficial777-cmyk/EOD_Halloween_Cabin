@@ -1326,7 +1326,7 @@ const EV={
   boss:{t:'首領的證詞',d:'半夜有個白白軟軟的東西，抱著一疊紅色盒子從廚房飄出來，往樓梯那邊去了。'},
   ian:{t:'IAN 的證詞',d:'晚餐前，會長在走廊上搖搖晃晃，像快沒電一樣。IAN 說要分他血，他看了縫線一眼就拒絕了。'},
   potion:{t:'薊少了一瓶藥',d:'薊的「一覺到天亮」安眠藥水不見了一瓶。喝了會睡得很香，叫都叫不醒。'},
-  sheet:{t:'床單下的空紙盒',d:'小波的床單底下藏著十二個空番茄汁紙盒和一個空藥瓶。他半夜口渴，以為那是草莓牛奶……',key:1},
+  sheet:{t:'床單下的空紙盒',d:'小波的床單底下藏著十二個空番茄汁紙盒和一個空藥瓶。他半夜口渴，以為那是洛神湯……',key:1},
   blood:{t:'一袋都沒少的血袋',d:'小教堂冷藏箱裡，協會替會長準備的備用血袋一袋都沒少。標籤寫著：「他不會自己喝，請大家盯著他喝。」'},
   rag:{t:'儲藏室裡的破布',d:'拉拉在上鎖的儲藏室裡找到的白布，邊緣被扯破，摸起來還溫溫的，上面沾著一點口水。',key:1},
   lock:{t:'完好的門鎖',d:'儲藏室的鎖沒有被撬過的痕跡，門板完好，唯一的通風口只有手掌大、封著蜘蛛網。架子的釘子上勾著幾根白色線頭。'},
@@ -1359,7 +1359,7 @@ Object.assign(EV,{
   seed1:{t:'番茄汁旁的南瓜籽',d:'第一幕結束時，會長倒下的那灘番茄汁旁邊掉著一顆南瓜籽。小波真的是犯人嗎？'},
   seed2:{t:'閣樓裡的南瓜籽',d:'閣樓坐墊旁也散著南瓜籽。閣樓窗戶裡一閃一閃的燈光，不是小波。'},
   seed3:{t:'錐齒獸腳印旁的南瓜籽',d:'錐齒獸跑過的地上，掉著一排南瓜籽。牠是被誰放進宅邸的？'},
-  riddle:{t:'封印上的紙條',d:'「想見我？先把四盞南瓜燈點亮吧！」一、睡教的祭壇前，說出唯一的教義。二、迷宮裡的騎士，把頭轉向回家的方向。三、小波床邊的盒子，密碼是那天晚上喝掉的「草莓牛奶」數量。四、首領最好的朋友身邊，有一顆會發光的弟弟。',key:1},
+  riddle:{t:'封印上的紙條',d:'「想見我？先把四盞南瓜燈點亮吧！」一、睡教的祭壇前，說出唯一的教義。二、迷宮裡的騎士，把頭轉向回家的方向。三、小波床邊的盒子，密碼是那天晚上喝掉的「洛神湯」數量。四、首領最好的朋友身邊，有一顆會發光的弟弟。',key:1},
   hint_sui:{t:'翠的迷路秘訣',d:'翠在迷宮裡迷路時，都會把頭轉向宅邸的方向。宅邸在迷宮的西邊。'},
   hint_boss:{t:'大南瓜的弟弟',d:'首領說，田裡第三排、最右邊那顆南瓜，是大南瓜的弟弟。敲一敲就會亮。'},
   scare:{t:'稻草人的南瓜頭',d:'迷宮稻草人的南瓜頭內側，畫著咧嘴笑的南瓜標誌。稻草人，也是某個人的惡作劇？'},
@@ -1500,7 +1500,7 @@ const ACHS=[
   {id:'h_lost',t:'失物招領',d:'把散落在宅邸各處的八樣失物，都還給了主人。',hint:'角落裡，偶爾有東西在閃。'},
   {id:'h_wish_talk',t:'雕像說話了',d:'許願時，騎士雕像開口說了一句話。',hint:'運氣非常、非常好的時候。'},
   {id:'h_bookquiz',t:'懂書的人',d:'答對了司書出的題目。',hint:'讀書，不是只有用嘴巴。'},
-  {id:'h_fakemilk',t:'標籤詐欺',d:'識破了兩瓶以上被換成草莓牛奶的番茄汁。',hint:'有些標籤在說謊。'},
+  {id:'h_fakemilk',t:'標籤詐欺',d:'識破了兩瓶以上被換成洛神湯的番茄汁。',hint:'有些標籤在說謊。'},
   {id:'h_k50', t:'災獸剋星',d:'累計擊倒 50 隻災獸。',hint:'宅邸裡的災獸，好像怎麼打都打不完……',stat:'kills',goal:50},
   {id:'h_dex', t:'災獸圖鑑',d:'宅邸裡的每一種災獸，都至少擊倒過一次。',hint:'認識宅邸裡的每一位住民。'},
   {id:'h_boss_nohit',t:'毫髮無傷',d:'一次都沒受傷就擊退南瓜稻草人。',hint:'連一顆種子都別碰到。'},
@@ -1649,10 +1649,10 @@ const PROPS=[
 /* a：[軟, 涼, 香甜, 能抱]，試躺時會顯示 */
 const PILLOWS={
   feather: {a:[1,0,0,1],t:'羽毛枕',d:'客房床上的羽毛枕。軟綿綿的，可是抱起來熱熱的，也沒什麼味道。',no:'羽毛枕軟是軟，可是熱熱的，一點也不涼。',sl:'你抱著羽毛枕躺下去……好熱。翻來覆去，翻到床的另一邊去了。'},
-  lavender:{a:[0,0,1,1],t:'薰衣草藥草枕',d:'薊的溫室裡的藥草枕。香香的，可是裡面塞滿乾燥的「個人秘方」藥草，硬梆梆的。聞久了會一直想笑。',no:'藥草枕硬梆梆的。而且一直讓人想笑，根本睡不著。',sl:'你一躺下去，就聞到一股草藥香……然後開始咯咯咯地笑個不停。'},
+  lavender:{a:[0,0,1,1],t:'藥草枕',d:'薊的溫室裡的藥草枕。香香的，可是裡面塞滿乾燥的「個人秘方」藥草，硬梆梆的。聞久了，會不自覺地傻笑起來。',no:'藥草枕硬梆梆的。而且聞著聞著就不自覺地傻笑，根本睡不著。',sl:'你一躺下去，就聞到一股草藥香……回過神來，你已經對著天花板傻笑了好久。'},
   flour:   {a:[1,1,0,1],t:'麵粉袋枕頭',d:'儲藏室裡被當成枕頭的一袋麵粉。軟軟的、涼涼的，可是一壓就噴出一團麵粉。',no:'麵粉袋一放上去就「噗」地噴出一團白粉。祭壇上的神像好像打了個噴嚏。',sl:'你一躺下去——「噗」！一團麵粉噴上了天花板。你變成白色的了。'},
   velvet:  {a:[1,1,1,0],t:'貴族的天鵝絨枕',d:'展覽室的展示品。涼涼滑滑、又軟又香，可是小小一顆，抱不住。標籤寫著「請勿觸摸」。',no:'天鵝絨枕又軟又涼又香……可是太小了，抱不住。',sl:'好軟、好涼、好香……可是枕頭太小，你一翻身它就滾到地上了。'},
-  ghost:   {a:[1,1,1,1],t:'會飄的白色抱枕',d:'閣樓角落一顆自己飄在半空中的抱枕。軟軟的、涼涼的，有淡淡的草莓牛奶香味，大小剛好可以整個抱住。',sl:'你抱著會飄的抱枕躺下去。軟軟的、涼涼的、甜甜的……\n……回過神來，你已經睡了一小覺。'},
+  ghost:   {a:[1,1,1,1],t:'會飄的白色抱枕',d:'閣樓角落一顆自己飄在半空中的抱枕。軟軟的、涼涼的，有淡淡的洛神花香，大小剛好可以整個抱住。',sl:'你抱著會飄的抱枕躺下去。軟軟的、涼涼的、甜甜的……\n……回過神來，你已經睡了一小覺。'},
   pumpkinp:{a:[0,1,1,1],t:'南瓜抱枕',d:'被丟在南瓜田邊的南瓜造型抱枕。涼涼的、有南瓜香，抱起來剛好……可是硬梆梆的。',no:'南瓜抱枕一放上去，「噗」地噴出一堆南瓜籽。',sl:'你枕在南瓜抱枕上。涼涼香香的……一翻身，「噗」地噴出了一堆南瓜籽。'},
   sponge:  {a:[1,1,1,0],t:'泡泡海綿枕',d:'泡在浴缸邊的海綿枕，聞起來有玫瑰泡泡的香味。軟軟涼涼的……可是濕答答的。',no:'海綿枕一放上去，就在祭壇上積了一灘水。',sl:'你枕上海綿枕。軟軟涼涼香香的……然後你的後腦勺濕透了。'},
   coffin:  {a:[1,1,0,1],t:'棺材裡的絲綢枕',d:'地下墓室棺材裡的絲綢枕頭。又軟又涼，大小也剛好……就是有一股陳年的霉味。',no:'絲綢枕一放上去，祭壇上飄起一股霉味。蠟燭都熄了一根。',sl:'你枕上棺材裡的絲綢枕。又軟又涼……可是那股霉味，讓你夢到了一整晚的蜘蛛。'},
@@ -1701,7 +1701,7 @@ function bookCaught(){
   const q=qGet('shisho');if(!q||q.mimicDone)return;q.mimicDone=1;q.got.push('door13');
   setTimeout(()=>run(async()=>{await n('書本怪「啪」地闔上了，變回一本普通的書——《走廊的第十三扇門》。');await n(BOOKS.door13.d);bookToast(q);ach('h_bookmon')}),600);
 }
-const CANS={c1:'小教堂冷藏箱旁邊，夾在兩袋血袋中間的一瓶番茄汁。……放錯地方了吧。',c2:'閣樓的玩具堆裡，一隻泰迪熊抱著一瓶番茄汁。',c3:'大南瓜底下壓著一瓶番茄汁。首領應該沒發現。',c4:'司書的書堆旁邊，一瓶番茄汁被拿來當書擋。',c5:'番茄苗旁邊埋著一瓶番茄汁，瓶子上寫著「肥料？」。',c6:'浴缸旁邊泡著一瓶「番茄汁」。瓶子的顏色有點粉紅……是泡太久了嗎？',c7:'儲藏室的麵粉袋後面，藏著一瓶番茄汁。瓶蓋上寫著「會長的備用」。'};
+const CANS={c1:'小教堂冷藏箱旁邊，夾在兩袋血袋中間的一瓶番茄汁。……放錯地方了吧。',c2:'閣樓的玩具堆裡，一隻泰迪熊抱著一瓶番茄汁。',c3:'大南瓜底下壓著一瓶番茄汁。首領應該沒發現。',c4:'司書的書堆旁邊，一瓶番茄汁被拿來當書擋。',c5:'番茄苗旁邊埋著一瓶番茄汁，瓶子上寫著「肥料？」。',c6:'浴缸旁邊泡著一瓶「番茄汁」。瓶子裡的紅色清清透透的，好像少了點番茄的濃稠……是泡太久了嗎？',c7:'儲藏室的麵粉袋後面，藏著一瓶番茄汁。瓶蓋上寫著「會長的備用」。'};
 const FEEDS={hay1:'一捆乾草',hay2:'一捆乾草',hay3:'一捆乾草',clover:'一把苜蓿',carrot:'一袋紅蘿蔔',oats:'一袋燕麥'};
 Object.assign(ITEMS,{potion:{t:'薊的神秘試作藥水',d:'冒著粉紅色泡泡的藥水。薊說什麼都可以試：玫瑰、南瓜田、首領的大南瓜、IAN，或是你自己。'}});
 for(const k in PILLOWS)ITEMS['p_'+k]={t:PILLOWS[k].t,d:PILLOWS[k].d};
@@ -1746,7 +1746,7 @@ function drawProps(cx,cy){
     const X=p.x*T-cx,Y=p.y*T-cy,g=ctx;
     if(p.k==='pillow'){
       if(p.id==='ghost'){const b=Math.round(Math.sin(tick/14)*2);g.save();g.globalAlpha=.85;R(g,X+2,Y+5+b,12,8,K);R(g,X+3,Y+6+b,10,6,'#f4f6fb');R(g,X+3,Y+10+b,10,2,'#d6dcea');R(g,X+6,Y+8+b,1,1,K);R(g,X+9,Y+8+b,1,1,K);g.restore()}
-      else{const c={feather:'#efe8dc',lavender:'#b89ad8',flour:'#e8dfc8',velvet:'#8e1c3a',pumpkinp:'#e2741c',sponge:'#ffd2e6',coffin:'#5a2a4a'}[p.id];R(g,X+2,Y+7,12,7,K);R(g,X+3,Y+8,10,5,c);R(g,X+3,Y+11,10,2,dk(c,.18));R(g,X+2,Y+7,1,1,c);R(g,X+13,Y+7,1,1,c);
+      else{const c={feather:'#efe8dc',lavender:'#8aa86a',flour:'#e8dfc8',velvet:'#8e1c3a',pumpkinp:'#e2741c',sponge:'#ffd2e6',coffin:'#5a2a4a'}[p.id];R(g,X+2,Y+7,12,7,K);R(g,X+3,Y+8,10,5,c);R(g,X+3,Y+11,10,2,dk(c,.18));R(g,X+2,Y+7,1,1,c);R(g,X+13,Y+7,1,1,c);
         if(p.id==='flour'){R(g,X+5,Y+9,6,2,'#c8b890');R(g,X+6,Y+9,4,1,'#8a7a5a')}if(p.id==='velvet')R(g,X+7,Y+9,2,2,'#d9a640')}
     }else if(p.k==='book'){
       const cs=['#7a2b2b','#2b4a6a','#5a6a2a','#a88a3a','#4a2a5a'];
@@ -2387,16 +2387,16 @@ async function takeJuice(p){
   const q=kq();q.got.push(p.id);await n(CANS[p.id]);q.unk.push(!CAN_FAKE[p.id]);
   if(await checkBottle())return;juiceToast(q);
 }
-/* 有些瓶子被南瓜幽靈換了標籤，裡面其實是草莓牛奶 */
+/* 有些瓶子被南瓜幽靈換了標籤，裡面其實是洛神湯 */
 async function checkBottle(){
   const q=kq();if(!q||!q.unk.length)return false;
   const c=await choose('這瓶真的是番茄汁嗎？要怎麼檢查？',['聞一聞','看看顏色','搖一搖','晚點再說']);if(c===3)return false;
   const real=q.unk.shift();
-  const T2=[['酸酸的、帶點青草味的番茄香。是真的番茄汁！','……甜甜的草莓香？撕開標籤，底下還有另一張：「草莓牛奶」。'],
-    ['倒一點在瓶蓋裡，是很濃的深紅色。是真的番茄汁！','倒出來是……粉紅色的？這是草莓牛奶！'],
-    ['搖起來稠稠的，瓶底還有番茄果肉。是真的番茄汁！','搖起來水水的，還冒出粉紅色的泡泡。這是草莓牛奶！']][c];
+  const T2=[['酸酸的、帶點青草味的番茄香。是真的番茄汁！','……酸酸甜甜的花香，還帶一點梅子的鹹味？撕開標籤，底下還有另一張：「洛神湯」。'],
+    ['倒一點在瓶蓋裡，是很濃的深紅色。是真的番茄汁！','倒出來是……清清透透的深紅色，一點都不濃稠。這是洛神湯！'],
+    ['搖起來稠稠的，瓶底還有番茄果肉。是真的番茄汁！','搖起來水水的，裡面還有一片洛神花在轉圈圈。這是洛神湯！']][c];
   await n(T2[real?0:1]);
-  if(real)q.real++;else{q.fake++;S.inv.milk=(S.inv.milk||0)+1;await n('（被換掉標籤的草莓牛奶。可以喝來補血。……一定又是誰的惡作劇。）');if(q.fake>=2)ach('h_fakemilk')}
+  if(real)q.real++;else{q.fake++;S.inv.milk=(S.inv.milk||0)+1;await n('（被換掉標籤的洛神湯。可以喝來補血。……一定又是誰的惡作劇。）');if(q.fake>=2)ach('h_fakemilk')}
   juiceToast(q);
   if(q.real===CANS_N)await n(cansDoneHint('五瓶真的番茄汁都找齊了。'));
   return true;
@@ -2416,7 +2416,7 @@ async function lalaOfferCans(){
   else if(ch===5){await say('lala','會長回來了，可是冰箱裡還是空空的……他說宅邸裡好像還藏了好幾瓶。');}
   else await say('lala','他之前拜託大家幫忙找番茄汁，說宅邸裡好像藏了好幾瓶。');
   await say('lala',ch===5?'找到五瓶的話，直接拿給會長吧！':'你如果看到的話，就幫他找回來吧！找到五瓶再拿來給我，我幫他冰起來。');
-  await say('lala','啊，聽說有人把草莓牛奶貼上番茄汁的標籤……要分清楚喔！……雖然我自己也分不出來就是了！');
+  await say('lala','啊，聽說有人把洛神湯貼上番茄汁的標籤……要分清楚喔！……雖然我自己也分不出來就是了！');
   qStart('kaicho',{got:[],unk:[],real:0,fake:0});
 }
 async function cansToKaicho(){
@@ -2545,7 +2545,7 @@ async function altar(){
   if(k!=='ghost'){
     await n(PILLOWS[k].no);
     await n('祭壇沉默了一下，還是收下了它。教堂裡的蠟燭搖了搖。');
-    await n({feather:'那天晚上，宅邸裡的每個人都熱得翻來覆去，一整晚沒睡好。',lavender:'那天晚上，宅邸裡的每個人都在夢裡一直笑，笑到天亮。',
+    await n({feather:'那天晚上，宅邸裡的每個人都熱得翻來覆去，一整晚沒睡好。',lavender:'那天晚上，宅邸裡的每個人都在夢裡傻笑，傻笑到天亮。',
       flour:'那天晚上，宅邸裡的每個人睡到一半都在打噴嚏。哈啾——',pumpkinp:'那天晚上，宅邸裡的每個人都夢到自己被南瓜籽淹沒了。',sponge:'那天晚上，宅邸裡的每個人醒來，枕頭都是濕的。',coffin:'那天晚上，宅邸裡的每個人都夢到了一整晚的蜘蛛。',velvet:'那天晚上，宅邸裡的每個人都在找自己的枕頭，誰也抱不住。'}[k]);
     if(chOf()===2&&!S.flags.poFell2){
       await n('……不知道從哪裡，傳來小波含糊的聲音：「……睡不著……那就熬夜吧……呼啊……」');
@@ -2777,7 +2777,7 @@ async function idleSession(){
   qFinish('boss',{candy:3});
 }
 async function cansToPo(){
-  await say('po','……那是……草莓牛奶嗎？紅紅的，好多瓶……');
+  await say('po','……那是……洛神湯嗎？紅紅的，好多瓶……');
   await say('po','給我一瓶。……一瓶就好。……兩瓶也可以。');
   const c=await choose('要給小波嗎？',['……給他','不行，這是會長的']);
   if(c===1){await say('po','……小氣。……那我睡覺了。');return}
@@ -2887,7 +2887,7 @@ const DECOR_T={
   phead:'一顆刻著笑臉的小南瓜頭，裡面點著蠟燭。……昨天這裡還沒有它。',
   toys:'幾隻縫縫補補的布偶，排得整整齊齊，好像在等誰回來陪它們睡覺。',
   sheet:'皺巴巴的床單。小波好像常常在這裡換床單……還是換身體？',
-  carton:'一個空的牛奶盒，上面貼著「草莓牛奶」的標籤。……底下還有一張被撕掉的「番茄汁」標籤。',
+  carton:'一個空的紙盒，上面貼著「洛神湯」的標籤。……底下還有一張被撕掉的「番茄汁」標籤。',
   wrap:'散落一地的糖果紙。小波睡前好像都會偷吃糖。',
   zzz:'空氣裡飄著淡淡的「Zzz……」。這個房間的睡意好像會傳染。',
   pillows:'一大堆枕頭疊成了小山。小波還在找最舒服的那一個。',
@@ -2994,7 +2994,7 @@ async function morphTalk(id){
     await n('你（蝙蝠）的耳朵抖了一下。');
     await n('會長的身體一動也不動。可是……你聽見了一個很細、很高的聲音。普通人的耳朵，大概聽不到。');
     await say('kaicho','……好餓……');
-    await say('kaicho','……冰箱裡的番茄汁……一瓶也……沒有了……只剩下……草莓牛奶……');
+    await say('kaicho','……冰箱裡的番茄汁……一瓶也……沒有了……只剩下……洛神湯……');
     await say('kaicho','……不用……抓誰……我只是……肚子餓……而已……');
     await say('kaicho','……還有……剛剛……冰箱旁邊……好像有誰在笑……嘻嘻嘻的……');
     await n('聲音斷了。……只有你的蝙蝠耳朵，還在嗡嗡作響。');
@@ -3289,7 +3289,7 @@ async function readSeal(){
   await n('封印正中間，貼著一張歪歪扭扭的紙條——');
   await n('「想見我？先把四盞南瓜燈點亮吧！嘻嘻。——南瓜幽靈」');
   await n('一、睡教的祭壇前，說出唯一的教義。\n二、迷宮裡的騎士，把頭轉向回家的方向。');
-  await n('三、小波床邊的盒子，密碼是那天晚上喝掉的「草莓牛奶」數量。\n四、首領最好的朋友身邊，有一顆會發光的弟弟。');
+  await n('三、小波床邊的盒子，密碼是那天晚上喝掉的「洛神湯」數量。\n四、首領最好的朋友身邊，有一顆會發光的弟弟。');
   if(!S.flags.riddle){S.flags.riddle=1;addEv('riddle')}
   await n(`（目前點亮了 ${lampsN()}/4 盞。謎題抄在調查筆記的線索裡了。）`);
 }
@@ -3349,7 +3349,7 @@ async function lampRoomL(){
     else await n('（小教堂的牆上，好像寫著睡教的戒律。）');return}
   await n('你小聲地說：「枕頭是神聖的。」');
   await n('小盒子打開了，裡面躺著一盞小小的南瓜燈。');
-  await n('南瓜燈自己亮了起來。床上的小波翻了個身：「……十二盒……草莓牛奶……」');
+  await n('南瓜燈自己亮了起來。床上的小波翻了個身：「……十二盒……洛神湯……」');
   lightLamp('roomL');
 }
 async function lampField(){
@@ -3415,7 +3415,7 @@ function questRows(){
     else if(id==='shisho')d=q.got.length>=BOOK_N?`找到的書：${q.got.length} 本（全部共 ${Object.keys(BOOKS).length} 本）。夠了，拿去 展覽室 給司書！司書喜歡酸酸甜甜的味道。`:`找到的書：${q.got.length}/${BOOK_N}（還差 ${BOOK_N-q.got.length} 本，全部共 ${Object.keys(BOOKS).length} 本）。宅邸各處、浴室、閣樓、迷宮，連一些秘密的地方都有書。有一本好像會咬人。`;
     else if(id==='ji'){const left=Object.keys(POTION_T).filter(k=>!q.tested.includes(k));d=`已報告 ${q.rep.length}/${Object.keys(POTION_T).length}。`+(left.length?'還沒試過：'+left.map(k=>POTION_T[k]).join('、')+'。':'')+(left.includes('self')?'想自己喝的話，在「道具」裡按「喝一口」。':'')+(q.tested.some(k=>!q.rep.includes(k))?'　有實驗結果還沒跟薊報告！':'')}
     else if(id==='sui')d=q.got.length>=Object.keys(FEEDS).length?'糧草找齊了！去屋外找翠，到 中庭 餵羊駝。':`找到的糧草：${q.got.length}/${Object.keys(FEEDS).length}（還差 ${Object.keys(FEEDS).length-q.got.length} 份）。屋外、廚房和儲藏室都找找看。`;
-    else if(id==='kaicho'){const k=kq();d=`真的番茄汁：${k.real}/${CANS_N}（還差 ${Math.max(0,CANS_N-k.real)} 瓶）。還沒檢查：${k.unk.length} 瓶。被換成草莓牛奶的：${k.fake} 瓶。`+(k.real>=CANS_N?(chOf()===0?'找齊了，拿去溫室給會長！':'找齊了！交給拉拉，或是那隻飛不起來的小蝙蝠。'):'有些瓶子被換了標籤，撿到時聞一聞、看看顏色或搖一搖就能分辨。打倒災獸也可能掉番茄汁。')}
+    else if(id==='kaicho'){const k=kq();d=`真的番茄汁：${k.real}/${CANS_N}（還差 ${Math.max(0,CANS_N-k.real)} 瓶）。還沒檢查：${k.unk.length} 瓶。被換成洛神湯的：${k.fake} 瓶。`+(k.real>=CANS_N?(chOf()===0?'找齊了，拿去溫室給會長！':'找齊了！交給拉拉，或是那隻飛不起來的小蝙蝠。'):'有些瓶子被換了標籤，撿到時聞一聞、看看顏色或搖一搖就能分辨。打倒災獸也可能掉番茄汁。')}
     else if(id==='boss')d=`跟首領一起躺在大南瓜旁邊發呆，什麼按鍵都不要按。已撐過 ${q.round||0}/3 輪。`
     else if(id==='ian')d=`全壘打：${q.hr||0}/3。怪物袋：${(q.sack||[]).length}/3。打倒災獸會自動收進怪物袋，抓到後回去找 IAN。`;
     rows.push([Qd.t+'（'+Qd.who+'）',d,q.st,q.st==='done'?ROUTES[id][0]:q.st==='alt'?ROUTES[id][1]:'進行中']);
@@ -3584,7 +3584,7 @@ async function po1(){
   const F=S.flags,st=NPCS.po.state;
   if(st==='sleep'){
     if(!hasItem('pancake')){
-      await say('po','Zzz……番茄……不對，是草莓牛奶……Zzz……');
+      await say('po','Zzz……番茄……不對，是洛神湯……Zzz……');
       await n('怎麼搖都叫不醒。也許可以拿點好吃的東西，把他引起來？');return;
     }
     await n('你把熱騰騰的鬆餅湊到床單旁邊——');
@@ -3603,7 +3603,7 @@ async function po1(){
     addEv('sheet');
     await say('po','……唔……嗯？早安……還是晚安？……都可以。');
     await say('me','小波，這些番茄汁是你喝的？');
-    await say('po','番茄汁？那不是草莓牛奶嗎……');
+    await say('po','番茄汁？那不是洛神湯嗎……');
     await say('po','半夜口渴，看到冰箱裡一整排紅紅的，懶得一瓶一瓶拿，就全部抱回來喝掉了。');
     await say('po','還有一瓶甜甜的藥水，喝完就睡得好香……然後就睡到剛剛了。');
     await say('po','……我是不是闖禍了？……好麻煩。');
@@ -3654,7 +3654,7 @@ async function deduction1(){
   await say('me','圓圓的頭，下面垂著一條長長的……就像披著床單的樣子。');
   await n('不知道為什麼，大家的視線慢慢飄向了同一個方向。');
   await ask('冰箱裡那一打番茄汁，最後去了哪裡？',['會長自己喝光了','被小波抱走喝掉了','被司書吃掉了'],1,{0:['sui','他要是喝了，就不會倒下了吧？'],2:['shisho','我只吃紙。紙盒……嗯，紙盒不算。']});
-  await say('po','……是我喝掉的。我以為是草莓牛奶。……好喝就好。');
+  await say('po','……是我喝掉的。我以為是洛神湯。……好喝就好。');
   await n('大家的視線全落到小波身上。床單抖了一下。');
   const ids=['lala','shisho','sui','boss','ian','ji','po'];
   for(;;){
@@ -3668,7 +3668,7 @@ async function deduction1(){
   if(!S.flags.dedWrong&&!(S.flags.accused||[]).length)ach('h_detective');
   await facScene({yelu:[['n','……小波是夜鷺的人。要指認自己人，你的喉嚨有點緊。']],assoc:[['n','夜鷺的人們都看著你。協會的你，要指認夜鷺的小波——空氣變得有點僵。']],wander:[['n','你不屬於任何一邊。這一指，只看證據。']]});
   await say('me','會作祟的只有幽靈。小波，就是你！');
-  await say('po','……啊？作祟？那麼麻煩的事，我才懶得做……我只是喝了草莓牛奶而已。');
+  await say('po','……啊？作祟？那麼麻煩的事，我才懶得做……我只是喝了洛神湯而已。');
   await n('小波的床單抖得像果凍一樣。');
   await facScene({yelu:[['boss','你是我們家的，卻指認我們家的人。'],['boss','嗯。至少很公正。但如果弄錯了，記得去跟他道歉。']],
     assoc:[['ji','哎呀～協會的人指認我們家的小波呢。……希望你沒有弄錯喔？']],
@@ -4185,7 +4185,7 @@ async function talk4(id){
         await n('……小波昨晚半夢半醒的時候，好像看到了什麼。');
         addEv('dream');return;
       }
-      return n(F.riddle?'小波在說夢話：「……十二盒……草莓牛奶……好好喝……」':'小波翻了個身，把枕頭抱得更緊了。');
+      return n(F.riddle?'小波在說夢話：「……十二盒……洛神湯……鹹鹹甜甜……好好喝……」':'小波翻了個身，把枕頭抱得更緊了。');
     case 'horse':return n('幽靈羊駝一直盯著墓園的地面，耳朵豎得直直的。');
     case 'batk':case 'cone':return talkChase(id);
   }
@@ -4349,10 +4349,10 @@ async function finalEnding(){
   await say('ghost','啊！不、不行！我的嘴巴自己停不下來了啦——！'); 
   await say('ghost','……其實，我只是想跟大家一起玩而已。');
   await say('ghost','這棟房子，一直都只有我一個。每年萬聖節，我都會把「需要這棟房子的人」請進來……');
-  await say('ghost','冰箱裡的番茄汁，是我偷偷貼上「草莓牛奶」標籤的喔。拉拉的麵糊會動，也是我施的小魔法。');
+  await say('ghost','冰箱裡的番茄汁，是我偷偷貼上「洛神湯」標籤的喔。拉拉的麵糊會動，也是我施的小魔法。');
   await say('ghost','大家的超能力，也是我先借走的。不然你們一下子就把我抓到了嘛！');
   await say('ghost','薊少掉的那瓶「一覺到天亮」，也是我拿去放在番茄汁旁邊的。小波喝了，就一直睡、一直睡……');
-  await say('ghost','所以會長才會餓到倒下、變成小蝙蝠。小波只是喝了「草莓牛奶」而已喔。');
+  await say('ghost','所以會長才會餓到倒下、變成小蝙蝠。小波只是喝了「洛神湯」而已喔。');
   await say('ghost','閣樓窗戶裡一閃一閃的燈，是我在陪睡著的小波玩捉迷藏！');
   await say('ghost','那隻錐齒獸，是我從森林裡放進來的。看牠追著小蝙蝠跑，好好笑喔！');
   await say('ghost','迷宮裡的稻草人也是我做的。還有 IAN 的長大藥水……每一件事旁邊，我都不小心掉了南瓜籽，嘻嘻。');
@@ -5170,10 +5170,10 @@ function startReload(){if(!S.flags.gun||P.reload>0||P.ammo>=GUN_MAG)return;if(S.
 const SNACK={
   candy:{t:'萬聖節糖果',heal:2,c:'#ff5fa2',eat:'吃了一顆糖果',d:'吃一顆回復一顆心。'},
   rice:{t:'乘乘米果',heal:3,c:'#e8b84a',eat:'喀滋喀滋地吃了一片乘乘米果',d:'黃黃的橢圓形米果，鹹鹹甜甜的。回復一顆半的心。'},
-  milk:{t:'草莓牛奶',heal:2,c:'#f2b8c6',eat:'喝了一瓶草莓牛奶（原本貼著番茄汁的標籤）',d:'被換掉標籤的草莓牛奶，甜甜的。回復一顆心。'},
+  milk:{t:'洛神湯',heal:2,c:'#9a1f3a',eat:'喝了一瓶洛神湯（原本貼著番茄汁的標籤）',d:'被換掉標籤的洛神湯。酸酸甜甜，還帶一點梅子的鹹味，熬得剛剛好……沒有署名，可是你就是知道是誰煮的。回復一顆心。'},
   pine:{t:'鳳梨酥',heal:4,c:'#f0c860',eat:'吃了一塊鳳梨酥，內餡好扎實',d:'黃色長方形的鳳梨酥，酥皮會掉滿地。回復兩顆心。'},
 };
-const ITEM_NAME={milk:'草莓牛奶',candy:'糖果',rice:'乘乘米果',pine:'鳳梨酥',magic:'神奇藥水'};
+const ITEM_NAME={milk:'洛神湯',candy:'糖果',rice:'乘乘米果',pine:'鳳梨酥',magic:'神奇藥水'};
 function useCandy(k){
   if(!S||busy)return;
   const has=Object.keys(SNACK).filter(x=>S.inv[x]>0);
@@ -5772,7 +5772,7 @@ function renderNote(){
     if(S.flags.gun)rows.push([WEAPONS.gun.name,`遠程武器。彈匣 ${P.ammo}／${GUN_MAG}，備用子彈 ${S.inv.ammo} 發。子彈打完要自己翻找。`,'武器']);
     else if(S.inv.ammo)rows.push(['子彈',`${S.inv.ammo} 發。得先找到槍才用得上。`,'補給']);
     for(const k in SNACK)if(S.inv[k])rows.push([SNACK[k].t,`${S.inv[k]} 個。${SNACK[k].d}`,'補給','eat:'+k]);
-    if(qOn('kaicho')){const q=kq();if(q.real)rows.push(['番茄汁（真的）',`${q.real} 瓶。要交給會長的。還差 ${Math.max(0,CANS_N-q.real)} 瓶。`,'支線']);if(q.unk.length)rows.push(['還沒檢查的「番茄汁」',`${q.unk.length} 瓶。有些可能被換成了草莓牛奶，聞一聞、看看顏色或搖一搖就知道。`,'支線','check'])}
+    if(qOn('kaicho')){const q=kq();if(q.real)rows.push(['番茄汁（真的）',`${q.real} 瓶。要交給會長的。還差 ${Math.max(0,CANS_N-q.real)} 瓶。`,'支線']);if(q.unk.length)rows.push(['還沒檢查的「番茄汁」',`${q.unk.length} 瓶。有些可能被換成了洛神湯，聞一聞、看看顏色或搖一搖就知道。`,'支線','check'])}
     if(S.inv.magic)rows.push(['神奇藥水',`${S.inv.magic} 瓶。喝下去會隨機變成怪物（不會被攻擊）、南瓜（原地滾動、動不了）或幽靈（攻擊會穿透），大約 10 秒。`,'補給','magic']);
     S.items.forEach(k=>rows.push([ITEMS[k].t,ITEMS[k].d,'重要',k==='potion'&&qOn('ji')&&!qGet('ji').tested.includes('self')?'potion':null]));
     if(!rows.length){body.innerHTML='<p class="empty">身上沒有帶著什麼。宅邸裡發亮的地方，也許可以翻找看看。</p>';return}
