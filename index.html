@@ -3095,13 +3095,15 @@ const GEAR=[
 ];
 ITEMS.g_apron={t:'阿鳳姨的鐵圍裙',d:'受到的重擊會減輕，偶爾還能把攻擊整個擋下來。'};
 ITEMS.g_lid={t:'鏡面鍋蓋',d:'飛過來的東西，有機會被彈回去打怪物。用鍋鏟打掉的東西，也會反彈回去。'};
+ITEMS.g_heart1={t:'南瓜派護身符',d:'用南瓜派做成的護身符，掛在脖子上熱熱的，一直飄著香味。體力上限多了一顆心。……有點想咬一口，但還是忍住了。'};
+ITEMS.g_heart2={t:'肉桂南瓜派護身符',d:'又一個南瓜派護身符，這個多灑了肉桂粉。心跳變得好有精神，體力上限又多了一顆心。……兩個掛在一起，聞起來像剛出爐的點心櫃。'};
 const gearAt=(x,y)=>S?GEAR.find(g=>g.sc===S.scene&&g.x===x&&g.y===y&&chOf()>=g.ch&&!S.flags['g_'+g.id])||null:null;
 function syncMaxHP(){MAXHP=10+2*((S&&S.flags.hearts)||0)+DF().hp}
 async function openGear(gr){
   const F=S.flags;for(const t of gr.t)await n(t);F['g_'+gr.id]=1;
   if(gr.id==='apron')addItem('g_apron');
   else if(gr.id==='lid')addItem('g_lid');
-  else{F.hearts=(F.hearts||0)+1;syncMaxHP();P.hp=MAXHP;toast('體力上限 +1 顆心！');updateHUD()}
+  else{F.hearts=(F.hearts||0)+1;syncMaxHP();P.hp=MAXHP;addItem('g_'+gr.id);toast('體力上限 +1 顆心！');updateHUD()}
   if(GEAR.every(g=>F['g_'+g.id]))ach('h_gear');
   checkWude();
 }
@@ -5581,6 +5583,7 @@ const PXD={0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001
 function pxText(t,x,y,c){for(const ch of String(t)){const m=PXD[ch];if(m)for(let i=0;i<15;i++)if(m[i]==='1')R(ctx,x+i%3,y+((i/3)|0),1,1,c);x+=4}}
 function drawHUD(){
   if(!S.inv)S.inv={candy:0,ammo:0};
+  for(const h of['heart1','heart2'])if(S.flags['g_'+h]&&!S.items.includes('g_'+h))S.items.push('g_'+h);
   if(CB.hurt>0){ctx.fillStyle=`rgba(200,20,30,${CB.hurt*.3})`;ctx.fillRect(0,0,320,208)}
   const itemsH=[...Object.keys(SNACK),'magic'].filter(k=>S.inv[k]>0),hw=Math.max(8+MAXHP/2*9,(S.flags.gun?50:5)+itemsH.length*27);
   R(ctx,2,2,hw,itemsH.length||S.flags.gun?21:12,'rgba(14,10,12,.65)');
