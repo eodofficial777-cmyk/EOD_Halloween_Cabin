@@ -2468,9 +2468,9 @@ async function llamaStart(){
   const lk=new Set();for(let y=COURT.y0-1;y<=COURT.y1+1;y++)for(let x=COURT.x0-1;x<=COURT.x1+1;x++){if(x>=COURT.x0&&x<=COURT.x1&&y>=COURT.y0&&y<=COURT.y1)continue;lk.add(x+','+y)}
   CB.lock=lk;CB.lockKind='llama';CB.mini='llama';
   const e=spawnFoe('llama',17*T+8,19*T,true);e.sat=0;e.cd=90;e.munch=0;e.noLaunch=1;
-  CB.hay=DF().hay;S.flags.llamaHurt=0;
+  CB.hay=DF().hay;CB.lure=2;CB.piles=[];S.flags.llamaHurt=0;$('pS').hidden=false;
   $('bossbar').querySelector('span').textContent='幽靈羊駝的滿足度';$('bossfill').style.width='0%';$('bossbar').hidden=false;
-  toast(isTouch?'按「砍」或「射」丟糧草！':'J／K 丟糧草，對準羊駝的嘴巴！');toastT=300;
+  toast(isTouch?'按「砍」或「射」丟糧草！「技」可以丟紅蘿蔔引開羊駝！':'J／K 丟糧草，對準羊駝的嘴巴！B 可以丟紅蘿蔔引開羊駝！');toastT=360;
 }
 function throwHay(){
   if(P.gcd>0||P.mcd>0)return;P.gcd=P.mcd=16;
@@ -2478,10 +2478,22 @@ function throwHay(){
   const[cx,cy]=pCenter(),[dx,dy]=DV[P.dir];
   CB.shots.push({x:cx+dx*8,y:cy+dy*8,vx:dx*3.6,vy:dy*3.6,life:55,hay:1});updateHUD();
 }
+/* 引開羊駝：丟在地上的糧草或紅蘿蔔，羊駝會走過去低頭吃，這段時間不會吐口水 */
+function hayPile(x,y,k){if(CB.mini!=='llama')return;x=Math.max(COURT.x0*T+8,Math.min(COURT.x1*T+8,x));y=Math.max(COURT.y0*T+8,Math.min(COURT.y1*T+8,y));CB.piles.push({x,y,k})}
+function throwLure(){
+  if(CB.mini!=='llama')return;if(!(CB.lure>0))return warn('紅蘿蔔用完了。');
+  CB.lure--;const[cx,cy]=pCenter(),[dx,dy]=DV[P.dir];hayPile(cx+dx*56,cy+dy*56,'carrot');sfx('swing');
+  toast(`你把紅蘿蔔往旁邊一丟——羊駝的眼睛跟著轉了過去！（紅蘿蔔還剩 ${CB.lure}）`);toastT=160;updateHUD();
+}
 function llamaMouth(e){return[e.x+(e.face>0?14:-14),e.y-22]}
 function updLlama(e,pcx,pcy){
   e.home=e.home||[e.x,e.y];e.y=e.home[1];
   if(e.munch>0){e.munch--;return}
+  if(CB.piles&&CB.piles.length){/* 先去吃地上的東西 */const pl=CB.piles.reduce((a,b)=>b.k==='carrot'&&a.k!=='carrot'?b:Math.abs(b.x-e.x)<Math.abs(a.x-e.x)&&a.k===b.k?b:a);
+    const tx=Math.max(COURT.x0*T+20,Math.min(COURT.x1*T-4,pl.x));e.face=pl.x>=e.x?1:-1;
+    if(Math.abs(tx-e.x)>3){moveE(e,Math.sign(tx-e.x)*(pl.k==='carrot'?.9:.6),0);return}
+    CB.piles.splice(CB.piles.indexOf(pl),1);e.munch=pl.k==='carrot'?200:90;CB.eshots=[];
+    toast(pl.k==='carrot'?'羊駝叼起紅蘿蔔，喀滋喀滋地嚼了起來……趁現在！':'羊駝低頭吃起了掉在地上的糧草……');toastT=120;return}
   const tx=Math.max(COURT.x0*T+20,Math.min(COURT.x1*T-4,pcx));
   if(Math.abs(tx-e.x)>2)moveE(e,Math.sign(tx-e.x)*.45,0);
   e.face=pcx>=e.x?1:-1;
@@ -2503,13 +2515,13 @@ function hayHit(b){
     return true;
   }
   const rx=(b.x-e.x)*e.face;
-  if(rx>-15&&rx<11&&b.y>e.y-10&&b.y<e.y+8){spark(b.x,b.y,'#d9b860',4);warn('丟到身上了！要丟進嘴巴裡！');e.cd=Math.min(e.cd,20);return true}
+  if(rx>-15&&rx<11&&b.y>e.y-10&&b.y<e.y+8){spark(b.x,b.y,'#d9b860',4);warn('糧草打到羊駝身上，牠愣了一下！（要丟進嘴巴裡才算吃到）');e.munch=Math.max(e.munch,50);e.flash=6;CB.eshots=CB.eshots.filter((_,i)=>i%2);hayPile(b.x,e.y+14,'hay');return true}
   return false;
 }
 function endLlama(){
   if(CB.mini!=='llama')return;CB.mini=null;
   for(const f of CB.foes)if(f.type==='llama')f.dead=2;
-  CB.foes=CB.foes.filter(f=>f.type!=='llama');CB.eshots=[];CB.lock=null;CB.lockKind=null;$('bossbar').hidden=true;
+  CB.foes=CB.foes.filter(f=>f.type!=='llama');CB.eshots=[];CB.piles=[];CB.lock=null;CB.lockKind=null;$('bossbar').hidden=true;$('pS').hidden=true;
 }
 function llamaWin(){
   if(CB.mini!=='llama')return;endLlama();
@@ -4520,7 +4532,7 @@ async function talk4(id){
         await n('旁邊的布料也被撐破了，好像身體突然變大了一圈。');
         addEv('seam');
         await n('下半身「咚」地踢了一下地面，跟在你後面走了起來。');
-        F.legsFollow=1;toast('IAN 的下半身成為你的伙伴！靠近的災獸會被牠踢飛。');toastT=300;return;
+        F.legsFollow=1;toast('IAN 的下半身成為你的伙伴！靠近的災獸會被牠踢飛。（它的鞋子上好像還有線索，轉身跟它說說話吧）');toastT=360;return;
       }
       if(!hasEv('shoe')){
         await n('你想看看下半身的鞋子，可是它一直原地踏步，怎麼也停不下來。');
@@ -4685,6 +4697,7 @@ const SPECIALS=[
 ];
 const spList=()=>SPECIALS.filter(x=>x.ok());
 function useSpecial(){
+  if(CB.mini==='llama')return throwLure();
   if(CB.lockKind!=='final')return;const e=ghostFoe();if(!e)return;
   const L=spList();if(!L.length){warn('沒有可以用的道具技……完成大家的支線，就能解鎖喔。');return}
   if(CB.spCd>0){warn(`道具技還要 ${Math.ceil(CB.spCd/60)} 秒才能再用。`);return}
@@ -6289,12 +6302,12 @@ function updateCombat(){
   for(const e of CB.foes)if(fool)updFoe(e,e.x+Math.cos(e.t/40+e.r)*80,e.y+Math.sin(e.t/50+e.r)*80);else updFoe(e,pcx,pcy);
   for(const b of CB.shots){
     b.x+=b.vx;b.y+=b.vy;b.life--;
-    if(solidPx(b.x,b.y,false)&&!s.exitsN.some(e=>e[0]===Math.floor(b.x/T)&&e[1]===Math.floor(b.y/T))){b.life=0;spark(b.x,b.y,'#ffd25a',3);continue}
-    if(b.hay){if(hayHit(b))b.life=0;continue}
+    if(solidPx(b.x,b.y,false)&&!s.exitsN.some(e=>e[0]===Math.floor(b.x/T)&&e[1]===Math.floor(b.y/T))){b.life=0;spark(b.x,b.y,'#ffd25a',3);if(b.hay)hayPile(b.x-b.vx*3,b.y-b.vy*3,'hay');continue}
+    if(b.hay){if(hayHit(b))b.life=0;else if(b.life<=0)hayPile(b.x,b.y,'hay');continue}
     for(const e of CB.foes)if(e.hp>0&&e.type!=='llama'&&!untouch(e)&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+3){e.by='gun';hitFoe(e,b.refl?2:GUN_DMG,b.vx*.4,b.vy*.4);b.life=0;break}
   }
   CB.shots=CB.shots.filter(b=>b.life>0);
-  if(CB.mini==='llama'&&CB.hay<=0&&!CB.shots.some(b=>b.hay)&&CB.foes.some(f=>f.type==='llama'&&f.sat<LL.goal&&!f.munch))llamaFail();
+  if(CB.mini==='llama'&&CB.hay<=0&&!CB.shots.some(b=>b.hay)&&!(CB.piles&&CB.piles.length)&&CB.foes.some(f=>f.type==='llama'&&f.sat<LL.goal&&!f.munch))llamaFail();
   updSlimes(pcx,pcy);
   const bs=DF().shot;
   for(const b of CB.eshots){
@@ -6488,6 +6501,7 @@ function render(){
   R(ctx,0,0,320,208,'#07050a');
   ctx.drawImage(s.cache,-cx,-cy);
   if(S&&mode==='play'){drawDecor(cx,cy);drawProps(cx,cy);drawSecrets(cx,cy,S.scene)}
+  if(CB.mini==='llama'&&CB.piles)for(const pl of CB.piles){const X=Math.round(pl.x-cx),Y=Math.round(pl.y-cy);if(pl.k==='carrot'){R(ctx,X-5,Y,9,3,K);R(ctx,X-4,Y+1,7,1,'#e2741c');R(ctx,X+3,Y-2,2,3,'#3f8a3a');R(ctx,X+5,Y-3,1,2,'#5fae3a')}else{R(ctx,X-5,Y-1,10,4,'#a8863a');R(ctx,X-4,Y-2,8,2,'#d9b860');for(const a of[-3,0,3])R(ctx,X+a,Y-3,1,2,'#e8d090')}}
   if(key0()==='chapel'&&qDoneP('po')){const[ax]=toNew('chapel',7,1),X=ax*T+8-cx,Y=T-cy;R(ctx,X-6,Y+2,12,7,K);R(ctx,X-5,Y+3,10,5,'#f4f6fb');R(ctx,X-2,Y+5,1,1,K);R(ctx,X+1,Y+5,1,1,K)}
   const key=S?S.scene:'outside';
   // floor-level objects
@@ -6532,6 +6546,7 @@ function render(){
       if(ch===3&&F.ded3&&!F.ladderSet){if(id==='lala'&&!hasItem('ladder')&&!hasItem('stack20'))need=true;if(id==='ian'&&hasItem('stack20'))need=true}
       if(ch===4){if(!F.disc4)need=false;if(id==='ian'&&REQ4.every(hasEv)&&!F.ded4)need=true}
       if(id==='batk'&&!hasEv('batseen')&&ch<5)need=true;
+      if(id==='legs'&&legsOn())need=false;/* 跟在身邊的下半身不要一直冒泡泡 */
       if(need){const[bx,by]=npcPos(o);bubble(bx-cx,by-cy-(id==='ji'?22:16))}
     }
     if(ch===1){if(key==='kitchen'&&!hasEv('fridge'))sp.push([11.5,1]);if(key==='dining'&&!hasEv('juice'))sp.push([8,6])}
@@ -6600,7 +6615,7 @@ function updateHUD(){
   if(!S)return;
   const F=S.flags,ch=chOf();let t;
   if(CB.lockKind==='final'){const L=spList();$('obj').innerHTML='最終戰｜打倒南瓜幽靈！'+(L.length?`按 <b>B</b> 使用道具技（${L.map(x=>x.k).join('、')}）`+(CB.spCd>0?`｜冷卻 ${Math.ceil(CB.spCd/60)} 秒`:'｜<b>可以用了！</b>'):'（完成支線可以解鎖道具技）');$('loc').textContent=SCENES[S.scene].name;return}
-  if(CB.mini==='llama'){$('obj').innerHTML=`支線｜對準羊駝的 <b>嘴巴</b> 丟糧草（攻擊鍵），躲開口水！剩下的糧草 <b>${CB.hay}</b>`;return}
+  if(CB.mini==='llama'){$('obj').innerHTML=`支線｜對準羊駝的 <b>嘴巴</b> 丟糧草（攻擊鍵），躲開口水！剩下的糧草 <b>${CB.hay}</b>・紅蘿蔔（${isTouch?'技':'B'}）<b>${CB.lure||0}</b>　沒丟進嘴的糧草掉在地上，也能引開牠`;return}
   if(ch===0){
     const k=PRE_IDS.filter(id=>F['p_'+id]).length;
     t=!F.gathered?'序幕｜大廳右上角的 <b>餐廳</b> 傳來說話聲，去看看。':`序幕｜在宅邸裡走走，跟每個人聊一聊。已聊過 <b>${k}/${PRE_IDS.length}</b>`;
