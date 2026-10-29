@@ -1776,7 +1776,7 @@ async function gatherScene(){
   await n('協會那一側的中間，坐著一個臉色蒼白的青年。他面前只放著一個空杯子。');
   await say('kaicho','我是協會的會長。先確認一下狀況——大家都是突然來到這裡的？');
   if(myFac()==='assoc'){await n('會長看到你，表情稍微放鬆了一點。');await say('kaicho','是{me}啊，連你也被拉進來了。拉拉旁邊的位子空著，坐那邊吧。');await say('lala','{LC}這邊這邊！椅子我幫你擦過了！');}
-  else if(myFac()==='yelu'){await n('上排的薊拍了拍身旁的空椅子。');await say('ji','{me}～這邊這邊！位子幫你留好了喔～');await say('boss','……{me}。你也在。');await say('kaicho','夜鷺的{me}，你也在啊。這種時候就不分彼此了，有什麼事儘管跟我說。');}
+  else if(myFac()==='yelu'){await n('上排的薊撐著下巴，朝身旁的空椅子瞥了一眼。');await say('ji','哎呀，{me}。旁邊剛好有個空位喔～……還不快感激我？');await say('boss','……{me}。你也在。');await say('kaicho','夜鷺的{me}，你也在啊。這種時候就不分彼此了，有什麼事儘管跟我說。');}
   else{await say('ji','欸～這位是誰？不是協會的，也不是我們夜鷺的……流浪者？好神秘喔～');await say('boss','流浪的啊。不站邊，比較不麻煩。');}
   await say('lala','我本來在協會的廚房煎鬆餅！一轉頭，就在這棟房子的廚房裡了！……鬆餅還在鍋子上耶，會不會焦掉啊？');
   await say('ian','我也是一覺醒來就在這裡啦！哈哈，大叔我活了四十五年，什麼場面沒見過，有吃有住就好！');
@@ -1793,13 +1793,13 @@ async function gatherScene(){
   await say('ian','好啦好啦！首領，會長也是在擔心大家嘛！');
   await say('ian','沒有超能力，大叔我還有這把鏟子跟一身力氣！真有什麼狀況，交給大叔我就對了！哈哈！');
   await say('shisho','沒了超能力，妳看起來倒是挺開心的？……整個腦袋空空的感覺，如何？');
-  await say('boss','很安靜。至少聽不到你腦袋裡在想什麼。');
+  await say('boss','很安靜。現在只聽得到南瓜在竊竊私語。……挺好的。');
   await say('sui','能力沒了就算了！結果還要跟一隻口水馬綁在一起是怎樣啦！');
   await n('窗外傳來「呸」的一聲。……好像是在回嘴。');
   await say('ji','反正都在這裡了，不如來看看有什麼好玩的吧～這裡的植物，好像有很多有趣的反應呢。');
   await say('po','……Zzz……');
-  await say('kaicho','……小波，至少等大家說完再睡，好嗎？');
-  await say('po','……Zzz。');
+  await say('kaicho','……小波，趴在這裡睡會不舒服的。要不要先回房間睡？');
+  await say('po','……Zzz。……這裡……也可以……');
   await say('lala','那、那個！我剛剛盤點過廚房的物資了……大家省著吃的話，大概只能撐三天……');
   await say('lala','怎麼辦，苦惱到都想做鬆餅了！');
   await say('ian','那就做啊！大叔我負責吃！');
