@@ -536,32 +536,33 @@ const OUTFITS=[
   {id:'pumpkin',label:'南瓜T恤',o:{cloth:'#e2741c',cloth2:'#3f6b2a',pants:'#2a2a2e'},
     post(g,d,o){if(d!=='down')return;R(g,5,13,2,1,K);R(g,9,13,2,1,K);R(g,5,15,6,1,K);R(g,7,15,1,1,o.cloth);R(g,8,16,1,1,K);R(g,7,12,2,1,dk(o.cloth2,.3))}},
   {id:'vamp',label:'吸血鬼襯衫',o:{cloth:'#e8e2f2',cloth2:'#a8232b',pants:'#1d1824'},
-    pre(g){R(g,1,10,14,11,K);R(g,2,11,12,9,'#1a1424');R(g,2,17,12,3,'#7a1020')},
-    post(g,d){if(d==='up')return;R(g,2,9,2,3,'#7a1020');R(g,12,9,2,3,'#7a1020');if(d==='down'){R(g,7,13,2,3,'#a8232b');R(g,6,13,1,1,'#a8232b');R(g,9,13,1,1,'#a8232b');R(g,7,16,2,1,dk('#e8e2f2',.2))}}},
+    pre(g,d){if(d==='right'){R(g,2,10,6,11,K);R(g,3,11,4,9,'#1a1424');R(g,3,17,4,3,'#7a1020');return}R(g,1,10,14,11,K);R(g,2,11,12,9,'#1a1424');R(g,2,17,12,3,'#7a1020')},
+    post(g,d){if(d==='up')return;if(d==='right'){R(g,4,9,2,3,'#7a1020');R(g,4,9,1,1,K);return}R(g,2,9,2,3,'#7a1020');R(g,12,9,2,3,'#7a1020');if(d==='down'){R(g,7,13,2,3,'#a8232b');R(g,6,13,1,1,'#a8232b');R(g,9,13,1,1,'#a8232b');R(g,7,16,2,1,dk('#e8e2f2',.2))}}},
   {id:'skull',label:'骷髏帽T',o:{cloth:'#1d1a22',cloth2:'#e8e3d4',pants:'#2a2a2e'},
     post(g,d,o){const B='#e8e3d4';if(d==='up'){R(g,4,10,8,2,lt(o.cloth,.12));R(g,7,12,2,5,B);R(g,5,13,6,1,B);R(g,5,15,6,1,B);return}
       if(d==='down'){R(g,7,13,2,4,B);R(g,4,13,3,1,B);R(g,9,13,3,1,B);R(g,4,15,3,1,B);R(g,9,15,3,1,B);R(g,5,17,1,1,B);R(g,10,17,1,1,B)}else{R(g,6,13,4,1,B);R(g,6,15,4,1,B)}}},
   {id:'cat',label:'黑貓針織衫',o:{cloth:'#4a2d5e',cloth2:'#e8e3d4',pants:'#2a2228'},
-    post(g,d,o){R(g,3,17,10,1,dk(o.cloth,.3));if(d!=='down')return;R(g,5,14,6,3,K);R(g,5,13,1,1,K);R(g,10,13,1,1,K);R(g,6,15,1,1,'#ffd25a');R(g,9,15,1,1,'#ffd25a');R(g,7,16,2,1,'#e6a0b0')}},
+    post(g,d,o){if(d==='right')R(g,5,17,6,1,dk(o.cloth,.3));else R(g,3,17,10,1,dk(o.cloth,.3));if(d!=='down')return;R(g,5,14,6,3,K);R(g,5,13,1,1,K);R(g,10,13,1,1,K);R(g,6,15,1,1,'#ffd25a');R(g,9,15,1,1,'#ffd25a');R(g,7,16,2,1,'#e6a0b0')}},
   {id:'zombie',label:'殭屍背心',o:{cloth:'#5c7a5f',cloth2:'#c9c1a8',pants:'#4a4234'},
-    post(g,d,o){R(g,4,17,1,1,o.skin);R(g,8,17,2,1,o.skin);R(g,6,20,1,1,o.skin);if(d==='up')return;
-      if(d==='down'){R(g,6,11,4,6,'#c9c1a8');R(g,7,13,1,1,dk('#c9c1a8',.3));R(g,8,15,1,1,dk('#c9c1a8',.3))}R(g,10,14,2,2,'#8a6a4a');R(g,10,15,2,1,K);R(g,4,12,1,3,'#e8e3d4')}},
+    post(g,d,o){if(d==='right'){R(g,6,17,1,1,o.skin);R(g,9,17,1,1,o.skin);R(g,7,20,1,1,o.skin);R(g,8,14,2,2,'#8a6a4a');R(g,8,15,2,1,K);R(g,5,12,1,3,'#e8e3d4');return}
+      R(g,4,17,1,1,o.skin);R(g,8,17,2,1,o.skin);R(g,6,20,1,1,o.skin);if(d==='up')return;
+      R(g,6,11,4,6,'#c9c1a8');R(g,7,13,1,1,dk('#c9c1a8',.3));R(g,8,15,1,1,dk('#c9c1a8',.3));R(g,10,14,2,2,'#8a6a4a');R(g,10,15,2,1,K);R(g,4,12,1,3,'#e8e3d4')}},
   {id:'hunter',label:'獵魔外套',o:{cloth:'#5c4d38',cloth2:'#efe3c8',pants:'#2a2a2e'},
-    pre(g,d){if(d!=='right')R(g,2,17,12,3,K);R(g,3,17,10,2,'#4a3d2c')},
-    post(g,d){R(g,3,15,10,1,'#2a2018');if(d==='up')return;R(g,5,15,1,1,'#d9a640');R(g,7,15,1,1,'#d9a640');R(g,9,15,1,1,'#d9a640');if(d==='down'){R(g,5,11,1,4,'#3a2f22');R(g,10,11,1,4,'#3a2f22')}}},
+    pre(g,d){if(d==='right'){R(g,3,17,9,3,K);R(g,4,17,7,2,'#4a3d2c');return}R(g,2,17,12,3,K);R(g,3,17,10,2,'#4a3d2c')},
+    post(g,d){if(d==='right'){R(g,5,15,6,1,'#2a2018');R(g,8,15,1,1,'#d9a640');return}R(g,3,15,10,1,'#2a2018');if(d==='up')return;R(g,5,15,1,1,'#d9a640');R(g,7,15,1,1,'#d9a640');R(g,9,15,1,1,'#d9a640');if(d==='down'){R(g,5,11,1,4,'#3a2f22');R(g,10,11,1,4,'#3a2f22')}}},
   {id:'witch',label:'巫師長袍',o:{cloth:'#3a2a4a',cloth2:'#c9a13c',pants:'#3a2a4a',robe:1},
     post(g,d,o){R(g,3,18,10,1,dk(o.cloth,.35));if(d==='up')return;R(g,7,13,2,3,'#c9a13c');R(g,6,14,4,1,'#c9a13c');R(g,6,11,4,1,dk(o.cloth,.4))}},
   {id:'mummy',label:'木乃伊繃帶',o:{cloth:'#e8e3d4',cloth2:'#d8d0bc',pants:'#d8d0bc'},
-    post(g,d,o){const S=dk(o.cloth,.25);R(g,3,12,4,1,S);R(g,7,13,5,1,S);R(g,4,15,6,1,S);R(g,9,16,3,1,S);R(g,5,19,2,1,S);R(g,9,20,2,1,S);if(d==='down'){R(g,11,17,1,3,o.cloth);R(g,11,20,1,1,S)}}},
+    post(g,d,o){const S=dk(o.cloth,.25);if(d==='right'){R(g,5,12,3,1,S);R(g,7,14,3,1,S);R(g,5,16,4,1,S);R(g,6,19,2,1,S);R(g,8,20,2,1,S);return}R(g,3,12,4,1,S);R(g,7,13,5,1,S);R(g,4,15,6,1,S);R(g,9,16,3,1,S);R(g,5,19,2,1,S);R(g,9,20,2,1,S);if(d==='down'){R(g,11,17,1,3,o.cloth);R(g,11,20,1,1,S)}}},
   {id:'assoc',label:'協會·魔導披肩',o:{cloth:'#d7e4e7',cloth2:'#78e7ff',pants:'#2f4e80'},
     post(g,d){const C='#5a3a8a';if(d==='up'){R(g,2,11,12,6,C);R(g,2,17,12,1,K);R(g,7,13,2,2,'#e2741c');return}
-      R(g,2,11,3,4,C);R(g,11,11,3,4,C);R(g,2,15,3,1,K);R(g,11,15,3,1,K);if(d==='down'){R(g,10,14,1,1,'#e2741c');R(g,10,13,1,1,'#3f6b2a')}}},
+      if(d==='right'){R(g,3,11,4,6,C);R(g,3,17,4,1,K);R(g,2,11,1,6,K);R(g,9,13,1,1,'#e2741c');return}R(g,2,11,3,4,C);R(g,11,11,3,4,C);R(g,2,15,3,1,K);R(g,11,15,3,1,K);if(d==='down'){R(g,10,14,1,1,'#e2741c');R(g,10,13,1,1,'#3f6b2a')}}},
   {id:'yelu',label:'夜鷺·蝙蝠夾克',o:{cloth:'#d63939',cloth2:'#490808',pants:'#1e1e22'},
-    pre(g,d){if(d==='up')return;R(g,0,11,3,5,K);R(g,13,11,3,5,K);R(g,0,12,2,2,'#490808');R(g,14,12,2,2,'#490808')},
-    post(g,d){R(g,3,17,10,1,'#490808');if(d==='up'){R(g,4,12,8,1,K);R(g,5,13,6,1,K);R(g,4,12,1,2,K);R(g,11,12,1,2,K);return}
+    pre(g,d){if(d==='up')return;if(d==='right'){R(g,1,11,4,5,K);R(g,2,12,2,3,'#490808');return}R(g,0,11,3,5,K);R(g,13,11,3,5,K);R(g,0,12,2,2,'#490808');R(g,14,12,2,2,'#490808')},
+    post(g,d){if(d==='right'){R(g,5,17,6,1,'#490808');R(g,6,12,1,2,K);return}R(g,3,17,10,1,'#490808');if(d==='up'){R(g,4,12,8,1,K);R(g,5,13,6,1,K);R(g,4,12,1,2,K);R(g,11,12,1,2,K);return}
       if(d==='down'){R(g,5,14,6,1,K);R(g,6,15,4,1,K);R(g,4,13,1,1,K);R(g,11,13,1,1,K)}}},
   {id:'wander',label:'流浪者·稻草人',o:{cloth:'#e7ee7b',cloth2:'#a4bc2e',pants:'#4a4234'},
-    post(g,d){const St='#d9b860';R(g,3,15,10,1,'#8a6a4a');R(g,2,17,1,2,St);R(g,13,17,1,2,St);R(g,5,21,1,1,St);R(g,10,21,1,1,St);
+    post(g,d){const St='#d9b860';if(d==='right'){R(g,4,15,8,1,'#8a6a4a');R(g,3,15,1,2,St);R(g,6,21,1,1,St);R(g,9,13,1,2,'#c8743a');return}R(g,3,15,10,1,'#8a6a4a');R(g,2,17,1,2,St);R(g,13,17,1,2,St);R(g,5,21,1,1,St);R(g,10,21,1,1,St);
       if(d==='up'){R(g,6,12,3,2,'#c8743a');return}R(g,5,13,2,2,'#c8743a');R(g,5,13,1,1,K);R(g,6,14,1,1,K)}},
 ];
 /* 頭上的東西：狼耳、貓耳、狐耳會跟著髮色走 */
@@ -607,27 +608,27 @@ function drawAccs(g,d,L,o){
 }
 /* 服裝細節：袖口、下襬、鈕扣、扣環這些小地方，畫在每套衣服原本的圖案之上 */
 const OUTFIT_DETAIL={
-  pumpkin(g,d,o){const D=dk(o.cloth,.3);R(g,3,17,10,1,D);if(d==='right'){R(g,5,17,6,1,D);R(g,7,12,1,1,o.cloth2);return}R(g,3,15,1,1,D);R(g,12,15,1,1,D);
-    if(d==='up'){R(g,7,12,2,1,o.cloth2);R(g,8,13,1,2,o.cloth2);R(g,6,14,2,1,o.cloth2)}else{R(g,10,11,1,1,o.cloth2);R(g,11,12,1,1,lt(o.cloth2,.3))}},
-  vamp(g,d){if(d==='up'){R(g,4,19,1,1,K);R(g,8,19,1,1,K);R(g,11,19,1,1,K);return}R(g,3,15,1,1,'#fff');R(g,12,15,1,1,'#fff');
+  pumpkin(g,d,o){const D=dk(o.cloth,.3);if(d==='right'){R(g,5,17,6,1,D);R(g,7,12,1,1,o.cloth2);return}R(g,3,15,1,1,D);R(g,12,15,1,1,D);
+    R(g,3,17,10,1,D);if(d==='up'){R(g,7,12,2,1,o.cloth2);R(g,8,13,1,2,o.cloth2);R(g,6,14,2,1,o.cloth2)}else{R(g,10,11,1,1,o.cloth2);R(g,11,12,1,1,lt(o.cloth2,.3))}},
+  vamp(g,d){if(d==='up'){R(g,4,19,1,1,K);R(g,8,19,1,1,K);R(g,11,19,1,1,K);return}if(d==='right'){R(g,9,12,1,1,'#e6c870');R(g,4,19,1,1,K);return}R(g,3,15,1,1,'#fff');R(g,12,15,1,1,'#fff');
     if(d==='down'){R(g,7,12,2,1,'#e6c870');R(g,7,12,1,1,'#8a1a6a');R(g,10,14,1,1,'#3a3040');R(g,10,16,1,1,'#3a3040');R(g,2,19,1,1,K);R(g,13,19,1,1,K)}else R(g,9,12,1,1,'#e6c870')},
-  skull(g,d,o){const B='#e8e3d4';if(d==='up')return;R(g,3,15,1,1,B);R(g,12,15,1,1,B);
-    if(d==='down'){R(g,6,11,1,2,B);R(g,9,11,1,2,B);R(g,6,13,1,1,'#c0bcae');R(g,9,13,1,1,'#c0bcae')}else{R(g,5,17,5,1,dk(o.cloth,.4))}},
+  skull(g,d,o){const B='#e8e3d4';if(d==='up')return;if(d==='right'){R(g,5,17,6,1,dk(o.cloth,.4));R(g,9,11,1,2,B);return}R(g,3,15,1,1,B);R(g,12,15,1,1,B);
+    R(g,6,11,1,2,B);R(g,9,11,1,2,B);R(g,6,13,1,1,'#c0bcae');R(g,9,13,1,1,'#c0bcae')},
   cat(g,d,o){const T=lt(o.cloth,.18);if(d==='up'){R(g,7,16,2,4,K);R(g,8,15,2,1,K);R(g,4,13,1,1,T);R(g,11,13,1,1,T);return}
-    if(d==='right'){R(g,3,13,2,1,K);R(g,2,12,1,2,K);R(g,4,14,1,3,K);R(g,7,12,1,1,'#ffd25a');return}
+    if(d==='right'){R(g,3,15,2,1,K);R(g,2,13,1,3,K);R(g,4,16,1,1,K);R(g,9,12,1,1,'#ffd25a');return}
     R(g,3,13,1,1,T);R(g,12,13,1,1,T);R(g,7,12,2,1,'#ffd25a');R(g,7,13,2,1,'#ffd25a');R(g,7,13,1,1,'#b8862a');R(g,8,12,1,1,'#fff6c0')},
-  zombie(g,d,o){const D=dk(o.cloth,.4);R(g,5,17,1,1,K);R(g,10,17,1,1,K);if(d==='up'){R(g,6,13,4,1,D);R(g,7,12,1,3,D);return}
-    if(d==='down'){R(g,4,13,1,1,D);R(g,5,12,1,3,D);R(g,10,12,1,1,'#7a2b3a');R(g,11,13,1,1,'#7a2b3a')}else{R(g,7,13,3,1,D);R(g,8,12,1,3,D)}},
+  zombie(g,d,o){const D=dk(o.cloth,.4);if(d==='right')R(g,7,17,1,1,K);else{R(g,5,17,1,1,K);R(g,10,17,1,1,K)}if(d==='up'){R(g,6,13,4,1,D);R(g,7,12,1,3,D);return}
+    if(d==='down'){R(g,4,13,1,1,D);R(g,5,12,1,3,D);R(g,10,12,1,1,'#7a2b3a');R(g,11,13,1,1,'#7a2b3a')}else{R(g,6,13,3,1,D);R(g,7,12,1,3,D)}},
   hunter(g,d){const St='#3a2a1c',Sv='#c0c6cc';if(d==='up'){for(let i=0;i<4;i++)R(g,10-i*2,11+i,2,1,St);return}
     if(d==='down'){for(let i=0;i<4;i++){R(g,6+i,11+i,1,1,St);if(i%2)R(g,6+i,12+i,1,1,Sv)}R(g,3,14,1,1,'#2a2018');R(g,12,14,1,1,'#2a2018')}
-    else{R(g,9,15,2,3,'#2a2018');R(g,9,15,2,1,'#d9a640');R(g,6,12,1,3,St)}},
+    else{R(g,9,15,2,3,'#2a2018');R(g,9,15,2,1,'#d9a640');R(g,7,11,1,4,St);R(g,7,12,1,1,Sv)}},
   witch(g,d,o){const G='#e6c870';for(const x of[4,7,10])R(g,x,19,1,1,G);if(d==='up'){R(g,5,13,1,1,G);R(g,10,15,1,1,G);R(g,4,16,1,1,G);return}
-    R(g,3,16,1,1,G);R(g,12,16,1,1,G);if(d==='down'){R(g,4,13,1,1,G);R(g,11,15,1,1,G);R(g,10,12,1,1,lt(G,.4));R(g,11,19,2,1,'#efe3c8');R(g,12,18,1,1,'#efe3c8')}else{R(g,6,14,1,1,G);R(g,9,19,1,1,G)}},
+    if(d==='right'){R(g,6,14,1,1,G);R(g,9,16,1,1,G);R(g,9,19,1,1,G);return}R(g,3,16,1,1,G);R(g,12,16,1,1,G);if(d==='down'){R(g,4,13,1,1,G);R(g,11,15,1,1,G);R(g,10,12,1,1,lt(G,.4));R(g,11,19,2,1,'#efe3c8');R(g,12,18,1,1,'#efe3c8')}else{R(g,6,14,1,1,G);R(g,9,19,1,1,G)}},
   mummy(g,d,o){const S=dk(o.cloth,.25),L=lt(o.cloth,.4);R(g,6,17,3,1,S);if(d==='up'){R(g,12,13,2,1,o.cloth);R(g,13,14,2,1,o.cloth);R(g,14,15,1,1,S);return}
-    R(g,4,11,2,1,L);R(g,8,14,2,1,L);if(d==='down'){R(g,13,15,1,1,o.cloth);R(g,14,16,1,2,o.cloth);R(g,14,17,1,1,S)}},
+    if(d==='right'){R(g,6,11,2,1,L);R(g,8,15,2,1,L);R(g,10,16,1,1,o.cloth);R(g,11,17,1,1,o.cloth);return}R(g,4,11,2,1,L);R(g,8,14,2,1,L);if(d==='down'){R(g,13,15,1,1,o.cloth);R(g,14,16,1,2,o.cloth);R(g,14,17,1,1,S)}},
   assoc(g,d){const C='#5a3a8a',T='#9a7ad0',G='#d9a640';if(d==='up'){R(g,2,16,12,1,T);R(g,4,11,1,1,G);R(g,11,11,1,1,G);R(g,6,13,1,1,T);R(g,9,13,1,1,T);R(g,7,15,2,1,T);return}
-    R(g,4,11,1,4,T);R(g,11,11,1,4,T);R(g,2,14,3,1,T);R(g,11,14,3,1,T);if(d==='down'){R(g,6,12,1,1,G);R(g,9,12,1,1,G);R(g,7,12,2,1,dk(G,.2));R(g,7,14,2,1,'#5a8ab0');R(g,7,15,2,1,'#5a8ab0')}},
-  yelu(g,d){const Z='#c0c6cc';R(g,3,11,1,1,Z);R(g,12,11,1,1,Z);if(d==='up')return;
+    if(d==='right'){R(g,3,16,4,1,T);R(g,6,11,1,1,G);return}R(g,4,11,1,4,T);R(g,11,11,1,4,T);R(g,2,14,3,1,T);R(g,11,14,3,1,T);if(d==='down'){R(g,6,12,1,1,G);R(g,9,12,1,1,G);R(g,7,12,2,1,dk(G,.2));R(g,7,14,2,1,'#5a8ab0');R(g,7,15,2,1,'#5a8ab0')}},
+  yelu(g,d){const Z='#c0c6cc';if(d==='right'){R(g,7,11,1,1,Z);R(g,9,12,1,5,'#2a0606');R(g,9,13,1,1,Z);return}R(g,3,11,1,1,Z);R(g,12,11,1,1,Z);if(d==='up')return;
     if(d==='down'){R(g,8,13,1,4,'#2a0606');R(g,8,13,1,1,Z);R(g,8,16,1,1,Z);R(g,3,15,1,1,'#490808');R(g,12,15,1,1,'#490808')}else{R(g,9,12,1,5,'#2a0606');R(g,9,13,1,1,Z)}},
   wander(g,d){const Pt='#7a9a3a',Pt2='#c8743a';if(d==='up'){R(g,9,12,2,2,Pt);R(g,9,12,1,1,K);R(g,4,16,1,2,'#d9b860');R(g,11,16,1,2,'#d9b860');return}
     if(d==='down'){R(g,9,16,2,2,Pt);R(g,10,16,1,1,K);R(g,7,13,1,1,'#5a4a2a');R(g,7,16,1,1,'#5a4a2a');R(g,9,19,2,1,Pt2);R(g,6,11,1,1,'#d9b860');R(g,9,11,1,1,'#d9b860')}else{R(g,8,16,2,1,Pt);R(g,6,19,2,1,Pt2)}},
@@ -636,7 +637,7 @@ function curLook(){return{...LOOK_DEF,...((S&&S.look)||{})}}
 function playerDef(){
   const L=curLook(),of=OUTFITS.find(x=>x.id===S.outfit)||OUTFITS[0];
   const o=O({...of.o,skin:L.skin,hair:L.hair,eye:L.eye,cut:L.cut,...(L.cloth?{cloth:L.cloth}:{})});
-  return {o,pre(g,d,t){of.pre&&of.pre(g,d,o)},post(g,d){of.post&&of.post(g,d,o);OUTFIT_DETAIL[of.id]&&OUTFIT_DETAIL[of.id](g,d,o);drawEars(g,d,S.ears,o.hair);drawAccs(g,d,L,o)}};
+  return {o,pre(g,d,t){of.pre&&of.pre(g,d,o)},post(g,d){of.post&&of.post(g,d,o);OUTFIT_DETAIL[of.id]&&OUTFIT_DETAIL[of.id](g,d,o);drawHair(g,o,d);drawEars(g,d,S.ears,o.hair);drawAccs(g,d,L,o)}};
 }
 
 function baseChar(g,o,d,f,blink){
