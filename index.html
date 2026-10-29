@@ -1963,7 +1963,7 @@ const PROPS=[
   {q:'po',k:'pillow',id:'ghost',   sc:'attic',     x:6, y:1},
   {q:'po',k:'pillow',id:'pumpkinp',sc:'outside',   x:6, y:23},
   {q:'po',k:'pillow',id:'sponge',  sc:'bath',      x:10,y:5},
-  {q:'po',k:'pillow',id:'coffin',  sc:'crypt',     x:2, y:10},
+  {q:'po',k:'pillow',id:'coffin',  sc:'chapel',    x:18,y:11},/* 墓室要到最後才開，改放在教堂的墓室柵欄旁 */
   {q:'po',k:'pillow',id:'pancake', sc:'dining',    x:17,y:9},
   {q:'shisho',k:'book',id:'rules',  sc:'hall',      x:4, y:12},
   {q:'shisho',k:'book',id:'batter', sc:'kitchen',   x:15,y:4},
@@ -1978,7 +1978,7 @@ const PROPS=[
   {q:'shisho',k:'book',id:'attic',  sc:'attic',     x:3, y:4},
   {q:'shisho',k:'book',id:'maze',   sc:'maze',      x:25,y:2},
   {q:'shisho',k:'book',id:'prank',  sc:'candy',     x:5, y:5},
-  {q:'shisho',k:'book',id:'lonely', sc:'crypt',     x:5, y:10},
+  {q:'shisho',k:'book',id:'lonely', sc:'chapel',    x:16,y:1},
   {q:'sui',k:'feed',id:'hay1',  sc:'outside',x:30,y:24},
   {q:'sui',k:'feed',id:'hay2',  sc:'outside',x:40,y:8},
   {q:'sui',k:'feed',id:'clover',sc:'outside',x:31,y:14},
@@ -2003,7 +2003,7 @@ const PILLOWS={
   pumpkinp:{a:[0,1,1,1],t:'南瓜抱枕',d:'被丟在南瓜田邊的南瓜造型抱枕。涼涼的、有南瓜香，抱起來剛好……可是硬梆梆的。',no:'南瓜抱枕一放上去，「噗」地噴出一堆南瓜籽。',sl:'你枕在南瓜抱枕上。涼涼香香的……一翻身，「噗」地噴出了一堆南瓜籽。'},
   sponge:  {a:[1,1,1,0],t:'泡泡海綿枕',d:'泡在浴缸邊的海綿枕，聞起來有玫瑰泡泡的香味。軟軟涼涼的……可是濕答答的。',no:'海綿枕一放上去，就在祭壇上積了一灘水。',sl:'你枕上海綿枕。軟軟涼涼香香的……然後你的後腦勺濕透了。'},
   pancake: {a:[1,0,1,1],t:'鬆餅枕頭',d:'餐廳角落一片比臉還大的史萊姆鬆餅，被拉拉拿來當午睡的枕頭。軟綿綿、香噴噴，大小剛好可以抱住……可是剛出爐，熱呼呼的。偶爾還會自己抖一下。',no:'鬆餅枕頭一放上祭壇，就「啾」地彈了起來，滾到神像背後躲起來了。……而且還熱熱的。',sl:'你抱著鬆餅枕頭躺下去。軟軟的、甜甜的……可是好熱。\n……睡到一半，枕頭還自己偷偷往外爬了一點。'},
-  coffin:  {a:[1,1,0,1],t:'棺材裡的絲綢枕',d:'地下墓室棺材裡的絲綢枕頭。又軟又涼，大小也剛好……就是有一股陳年的霉味。',no:'絲綢枕一放上去，祭壇上飄起一股霉味。蠟燭都熄了一根。',sl:'你枕上棺材裡的絲綢枕。又軟又涼……可是那股霉味，讓你夢到了一整晚的蜘蛛。'},
+  coffin:  {a:[1,1,0,1],t:'棺材裡的絲綢枕',d:'卡在教堂角落、通往地下墓室的柵欄縫隙裡的絲綢枕頭。大概是從底下的棺材裡滾上來的……又軟又涼，大小也剛好，就是有一股陳年的霉味。',no:'絲綢枕一放上去，祭壇上飄起一股霉味。蠟燭都熄了一根。',sl:'你枕上棺材裡的絲綢枕。又軟又涼……可是那股霉味，讓你夢到了一整晚的蜘蛛。'},
 };
 function pillowRate(k){const a=PILLOWS[k].a,m=v=>v?'○':'×';return`軟${m(a[0])}　涼${m(a[1])}　香甜${m(a[2])}　能抱${m(a[3])}`}
 async function tryPillow(){
