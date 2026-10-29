@@ -1209,7 +1209,12 @@ function drawTile(g,c,X,Y,tx,ty,sc){
       R(g,X+5,Y+1,6,14,K);R(g,X+3,Y+3,10,6,K);R(g,X+4,Y+9,8,4,K);R(g,X+6,Y+2,4,12,'#5e3a20');R(g,X+4,Y+4,8,5,'#5e3a20');R(g,X+5,Y+9,6,3,'#5e3a20');
       R(g,X+6,Y+2,4,1,'#7a5232');R(g,X+4,Y+4,1,5,'#7a5232');R(g,X+11,Y+4,1,5,'#3a2214');R(g,X+7,Y+4,2,8,'#c9a54a');R(g,X+5,Y+6,6,2,'#c9a54a');R(g,X+7,Y+4,1,8,'#e6c870');
       for(const[a,b]of[[6,3],[9,3],[5,8],[10,8],[6,12],[9,12]])R(g,X+a,Y+b,1,1,'#8a8a92');break;
-    case 'D':if(sc==='candy')R(g,X,Y,16,16,'#5a3a3e');else if(sc==='bath')R(g,X,Y,16,16,'#e8e2d8');else if(sc==='crypt')R(g,X,Y,16,16,'#26222a');else if(sc==='outside')R(g,X,Y,16,16,tx===6?'#c4bcac':tx===28?'#2a3a3e':'#352325');else if(sc==='greenhouse'||sc==='chapel')R(g,X,Y,16,16,sc==='chapel'?'#3e383c':'#5a3a2e');else floor();R(g,X+2,Y,12,16,'#2a170e');R(g,X+3,Y+1,10,15,'#5e3a20');R(g,X+3,Y+8,10,1,'#4a2c18');R(g,X+8,Y+1,1,15,'#4a2c18');R(g,X+10,Y+9,1,1,'#e0b84a');break;
+    case 'D':if(sc==='candy')R(g,X,Y,16,16,'#5a3a3e');else if(sc==='bath')R(g,X,Y,16,16,'#e8e2d8');else if(sc==='crypt')R(g,X,Y,16,16,'#26222a');else if(sc==='outside')R(g,X,Y,16,16,tx===6?'#c4bcac':tx===28?'#2a3a3e':'#352325');else if(sc==='greenhouse'||sc==='chapel')R(g,X,Y,16,16,sc==='chapel'?'#3e383c':'#5a3a2e');else floor();
+      if(at(1,0)==='D'||at(-1,0)==='D'){/* 雙開門：左右兩扇對開，把手靠在中間的門縫兩側 */const m=at(-1,0)==='D',q=(a,b,w,hh,c)=>R(g,X+(m?16-a-w:a),Y+b,w,hh,c);
+        q(1,0,15,16,'#2a170e');q(2,1,14,15,'#5e3a20');q(2,1,1,15,'#7a4e2c');q(2,1,14,1,'#6e4628');
+        for(const b of[3,9]){q(4,b,9,5,'#4a2c18');q(5,b+1,7,3,'#6a4428');q(5,b+1,7,1,'#7a5232')}
+        q(15,1,1,15,'#1e1008');q(13,7,1,3,'#e0b84a');q(13,7,1,1,'#fff0a0');q(12,8,1,1,'#b8862a');break}
+      R(g,X+2,Y,12,16,'#2a170e');R(g,X+3,Y+1,10,15,'#5e3a20');R(g,X+3,Y+8,10,1,'#4a2c18');R(g,X+8,Y+1,1,15,'#4a2c18');R(g,X+10,Y+9,1,1,'#e0b84a');break;
     case '=':case 'U':R(g,X,Y,16,16,'#5c3c2d');for(let i=0;i<4;i++){R(g,X,Y+i*4+3,16,1,'#2e1c14');R(g,X,Y+i*4,16,1,'#704a38')}if(c==='U')R(g,X,Y,16,16,'rgba(0,0,0,.35)');break;
     case 'I':floor();R(g,X+6,Y,4,16,'#2a170e');R(g,X+7,Y,2,16,'#6b4026');break;
     case 'T':floor();if(sc==='dining'){/* 長餐桌：白桌巾、蕾絲邊、紅色桌旗，兩側擺好餐具，中間放燭台和南瓜 */
