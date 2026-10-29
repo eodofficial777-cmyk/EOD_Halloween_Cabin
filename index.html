@@ -4951,6 +4951,7 @@ function onArrive(){
   const ex=sc().exitsN.find(e=>e[0]===P.x&&e[1]===P.y);
   if(ex&&ex[2]==='exhibit'&&S.scene!=='exhibit'&&(S.flags.dirt||[]).length&&NPCS.shisho.scene==='exhibit')return run(shishoNoEntry);
   if(ex)return changeScene(ex[2],ex[3],ex[4],ex[5]);
+  if(S.scene==='outside'&&chOf()===3&&!S.flags.riotDone&&!hasEv('skid')&&P.y===20&&P.x>=15&&P.x<=22)return run(skidMark);
   if(tileAt(P.x,P.y)==='X')return run(async()=>{await n('濃霧裡傳來不明生物的嚎叫。');await n('……現在還不能離開這裡。');P.y-=1;P.dir='up'});
   stepHazard();
 }
@@ -5684,7 +5685,7 @@ function objectAt(nx,ny){
   if(POP&&POP.sc===s&&POP.x===nx&&POP.y===ny)return()=>{POP=null;return n('……什麼都沒有。剛剛明明有東西在這裡的。')};
   if(s==='exhibit'&&nx===12&&ny===2)return furnitureBook;
   if(hasItem('candle')&&!(P.light>0)){const fs=fireSource(s,nx,ny);if(fs)return()=>lightCandle(fs)}
-  if(s==='chapel'&&tileAt(nx,ny)==='q'&&!decorAt(nx,ny))return pewNap;
+  if(s==='chapel'&&tileAt(nx,ny)==='q'&&!decorAt(nx,ny)&&!(SEARCH[sk]&&!S.flags['s_'+sk]))return pewNap;
   if(s==='bath'&&tileAt(nx,ny)==='~')return async()=>{const c=await choose('要泡個澡嗎？',['泡澡','不用了']);if(c===0)await takeBath()};
   if(tileAt(nx,ny)==='L')return dumbwaiter;
   {const se=secretAt(nx,ny);if(se)return()=>useSecret(se)}
@@ -5916,6 +5917,7 @@ function freeTile(minD,o={}){
   for(let i=0;i<120;i++){
     const x=rg[0]+((Math.random()*(rg[2]-rg[0]+1))|0),y=rg[1]+((Math.random()*(rg[3]-rg[1]+1))|0),c=(s.map[y]||'')[x];
     if(!c||SOLID.has(c)||c==='X'||s.exitsN.some(e=>e[0]===x&&e[1]===y)||npcAt(x,y))continue;
+    if(S.scene==='outside'&&(c==='a'||c==='e'))continue;/* 南瓜田裡不冒怪 */
     if(CB.lock&&CB.lock.has(x+','+y))continue;
     if(Math.abs(x-P.x)+Math.abs(y-P.y)<minD)continue;
     if(o.offcam&&x*T+16>cx-8&&x*T<cx+320+8&&y*T+16>cy-8&&y*T<cy+208+8)continue;
@@ -6159,8 +6161,9 @@ function playerDown(){
 }
 function onEnterScene(to){
   clearCombat();spawnSlimes();
+  if(!SCENES[to].out)CB.spawnT=Math.max(CB.spawnT||0,1800+Math.random()*1800);/* 剛進室內先讓人喘口氣 */
   if(to==='crypt')addDirt('dust');
-  if(to==='crypt'&&!S.flags.finalDone)spawnRandom(4,['bat','lantern','pghost','sprite'],{region:[1,9,20,14]});
+  if(to==='crypt'&&!S.flags.finalDone)spawnRandom(2,['bat','lantern','pghost','sprite'],{region:[1,9,20,14]});
   if(to==='maze')spawnRandom(5,FOE_OUT[foeCh()]);
   if(to==='outside'&&S.flags.riot&&!S.flags.riotDone)spawnRiot();
   if(to==='attic'&&chOf()===2&&!S.flags.atticCleared){
@@ -6179,13 +6182,13 @@ function updateCombat(){
   if((meleeHeld||meleeQ)&&P.mcd<=0){meleeQ=0;doMelee()}
   if((gunHeld||gunQ)&&P.gcd<=0){gunQ=0;doFire()}
   if(S.flags.discovered&&!CB.lock){
-    if(s.out&&!(S.flags.riot&&!S.flags.riotDone)&&--CB.spawnT<=0){
+    if(s.out&&!SOKO[S.scene]&&!(S.flags.riot&&!S.flags.riotDone)&&--CB.spawnT<=0){
       CB.spawnT=900+Math.random()*900;
       if(CB.foes.filter(e=>!e.leash).length<3)spawnRandom(1+(Math.random()<.4?1:0),FOE_OUT[foeCh()]);
     }
     if(!s.out&&INDOOR_FOES.includes(S.scene)&&--CB.spawnT<=0){
-      CB.spawnT=1500+Math.random()*1500;
-      if(CB.foes.length<2)spawnRandom(1,FOE_IN[foeCh()]);
+      CB.spawnT=3600+Math.random()*3600;
+      if(!CB.foes.length)spawnRandom(1,FOE_IN[foeCh()]);
     }
     /* 墓地偶爾有災獸徘徊（IAN 會把牠們打飛） */
     if(S.scene==='outside'&&--CB.graveT<=0){
