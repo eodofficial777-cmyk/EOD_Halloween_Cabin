@@ -3768,6 +3768,13 @@ async function talk(id){
     await say('boss','你去過教堂了？牆上那把鍋。');await say('boss','是我們夜鷺的人。很久以前，她來過這裡。');
     await say('boss','她說那晚打得很痛快。天海幫、地聯幫、還是什麼東西……她沒說清楚。我也懶得問。');await say('boss','好麻煩。不過，她煎的蛋很好吃。');return}
   if(id==='batk'&&S.flags.gardenDone&&!S.flags.gardenBat){S.flags.gardenBat=1;await n('小蝙蝠的身上，沾著一點點五顏六色的花粉。……牠好像，偷偷去看過迷宮裡的花了。')}
+  if(id==='lala'&&(S.flags.g_heart1||S.flags.g_heart2)&&!['down','sleep'].includes(NPCS.lala.state)){const F=S.flags,two=F.g_heart1&&F.g_heart2;
+    if(!F.lalaHeart){F.lalaHeart=1;F.lalaHeart2=two?1:0;await say('lala','{me}，你脖子上掛的那個……是南瓜口味的史萊姆鬆餅！？');await n('護身符被拉拉盯著看，扁扁地抖了一下。');
+      await say('lala','被打得好服貼……這是誰打的呀？打法好專業……我打四百下，牠們都還會跑耶！');
+      await say('lala','既、既然牠這麼乖，就讓牠保護你吧！史萊姆鬆餅被打服一次，就會很認主人喔。……不可以吃掉喔！');return}
+    if(two&&!F.lalaHeart2){F.lalaHeart2=1;await say('lala','又、又一塊！？還灑了肉桂粉……');await n('兩塊護身符在你胸口碰了一下，互相抖了抖。……好像在打招呼。');
+      await say('lala','打服之後再灑肉桂粉……原來還可以這樣！我、我也要來學！');return}
+  }
   if(id==='kaicho'&&chOf()===5&&S.flags.gardenDone&&!S.flags.gardenKai){S.flags.gardenKai=1;await say('kaicho','迷宮的花……是你幫我照顧的嗎？');await say('kaicho','謝謝你。我還以為，它們等不到我回來了……真的，謝謝。');return}
   {const F=S.flags;if(F.wude&&WUDE_LINE[id]&&!(F.wudeTalk||{})[id]&&!['down','sleep','pile','nohead'].includes(NPCS[id].state)){(F.wudeTalk=F.wudeTalk||{})[id]=1;await say(id,WUDE_LINE[id])}}
   await noseTalk(id);
@@ -4697,6 +4704,7 @@ async function finalEnding(){
   else await say('lala','我、我馬上去煎鬆餅！番茄口味的！……番茄要先切還是先打？');
   await n('拉拉用他驚人的力氣，三兩下就把 IAN 的上半身和下半身縫了回去。');
   await say('ian','縫好啦！腳回來了！哈哈，果然還是有腿比較方便，大叔我的老腰終於有地方靠了！');
+  await finalSupper();
   await facScene({assoc:[['kaicho','好了，協會的大家，我們回家吧。'],['kaicho','{me}，謝謝你。下次的協會會議，坐我旁邊吧。'],['sui','好耶～{me}升官了！']],
     yelu:[['boss','走吧。回家。'],['boss','我們家的人，一個都不能少。你也是。'],['ian','大叔我請客！夜鷺的慶功宴，宵夜吃到飽！']],
     wander:[['n','兩邊的人，都對你揮了揮手。'],['n','……你不屬於任何一邊。可是這一晚之後，兩邊好像都多了一個朋友。']]});
@@ -4710,6 +4718,50 @@ async function finalEnding(){
   await say('radio','那麼，我們下次再見——滋——');
   RADIO_T=0;ach('h_radio');
   finish('final');
+}
+/* 終幕：離開前，拉拉端出鬆餅和冷凍櫃最深處挖出來的肉粽，大家回到餐廳吃最後一頓 */
+async function finalSupper(){
+  const F=S.flags,amu=F.g_heart1||F.g_heart2;
+  await n('……就在這時，宅邸裡飄出了一股甜甜的香味。');
+  await say('lala','大、大家等一下！走之前，先吃完這一頓再走！我都準備好了！');
+  changeScene('dining',7,8,'up');
+  for(const id in NPCS)NPCS[id].scene=null;
+  const seat=(id,x,y,dir,st)=>{const[a,b]=toNew('dining',x,y);Object.assign(NPCS[id],{scene:'dining',x:a,y:b,dir,state:st,mv:null,queue:[],qdone:null,patrol:null,follower:null,wait:9999})};
+  seat('boss',4,2,'down');seat('ian',6,2,'down');seat('po',8,2,'down','stand');seat('ji',10,2,'down');
+  seat('shisho',4,5,'up');seat('kaicho',6,5,'up');seat('sui',8,5,'up');seat('lala',10,5,'up');seat('ghost',13,3,'left');
+  {const[sx,sy,sd]=DINNER_SEAT[myFac()]||DINNER_SEAT.wander,[nx,ny]=toNew('dining',sx,sy);Object.assign(P,{x:nx,y:ny,dir:sd,moving:false,prog:0});fade=1}
+  await n('長桌上，又點起了蠟燭。');
+  await n('跟第一天晚上一樣的位子，一樣的人。……只是這一次，誰都沒有缺席。');
+  await say('lala','雖然天已經亮了……可是這是我們在這裡的最後一頓，所以算晚餐！最後的晚餐！');
+  await say('sui','拉拉，這說法很不吉利耶！');
+  await say('lala','對、對不起！那、那就是……「在這裡的」最後一頓晚餐！');
+  await n('拉拉端上一大盤鬆餅。疊得高高的，每一片都在微微地抖動。');
+  await say('lala','這次只打了三百九十九下，牠們有點緊張，可是很乖，一坨都沒有跑掉喔！');
+  if(amu){await n('你胸口的南瓜鬆餅護身符，忽然也輕輕抖了一下。');
+    await n('盤子裡的鬆餅們，齊刷刷地朝它彎了彎腰。……像是在跟前輩打招呼。');
+    await say('lala','欸！？牠們在……鞠躬？{me}，你那塊鬆餅，在鬆餅界是不是很有地位啊……');}
+  await say('lala','還、還有這個！我在廚房冷凍櫃的最深處挖到的！');
+  await n('拉拉抱出一大串用棉繩綁著的粽子。每一顆都用舊報紙包了好幾層，上面什麼字都沒寫。');
+  await n('蒸籠一掀開，竹葉的香味整個漫了出來。剝開來——油亮的糯米裡，包著滷得透透的五花肉、香菇、栗子，還有一整顆鹹蛋黃。');
+  await say('ian','肉粽！？萬聖節吃肉粽！？哈哈，好吃就好！大叔我先拿兩顆！');
+  await say('sui','喂！那個傻大個！一次拿兩顆是怎樣！我的份給我留下來！');
+  await say('po','……甜的鬆餅，配鹹的粽子。……剛好。我要三顆。');
+  await say('po','……醒著吃。吃完再睡。');
+  await say('ji','哎呀～冷凍櫃那麼深的地方，居然被拉拉先挖到了。……這糯米的黏性，拿來養植物一定很好玩～');
+  await say('ian','首領，這粽子是誰包的啊？冰得這麼好，大叔我都想去拜師了！');
+  await say('boss','報紙是好幾年前的。冰了很久。');
+  await say('boss','……結打得很緊。很會照顧人的那種人包的。好吃就好。');
+  await say('shisho','一個在盤子上逃跑，一個在冷凍櫃裡等了好幾年。……甜的跟鹹的，這頓飯倒是很有故事。');
+  await say('shisho','我就不吃了。包粽子的報紙倒是……算了，報紙不是書，不合胃口。');
+  await say('kaicho','能跟大家一起，好好坐下來吃一頓飯……真好。');
+  if(qDoneP('kaicho')){await say('kaicho','……配番茄汁的話，就更好了。');await say('lala','有！冰好的！');}
+  await say('ghost','那、那個……我也可以吃一顆嗎……？');
+  await say('kaicho','當然可以。你也是這張桌子的客人啊。');
+  await say('ghost','……嗚嗚，好好吃……原來有人陪著一起吃飯，是這種味道……');
+  await n('陽光從窗戶照進來，落在長桌上。最後一片鬆餅被大家推來推去，誰都捨不得吃。');
+  await say('lala','……啊，牠趁機跑掉了。對不起！！');
+  await n('整張桌子的人，都笑成了一團。');
+  applyWorld();changeScene('outside',17,22,'up');
 }
 function drawRadioPop(){
   if(!RADIO_T)return;const k=Math.min(1,(tick-RADIO_T)/18),y=Math.round(208-k*128+Math.sin(tick/7)*2);
@@ -5359,6 +5411,7 @@ async function roseTrip(dark){
 async function doughAmbush(mad,calm){
   const F=S.flags;F.ambush=(F.ambush||0)+1;
   if(calm){await n('一小坨麵糰從碗裡探出頭，看了看你，又乖乖縮了回去。');await n('……拉拉打了四百下的成果，好像真的有用。');return}
+  if(F.g_heart1||F.g_heart2){await n('攪拌碗裡的麵糰「啵」地探出頭——');await n('……看到你胸口那塊被打得扁扁的南瓜鬆餅，整坨僵住了。');await n('然後，慢慢地、慢慢地，縮回了碗底。');return}
   shake=5;
   await n(blackOn>0?'黑暗中，流理台那邊傳來「啵」的一聲——':'攪拌碗裡的麵糰，趁你經過的時候「啵」地彈了出來——');
   await n(mad?'好幾坨史萊姆麵糰一起撲上來，黏在你身上！……牠們好像還記得，你吃掉了牠們的同伴。':'一坨史萊姆麵糰撲上來，黏在你的腳上！走起路來黏答答的。');
