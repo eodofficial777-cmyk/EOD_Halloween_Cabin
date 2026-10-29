@@ -2472,7 +2472,7 @@ const IDLE_EV=[
   [[3,'thunder'],[6,'lala','鬆餅放這裡喔～趁熱吃！'],[11,'qte','連打 Z 接住鬆餅！'],[14,'thought','……鬆餅好香。不能動。'],[15,'head'],[19,'tickle'],[24,'ian','鏘——！'],
    [29,'chase'],[33,'fakeend'],[36,'boss','還沒結束。笨。'],[38,'boss','大南瓜說你很乖。']],
   [[3,'thought','好想看一下時間……'],[6,'ji','這瓶新的個人秘方，給你聞聞看～'],[10,'qte','按住 X 撐住！'],[13,'thought','……什麼都沒有要撐。'],[14,'thunder'],[17,'llama'],[21,'po','……這裡好睡。呼啊……'],
-   [26,'phone','🔔 新訊息：「發呆發得怎麼樣？」'],[30,'blackout'],[39,'qte','QTE！快按 C 閃開！'],[42,'thought','……閃什麼？'],[44,'voice','「{me}～鬆餅煎好囉～快來吃！」'],[48,'mosquito'],
+   [26,'phone','🔔 新訊息：「發呆發得怎麼樣？」'],[30,'blackout'],[39,'qte','QTE！快按 C 閃開！'],[42,'thought','……閃什麼？'],[44,'voice','「鬆餅煎好囉～大家快來吃！」（是拉拉的聲音）'],[48,'mosquito'],
    [52,'fakeend'],[55,'boss','再一下下。'],[57,'thought','……睡著了嗎？']],
 ];
 function idleRound(r){
@@ -2772,12 +2772,12 @@ async function idleSession(){
         await say('boss','偶爾這樣，也不錯。');
         qAlt('boss',{candy:3});return;
       }
-      await say('boss',['……你動了。好麻煩。','……再來。','……大南瓜說你太吵了。','……坐不住啊。'][(Math.random()*4)|0]);
+      await say('boss',['你動了。好麻煩。','再來。','大南瓜說你太吵了。','坐不住啊。'][(Math.random()*4)|0]);
       const c=await choose(`要再躺一次嗎？（再動 ${5-q.fails} 次，會走向另一條路線）`,['再躺一次','先起來']);if(c===1)return;continue;
     }
     q.round++;
     if(q.round>=IDLE_DUR.length)break;
-    await say('boss',q.round===1?'……不錯。':'……很好。大南瓜也這麼覺得。');
+    await say('boss',q.round===1?'不錯。':'很好。大南瓜也這麼覺得。');
     const c=await choose(`要繼續躺下一輪嗎？（${IDLE_DUR[q.round]} 秒）`,['繼續躺','先起來']);if(c===1)return;
   }
   await n('躺了好久好久。雨聲變得好遠好遠。');
