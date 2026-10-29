@@ -1142,7 +1142,7 @@ function drawTile(g,c,X,Y,tx,ty,sc){
     case 'G':R(g,X,Y,16,16,'#3e3226');R(g,X,Y,16,2,'#1a3220');R(g,X,Y+14,16,2,'#1a3220');R(g,X+1,Y+2,1,12,'#2a2a30');R(g,X+14,Y+2,1,12,'#2a2a30');R(g,X+4,Y+7,1,2,'#d9a640');break;
     case 'E':R(g,X,Y,16,16,'#3e3226');R(g,X,Y,16,2,'#1a3220');R(g,X,Y+14,16,2,'#1a3220');break;
     case 'x':R(g,X,Y,16,16,'#3a2014');R(g,X,Y+7,16,1,'#22120a');R(g,X,Y+15,16,1,'#22120a');R(g,X+2,Y+2,3,5,sc==='attic'?'#8a7a6a':'#c8202a');R(g,X+6,Y+3,3,4,'#d9a640');R(g,X+10,Y+2,3,5,sc==='attic'?'#6a8aa0':'#c8202a');R(g,X+2,Y+10,4,5,'#efe3c8');R(g,X+8,Y+11,5,4,'#8a6a40');break;
-    case 'y':floor();if(sc==='attic'){R(g,X+1,Y+3,14,12,'#d8d4cc');R(g,X+2,Y+4,12,2,'#e8e4dc');R(g,X+1,Y+14,14,1,'#a8a49c')}else{R(g,X+2,Y+4,12,11,'#c9bfa0');R(g,X+3,Y+3,10,2,'#b8ae8f');R(g,X+5,Y+8,6,3,'#8a7a5a');R(g,X+2,Y+14,12,1,'#7a6a4a')}break;
+    case 'y':floor();if(sc==='attic'){R(g,X+2,Y+14,3,2,'#3a2414');R(g,X+11,Y+14,3,2,'#3a2414');R(g,X+1,Y+3,14,12,'#9a968e');R(g,X+2,Y+2,12,12,'#dcd8cf');R(g,X+3,Y+1,10,2,'#e8e4dc');R(g,X+2,Y+2,12,1,'#efebe3');R(g,X+5,Y+3,1,11,'#c4c0b6');R(g,X+10,Y+4,1,10,'#c4c0b6');R(g,X+8,Y+6,1,8,'#cfcbc2');R(g,X+2,Y+13,12,1,'#b0aca2');R(g,X+1,Y+14,2,1,'#c4c0b6');R(g,X+13,Y+14,2,1,'#c4c0b6')}else{R(g,X+2,Y+4,12,11,'#c9bfa0');R(g,X+3,Y+3,10,2,'#b8ae8f');R(g,X+5,Y+8,6,3,'#8a7a5a');R(g,X+2,Y+14,12,1,'#7a6a4a')}break;
     case '%':{(sc==='chapel'?R(g,X,Y,16,16,'#3e383c'):sc==='greenhouse'?R(g,X,Y,16,16,'#5a3a2e'):floor());
       R(g,X+2,Y+3,12,12,'#2a170e');R(g,X+3,Y+4,10,10,'#8a6a40');R(g,X+3,Y+8,10,1,'#5e3a20');R(g,X+7,Y+4,2,10,'#5e3a20');R(g,X+3,Y+4,10,1,'#a8865a');
       decoHW(g,X,Y,h%5,3);break}
@@ -1270,6 +1270,7 @@ function npcWalkable(o,x,y){
   if(s.exitsN.some(e=>e[0]===x&&e[1]===y))return false;
   if(o.scene==='dining'){const[ox,oy]=toOld('dining',x,y);if(ox===8&&oy===6)return false}
   if(hallObj(o.scene,x,y))return false;
+  if(S&&chOf()>=0&&DECOR.some(d=>d.sc===o.scene&&d.x===x&&d.y===y&&DECOR_SOLID.has(d.k)&&decorOn(d)))return false;
   if(S&&o.scene===S.scene&&((P.x===x&&P.y===y)||(P.moving&&P.tx===x&&P.ty===y)))return false;
   for(const q of Object.values(NPCS))if(q!==o&&q.scene===o.scene&&q.x===x&&q.y===y)return false;
   return true;
@@ -2881,10 +2882,9 @@ const DECOR=[
   {sc:'roomL',x:11,y:4,k:'pillows',ch:3},{sc:'roomL',x:13,y:9,k:'toys',ch:3},
   {sc:'roomL',x:8,y:8,k:'fort',ch:4},{sc:'roomL',x:4,y:9,k:'wrap',ch:4},
   /* 2F 右客房：鏡子和衣櫃那間，越來越詭異 */
-  {sc:'roomR',x:5,y:3,k:'web',ch:1},
-  {sc:'roomR',x:14,y:3,k:'clothes',ch:2},
-  {sc:'roomR',x:15,y:5,k:'candles',ch:3},{sc:'roomR',x:1,y:3,k:'web',ch:3},
-  {sc:'roomR',x:15,y:6,k:'phead',ch:4},{sc:'roomR',x:14,y:5,k:'phead',ch:4},{sc:'roomR',x:10,y:9,k:'web',ch:4},
+    {sc:'roomR',x:14,y:3,k:'clothes',ch:2},
+  {sc:'roomR',x:15,y:5,k:'candles',ch:3},
+  {sc:'roomR',x:15,y:6,k:'phead',ch:4},{sc:'roomR',x:14,y:5,k:'phead',ch:4},
   /* 展覽室：司書的提神飲料 */
   {sc:'exhibit',x:7,y:3,k:'espresso',ch:0},
   /* 餐廳 */
@@ -2917,6 +2917,8 @@ const DECOR_T={
   web:'角落結了一張蜘蛛網。網子正中間，蜘蛛排成了一個南瓜的形狀。',
   clothes:'衣櫃前散落了一堆衣服。衣櫃裡傳來咚咚的敲門聲……衣服是被推出來的？',
 };
+/* 立著的裝飾有體積，走不過去；灑在地上的麵粉、腳印、糖果紙之類的可以踩過去 */
+const DECOR_SOLID=new Set(['candles','candle','phead','toys','pillows','fort','saw','flourbag','plates','espresso','custard','stack','bowl','ppie']);
 const decorOn=d=>chOf()>=d.ch&&(!d.cond||d.cond());
 function decorAt(x,y){return S?DECOR.find(d=>d.sc===S.scene&&d.x===x&&d.y===y&&decorOn(d))||null:null}
 function drawDecor(cx,cy){
@@ -4099,7 +4101,7 @@ const HINT_SPOTS=[
 function hintSpot(x,y){return S?HINT_SPOTS.find(h=>h.sc===S.scene&&h.x===x&&h.y===y&&chOf()<h.until):null}
 function hintSeen(id){achSeen('hints',id,4,'h_hints')}
 const HINT4={cut:'墓園裡 IAN 的上半身',seam:'IAN 的下半身（看看斷口）',shoe:'IAN 的下半身（再看看腳上）',bottle:'IAN 旁邊草地上發亮的東西',notji:'溫室裡的薊（給她看看藥水瓶）',growth:'展覽室的司書',laugh:'屋外的首領',dream:'睡著的小波（湊近聽聽）'};
-const BOTTLE={x:20,y:5};
+const BOTTLE={x:22,y:7};
 async function disc4(){
   S.flags.disc4=true;
   await n('墓園裡，大家已經圍成了一圈。');
@@ -4530,13 +4532,15 @@ function walkable(x,y){
   const c=tileAt(x,y);if(SOLID.has(c))return false;{const na=npcAt(x,y);if(na&&!(na==='legs'&&legsOn()))return false}
   if(S.scene==='dining'&&ox===8&&oy===6&&chOf()>=1)return false;
   if(propAt(x,y))return false;
+  {const dc=decorAt(x,y);if(dc&&DECOR_SOLID.has(dc.k))return false}
+  {const wd=wanderAt(x,y);if(wd&&!wd.wall)return false}
   if(S.scene===SIGN.scene&&x===SIGN.x&&y===SIGN.y)return false;
   return true;
 }
 function changeScene(to,x,y,dir){
   [x,y]=toNew(to,x,y);
   if(SCENES[to].out&&P.light>0){P.light=0;setTimeout(()=>toast('雨一淋，蠟燭就熄了。'),300)}
-  S.scene=to;sfx('door');Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(SOKO[to]){sokoInit(to);setTimeout(()=>run(()=>sokoIntro(to)),60)}legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
+  S.scene=to;sfx('door');for(const w of WEBS)w.torn=0;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(SOKO[to]){sokoInit(to);setTimeout(()=>run(()=>sokoIntro(to)),60)}legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
   if(to==='dining'&&chOf()===0&&!S.flags.gathered)run(gatherScene);
   else if(to==='dining'&&chOf()===1&&!S.flags.discovered)run(discovery);
   if(to==='kitchen'&&chOf()===2&&!S.flags.disc2)run(discovery2);
@@ -4545,6 +4549,7 @@ function changeScene(to,x,y,dir){
   if(to==='outside'&&chOf()===4&&!S.flags.disc4)run(disc4);
 }
 function onArrive(){
+  webCheck();
   const ex=sc().exitsN.find(e=>e[0]===P.x&&e[1]===P.y);
   if(ex&&ex[2]==='exhibit'&&S.scene!=='exhibit'&&(S.flags.dirt||[]).length&&NPCS.shisho.scene==='exhibit')return run(shishoNoEntry);
   if(ex)return changeScene(ex[2],ex[3],ex[4],ex[5]);
@@ -4644,7 +4649,7 @@ const WANDER=[
   {id:'dcdl',sc:'dining',k:'cdl',p:[[2,1],[17,1],[17,7],[2,7]]},
   {id:'eframe',sc:'exhibit',k:'frame',wall:1,p:[[3,0],[8,0]]},
   {id:'rchair',sc:'roomR',k:'chair',p:[[4,7],[14,8],[9,9]]},
-  {id:'kpot',sc:'kitchen',k:'teapot',p:[[2,3],[14,3],[14,5],[8,6]]},
+  {id:'kpot',sc:'kitchen',k:'teapot',p:[[4,2],[14,2],[14,3],[8,6]]},
 ];
 const WS={};for(const w of WANDER)WS[w.id]={x:w.p[0][0],y:w.p[0][1],ox:0,oy:0,mv:0,wi:1,t:120,away:0};
 const WANDER_T={
@@ -4663,6 +4668,7 @@ function lookingAt(x,y){const[dx,dy]=DV[P.dir],vx=x-P.x,vy=y-P.y,d=Math.hypot(vx
 /* 會動的家具不能停在門口、可調查的東西、道具或角色身上 */
 function spotBusy(sc,x,y){const c=tileAt(x,y);return!c||SOLID.has(c)||c==='D'||isExit(sc,x,y)||hallObj(sc,x,y)||npcAt(x,y)||propAt(x,y)||lostAt(x,y)||gearAt(x,y)||hintSpot(x,y)||decorAt(x,y)||searchKey(sc,x,y)}
 function wanderFree(w,x,y){if(w.wall)return true;if(spotBusy(w.sc,x,y)||(P.x===x&&P.y===y))return false;
+  if((SCENES[w.sc].exitsN||[]).some(e=>Math.abs(e[0]-x)+Math.abs(e[1]-y)<=1))return false;
   return!WANDER.some(o=>o!==w&&o.sc===w.sc&&WS[o.id].x===x&&WS[o.id].y===y)}
 function wanderStep(w,toward){const st=WS[w.id];
   let opts;if(toward){const[tx,ty]=w.p[st.wi],sx=Math.sign(tx-st.x),sy=Math.sign(ty-st.y);opts=[[sx,0],[0,sy]].filter(([a,b])=>a||b);if(!opts.length){st.wi=(st.wi+1)%w.p.length;return false}}
@@ -4677,6 +4683,7 @@ function wanderTick(){
     if(st.mv>0){st.mv--;continue}
     if(busy)continue;
     if(!w.wall&&P.x===st.x&&P.y===st.y){wanderStep(w,false);continue}
+    if(!w.wall&&!busy&&held.length){const[dx,dy]=DV[P.dir];if(P.x+dx===st.x&&P.y+dy===st.y){wanderStep(w,false);st.t=60;continue}}
     if(--st.t>0)continue;
     if(lookingAt(st.x,st.y)){st.t=40;continue}
     wanderStep(w,true);st.t=70+Math.random()*120}
@@ -4722,6 +4729,20 @@ async function furnitureBook(){
   await n('頁邊有一行工整的小字：「已驗證。這一頁的知識，有木頭的香味。——研究部長」');
   if(NPCS.shisho.scene==='exhibit')await say('shisho','那本我吃了一半。……家具會走路，有什麼好大驚小怪的？你們走路的時候，我也沒說什麼。');
   S.flags.furnBook=1;
+}
+/* 蜘蛛網：結在房間角落。走進去會被纏住，動作變慢一陣子 */
+const WEBS=[{sc:'roomR',x:1,y:10,c:'bl'},{sc:'roomR',x:16,y:10,c:'br'},{sc:'roomR',x:16,y:4,c:'tr'},
+  {sc:'attic',x:10,y:1,c:'tr'},{sc:'attic',x:1,y:5,c:'bl'},{sc:'attic',x:10,y:5,c:'br'}];
+const webAt=(x,y)=>S?WEBS.find(w=>w.sc===S.scene&&w.x===x&&w.y===y)||null:null;
+function webCheck(){const w=webAt(P.x,P.y);if(!w||w.torn)return;w.torn=1;P.sticky=Math.max(P.sticky||0,60*3);sfx('swing');
+  addDirt('dust');toast('哇！被角落的蜘蛛網纏住了！黏黏的，動作變慢了……');toastT=160}
+function drawWebs(cx,cy,key){
+  for(const w of WEBS){if(w.sc!==key)continue;const X=w.x*T-cx,Y=w.y*T-cy,fx=w.c[1]==='r',fy=w.c[0]==='b',c='rgba(225,225,235,.75)',c2='rgba(225,225,235,.45)';
+    const px=(a)=>fx?X+15-a:X+a,py=(b)=>fy?Y+15-b:Y+b;
+    if(w.torn){for(const[a,b]of[[0,0],[1,1],[2,1],[0,3],[1,5],[5,0]])R(ctx,px(a),py(b),1,1,c2);continue}
+    for(let i=0;i<14;i++){R(ctx,px(i),py(0),1,1,c);R(ctx,px(0),py(i),1,1,c);if(i<11)R(ctx,px(i),py(i),1,1,c2)}
+    for(const r of[5,9,13])for(let i=0;i<=r;i++){const a=Math.round(r-i*i/r);R(ctx,px(i),py(Math.max(0,r-i)),1,1,c2)}
+    R(ctx,px(6),py(6),2,2,'#2a2228');R(ctx,px(5),py(5),1,1,'#2a2228');R(ctx,px(8),py(8),1,1,'#2a2228')}
 }
 /* ---------------- 大廳：管風琴、巨大南瓜燈、奇怪的裝飾、燭台 ---------------- */
 const HALL_OBJ=[
@@ -4998,9 +5019,26 @@ function drawHallStuff(cx,cy){
     }else if(o.k==='gpump'){
       g.fillStyle=`rgba(255,170,60,${.12+Math.sin(tick/14)*.04+(F.organDark&&blackOn>0?.1:0)})`;g.beginPath();g.arc(X+16,Y+16,30,0,6.28);g.fill();drawPumpkin(X,Y);
     }else if(o.k==='armor'){
-      R(g,X+3,Y-10,10,24,K);R(g,X+4,Y-9,8,10,'#8a8f96');R(g,X+5,Y-8,2,8,'#b8bec4');R(g,X+4,Y+1,8,12,'#6a6e72');R(g,X+5,Y+2,2,10,'#8a8f96');R(g,X+1,Y-8,2,12,'#6a6e72');R(g,X+13,Y-8,2,12,'#6a6e72');
-      R(g,X+14,Y-14,1,26,'#9aa0a6');R(g,X+13,Y-16,3,3,'#c9ced4');
-      R(g,X+2,Y-20,12,11,K);R(g,X+3,Y-19,10,9,'#e2741c');R(g,X+7,Y-22,2,3,'#3f6b2a');R(g,X+5,Y-16,2,2,'#ffd25a');R(g,X+9,Y-16,2,2,'#ffd25a');R(g,X+5,Y-12,6,1,'#ffd25a');
+      /* 盔甲騎士：石座、鐵靴、護脛、裙甲、胸甲、肩甲，頭盔換成了南瓜，手上握著斧槍 */
+      const st='#8a9098',hi='#c8ced6',md='#6a7078',dk='#4a5058';
+      R(g,X+1,Y+12,14,4,K);R(g,X+2,Y+12,12,3,'#5a4a40');R(g,X+2,Y+12,12,1,'#7a6a5a');
+      R(g,X+14,Y-24,1,36,'#5a3a20');R(g,X+15,Y-24,1,36,'#3a2414');
+      R(g,X+11,Y-22,3,6,K);R(g,X+12,Y-21,2,4,'#b8bec4');R(g,X+12,Y-21,1,4,hi);R(g,X+16,Y-21,2,3,'#9aa0a6');R(g,X+14,Y-27,2,4,'#d8dee4');
+      R(g,X+3,Y+9,4,3,K);R(g,X+9,Y+9,4,3,K);R(g,X+3,Y+10,4,1,md);R(g,X+9,Y+10,4,1,md);
+      R(g,X+4,Y+1,3,9,K);R(g,X+9,Y+1,3,9,K);R(g,X+4,Y+2,2,7,st);R(g,X+9,Y+2,2,7,st);R(g,X+4,Y+2,1,7,hi);R(g,X+9,Y+2,1,7,hi);
+      R(g,X+4,Y+4,3,1,dk);R(g,X+9,Y+4,3,1,dk);
+      R(g,X+2,Y-2,12,4,K);R(g,X+3,Y-1,10,3,md);for(let k=0;k<4;k++)R(g,X+3+k*3,Y-1,1,3,dk);
+      R(g,X+3,Y-3,10,1,'#7a4a2a');R(g,X+7,Y-3,2,1,'#d9a640');
+      R(g,X+2,Y-12,12,10,K);R(g,X+3,Y-11,10,8,st);R(g,X+4,Y-10,2,6,hi);R(g,X+7,Y-11,2,8,'#a8aeb6');R(g,X+11,Y-11,2,8,md);R(g,X+5,Y-5,6,1,dk);
+      R(g,X+0,Y-12,4,5,K);R(g,X+12,Y-12,4,5,K);R(g,X+1,Y-11,3,3,'#7a8088');R(g,X+12,Y-11,3,3,'#7a8088');R(g,X+1,Y-11,3,1,hi);R(g,X+12,Y-11,3,1,hi);
+      R(g,X+0,Y-7,3,7,K);R(g,X+1,Y-6,1,5,md);R(g,X+0,Y,3,2,dk);
+      R(g,X+12,Y-7,3,6,K);R(g,X+13,Y-6,1,4,md);R(g,X+12,Y-2,4,3,dk);
+      R(g,X+5,Y-13,6,2,dk);
+      R(g,X+2,Y-23,12,11,K);R(g,X+3,Y-22,10,9,'#e2741c');R(g,X+5,Y-22,1,9,'#b8560f');R(g,X+10,Y-22,1,9,'#b8560f');R(g,X+3,Y-22,10,1,'#f08a2c');
+      R(g,X+7,Y-26,2,4,'#3f6b2a');R(g,X+9,Y-26,2,1,'#3f6b2a');
+      const gl=(tick>>4)%6?'#ffd25a':'#ffb03a';R(g,X+4,Y-19,3,2,K);R(g,X+9,Y-19,3,2,K);R(g,X+5,Y-19,1,1,gl);R(g,X+10,Y-19,1,1,gl);
+      R(g,X+5,Y-16,6,1,K);R(g,X+6,Y-16,1,1,gl);R(g,X+8,Y-16,1,1,gl);
+      R(g,X+3,Y-14,10,1,st);R(g,X+3,Y-14,10,1,'rgba(200,206,214,.6)');
     }else if(o.k==='broom'){
       R(g,X+3,Y+4,10,11,K);R(g,X+4,Y+5,8,9,'#4a2d5e');R(g,X+4,Y+8,8,1,'#7a4a9a');
       const out=BROOM_T>0;for(let i=0;i<3;i++){if(out&&i===1)continue;const bx=X+5+i*3,sh=i===1?Math.round(Math.sin(tick/3)):0;R(g,bx+sh,Y-12,1,18,'#8a6a3a');R(g,bx-1+sh,Y-15,3,4,'#d9b860')}
@@ -5857,7 +5895,7 @@ function render(){
       R(ctx,X+12,Y+6,3,3,'#efe8dc');R(ctx,X+12,Y+6,3,1,'#8a4a2a');R(ctx,X+1,Y+7,3,1,'#d9a050')}
     else{for(let i=0;i<4;i++){R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,5,'#efe8dc');R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,1,'#5a3a22')}R(ctx,X+6,Y+2,5,5,'#efe8dc');R(ctx,X+6,Y+2,5,1,'#5a3a22')}}
   if(S&&mode==='play')drawMazeStuff(cx,cy,key);
-  if(S&&mode==='play')drawWander(cx,cy,key);
+  if(S&&mode==='play'){drawWebs(cx,cy,key);drawWander(cx,cy,key)}
   if(S&&mode==='play'&&key==='hall')drawHallStuff(cx,cy);
   if(S&&mode==='play'&&key==='chapel')drawChapelStuff(cx,cy);
   if(S&&mode==='play'&&SOKO[key])drawPField(cx,cy);
