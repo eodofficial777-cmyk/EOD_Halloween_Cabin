@@ -1206,8 +1206,10 @@ function applyWorld(){
   if(!llamaOk)set('horse','outside',33,13);
   if(S&&qGet('sui')&&qGet('sui').st==='alt')NPCS.horse.scene=null;
   if(ch===0){
-    if(!F.gathered){/* 開場晚餐：大家坐在長桌兩側的椅子上 */set('kaicho','dining',1,3);set('lala','dining',4,2);set('ian','dining',7,2);set('ji','dining',10,2);set('boss','dining',12,2);
-      set('shisho','dining',4,5);set('sui','dining',7,5);set('po','dining',10,5,'stand');NPCS.kaicho.dir='right';for(const id of['shisho','sui','po'])NPCS[id].dir='up'}
+    if(!F.gathered){/* 開場晚餐：上排夜鷺、下排協會，玩家坐自己陣營那邊，流浪者坐桌邊 */
+      set('boss','dining',4,2);set('ian','dining',6,2);set('po','dining',8,2,'stand');set('ji','dining',10,2);
+      set('shisho','dining',4,5);set('kaicho','dining',6,5);set('sui','dining',8,5);set('lala','dining',10,5);
+      for(const id of['shisho','kaicho','sui','lala'])NPCS[id].dir='up'}
     else{set('kaicho','greenhouse',10,7);set('lala','kitchen',9,4);set('po','hall',12,6,'stand')}
   }else if(ch===1){
     set('kaicho','dining',7,6,'down');
@@ -1765,11 +1767,13 @@ function drawProps(cx,cy){
 
 /* ---------------- 序幕 ---------------- */
 const PRE_IDS=['kaicho','shisho','sui','lala','boss','ian','ji','po'];
+const DINNER_SEAT={yelu:[3,2,'down'],assoc:[7,5,'up'],wander:[2,3,'right']};
 async function gatherScene(){
   const F=S.flags;F.gathered=true;
+  {const[sx,sy,sd]=DINNER_SEAT[myFac()]||DINNER_SEAT.wander,[nx,ny]=toNew('dining',sx,sy);Object.assign(P,{x:nx,y:ny,dir:sd,moving:false,prog:0});fade=1}
   await n('餐廳的長桌旁，已經坐滿了人。燭光搖晃，每個人的影子都拉得長長的。');
   await say('kaicho',myFac()==='wander'?'……人都到齊了吧。新來的那位，也請坐。':'……人都到齊了吧。');
-  await n('坐在長桌最前面的，是一個臉色蒼白的青年。他面前只放著一個空杯子。');
+  await n('協會那一側的中間，坐著一個臉色蒼白的青年。他面前只放著一個空杯子。');
   await say('kaicho','我是協會的會長。先確認一下狀況——大家都是突然來到這裡的？');
   if(myFac()==='assoc'){await n('會長看到你，表情稍微放鬆了一點。');await say('kaicho','是{me}啊，連你也被拉進來了。……來，坐我旁邊吧，這裡比較暖。');}
   else if(myFac()==='yelu'){await n('桌子另一頭，抱著南瓜燈的首領懶洋洋地抬起一隻手，朝你的位置指了指。');await say('boss','{me}。你也在。坐這邊。');await say('kaicho','夜鷺的{me}，你也在啊。這種時候就不分彼此了，有什麼事儘管跟我說。');}
