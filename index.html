@@ -1831,7 +1831,7 @@ async function preEnd(){
 async function talk0(id){
   const F=S.flags,first=!F['p_'+id];
   if(id==='horse'){ach('h_horse');await n('半透明的幽靈羊駝斜眼看著你，嘴巴嚼個不停。');await n('「呸！」——一團冰冰涼涼的口水黏在你臉上。');addDirt('spit');return}
-  if(!F.gathered){return say(id,'大家都在 餐廳 集合喔，快過去吧！')}
+  if(!F.gathered){return say(id,{kaicho:'大家都在 餐廳 集合，你也一起來吧。',boss:'……餐廳。大家在等。',shisho:'餐廳。開會。……我只是去看戲的。',sui:'快點！大家都在 餐廳 等啦！',ji:'大家都在 餐廳 等你喔～遲到的人要喝我的新藥水～',lala:'大家都在 餐廳 集合喔，快過去吧！',ian:'喲！大家都在 餐廳 集合啦，快過去吧！',po:'……餐廳……開會……Zzz……'}[id]||'大家都在 餐廳 集合。')}
   if(!first){
     if(await sideTalk(id))return;
     if(id==='po'&&NPCS.po.state==='sleep')return say('po','……枕頭……祭壇……Zzz……');
@@ -2971,13 +2971,23 @@ function drawDirt(g,X,Y){
   }
 }
 /* 跟人說話時，對方會聞到你身上的味道 */
+/* 每個人聞到你身上味道時的反應（照個性） */
+const NOSE={
+  kaicho:{spit:'你臉上……是羊駝的口水嗎？來，用這個擦一擦吧。',pumpkin:'有南瓜的味道呢。首領應該會喜歡。',batter:'衣服上黏著鬆餅麵糊……好像在動？小心別被它跑掉了。',dust:'全身都是灰……沒受傷吧？',petal:'頭上卡著花瓣喔。是溫室的玫瑰吧？薊的花，很有精神呢。',bath:'……要不要先去洗個澡？熱水會讓人放鬆一點。',fresh:'好香……是玫瑰跟香草？洗過澡了啊，太好了。'},
+  boss:{spit:'……口水。羊駝的。',pumpkin:'……南瓜的味道。嗯。不錯。',batter:'你身上的麵糊在動。',dust:'……灰。墓室的。',petal:'……花瓣。溫室的。',bath:'……去洗澡。',fresh:'……香的。'},
+  shisho:{spit:'羊駝的口水。……離書遠一點。',pumpkin:'南瓜汁的味道。……別靠近書架。',batter:'你身上的麵糊在動。從生物學的角度很值得研究——但別在我的書旁邊研究。',dust:'墓室的灰塵。看來你去了不少書上沒寫的地方。',petal:'滿頭花瓣。薊的花粉沾到書上，我吃了會打噴嚏。',bath:'你身上同時有好幾種味道，分析起來很有趣。……浴室在二樓右客房。',fresh:'玫瑰和香草。……嗯，這樣才能靠近書。'},
+  sui:{spit:'哈哈哈！那隻臭羊駝也吐你啦？歡迎加入！',pumpkin:'你掉進南瓜裡啦？這方面我比你有經驗喔！',batter:'欸，你身上的麵糊在動耶！要不要我幫你揍它？',dust:'你去哪裡打滾啦？全身都是灰！',petal:'頭上插滿花瓣是怎樣？那個臭女人的玫瑰又亂來了吧！',bath:'說真的，你該去洗澡了啦！',fresh:'哦～香香的嘛！總算洗乾淨了！'},
+  ji:{spit:'噗哈哈！羊駝的口水～很適合你喔～',pumpkin:'南瓜汁的味道～首領看到你，大概會把你抱回家喔～',batter:'鬆餅麵糊？拉拉的作品還真是熱情呢～',dust:'全身灰撲撲的～你是去墓室挖寶了嗎？',petal:'我的玫瑰很喜歡你嘛～不過花瓣可不是免費的喔～',bath:'先說好，你這個味道，我的玫瑰會嫌棄喔～',fresh:'玫瑰跟香草？品味還不錯嘛。……當然，比我的玫瑰差一點～'},
+  lala:{spit:'{LC}臉上那個……是羊駝的口水嗎！？我、我去拿毛巾！',pumpkin:'咦？有南瓜的味道！要不要我做南瓜鬆餅給你？',batter:'啊啊啊對不起！那是我的麵糊！它、它黏到你身上了！',dust:'{LC}全身都是灰！要不要先坐下來吃片鬆餅？',petal:'頭上都是花瓣耶，好可愛！……啊、對不起，不是說你平常不可愛的意思！',bath:'那個……要不要先去洗個澡？我、我不是嫌棄的意思！',fresh:'哇，好香！是玫瑰跟香草的味道！'},
+  ian:{spit:'哈哈！被羊駝吐了吧！大叔我也被吐過，習慣就好！',pumpkin:'喲！南瓜味！你剛剛跟南瓜打了一架嗎？',batter:'你身上的麵糊在動耶！哈哈，拉拉的麵糊就是有精神！',dust:'全身灰撲撲的！年輕人就是愛到處跑！',petal:'頭上插花啦？哈哈，挺好看的嘛！',bath:'來，聽大叔一句——該去洗澡啦！',fresh:'喲！香噴噴的！洗完澡整個人都不一樣了嘛！'},
+  po:{spit:'……口水。……我沒有流。',pumpkin:'……南瓜的味道。……好餓。',batter:'……你身上的東西在動。……我不想管。',dust:'……灰灰的。……去洗啦。',petal:'……花瓣。……可以拿來塞枕頭嗎。',bath:'……你好臭。……我不要跟你一起睡。',fresh:'……好香。……可以借我聞著睡嗎。'},
+};
 const NOSE_SKIP=['horse','batk','cone','legs','ghost'];
 async function noseTalk(id){
   const F=S.flags,o=NPCS[id];if(NOSE_SKIP.includes(id)||['down','sleep','pile','nohead'].includes(o.state))return;
   if(F.dirtTalk&&F.dirt&&F.dirt.length){F.dirtTalk=0;const k=F.dirt[F.dirt.length-1];
-    const line={spit:'……你臉上那個，是羊駝的口水嗎？',pumpkin:'你身上……怎麼有南瓜的味道？首領會很開心吧。',batter:'你身上黏著鬆餅麵糊耶。……它是不是在動？',dust:'你剛從哪裡爬出來的？全身都是灰。',petal:'你頭上卡著好多玫瑰花瓣喔。'}[k];
-    await say(id,line);if(F.dirt.length>=3)await say(id,'……而且，你是不是該去洗個澡了？');}
-  else if(P.fresh>0&&!F.freshTalk){F.freshTalk=1;await say(id,'咦？好香喔！是玫瑰跟香草的味道？')}
+    const L=NOSE[id]||NOSE.kaicho;await say(id,L[k]);if(F.dirt.length>=3)await say(id,L.bath);}
+  else if(P.fresh>0&&!F.freshTalk){F.freshTalk=1;await say(id,(NOSE[id]||NOSE.kaicho).fresh)}
 }
 /* 變身時跟人說話：首領×南瓜、會長×蝙蝠有專屬對話，其他人只會嚇一跳 */
 const MORPH_LINE={
