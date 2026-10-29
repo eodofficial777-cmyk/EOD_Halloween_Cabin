@@ -1862,6 +1862,7 @@ const ACHS=[
   {id:'m_act1', main:1,t:'第一幕・水落石出',d:'揭穿作祟的真兇。',lk:'真相，往往不是第一眼看到的那樣。'},
   {id:'m_act2', main:1,t:'第二幕・睡覺就該在床上睡',d:'找到從上鎖儲藏室消失的小波。',lk:'上了鎖的門，擋不住想睡覺的人。'},
   {id:'m_act3', main:1,t:'第三幕・南瓜裡的頭',d:'幫翠找回她的頭。',lk:'有人把頭弄丟了。'},
+  {id:'m_riot', main:1,t:'南瓜精靈大暴動',d:'平息了首領召喚出來的南瓜精靈暴動。',lk:'大南瓜旁邊，有人不准你亂來。'},
   {id:'m_act4', main:1,t:'第四幕・縫線的真相',d:'揭開 IAN 斷成兩半的真相，替拉拉洗清冤屈。',lk:'線，是怎麼斷掉的？'},
   {id:'m_seal',main:1,t:'四盞南瓜燈',d:'解開謎題，點亮通往墓室深處的四盞南瓜燈。',lk:'四個地方，四道光。'},
   {id:'m_final',main:1,t:'終幕・不給糖就搗蛋',d:'打倒地下墓室深處的南瓜幽靈，和大家一起離開宅邸。',lk:'最深的地方，有誰在等著一起玩。'},
@@ -1892,6 +1893,8 @@ const ACHS=[
   {id:'h_idle_perfect',t:'不動如山',d:'一次都沒動，就撐完了三輪發呆。',hint:'比石頭還安靜。'},
   {id:'h_legs',t:'斷腿助攻',d:'IAN 的下半身幫你踢飛了 10 隻災獸。',hint:'有一雙腿，比你還想戰鬥。',stat:'legs',goal:10},
   {id:'h_hints',t:'其實早就有跡象',d:'在南瓜幽靈坦白之前，就找到了拉拉、司書、薊、首領沒被作祟的伏筆。',hint:'有四個人，從來沒被纏上。為什麼？'},
+  {id:'h_nap',t:'睡教的午覺',d:'在教堂的長椅上，蓋著小被被睡了一覺。',hint:'教堂的長椅，看起來很好睡。'},
+  {id:'h_tombs',t:'墓誌銘鑑賞家',d:'讀遍了墓園裡每一種墓誌銘。',hint:'每一塊墓碑，都有想說的話。'},
   {id:'h_bath',t:'香噴噴',d:'在古典大浴缸裡泡了個澡。',hint:'洗去一身疲憊。'},
   {id:'h_keeps',t:'滿滿的回憶',d:'收齊了八位夥伴送的信物。',hint:'幫完大家的忙之後，再去跟他們聊聊吧。'},
   {id:'h_bald',t:'洗到毛禿',d:'在古典大浴缸裡泡了 10 次澡。……頭上的耳朵好像有點稀疏了。',hint:'泡澡很舒服。舒服到停不下來。',stat:'bath',goal:10},
@@ -5057,7 +5060,7 @@ let mode='title',tick=0,fade=0,shake=0,flash=0,cutDark=false;
 const P={x:10,y:8,dir:'down',moving:false,tx:0,ty:0,prog:0,wc:0};let runHeld=false;
 const DV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 const held=[];
-let nextBlack=60*180,blackOn=0;const BLACK_LEN=60*6;/* 停電：開場三分鐘後才第一次，之後每四到六分鐘一次 */
+let nextBlack=60*180,blackOn=0;const BLACK_LEN=60*25;/* 停電：開場三分鐘後才第一次，之後每四到六分鐘一次 */
 const rain=Array.from({length:90},()=>({x:Math.random()*320,y:Math.random()*208,v:4+Math.random()*3}));
 const dark=document.createElement('canvas');dark.width=320;dark.height=208;const dctx=dark.getContext('2d');
 
@@ -5731,7 +5734,7 @@ function update(){
   if(!busy&&!overlayOpen()){
     if(!CB.mini&&!RACE&&!PITCH&&!IDLE&&!CB.lock&&!SOKO[S.scene]&&--nextBlack<=0&&!blackOn){blackOn=BLACK_LEN;nextBlack=60*(240+Math.random()*120);sfx('thunder');
       if(!sc().out&&S.flags.discovered&&!CB.lock&&Math.random()<.3&&!['storage','attic','dining'].includes(S.scene)){spawnRandom(2,[foeBat()]);toast('停電了……黑暗中有東西在飛！')}
-      else toast('雷雨來了，宅邸停電了！')}
+      else toast('雷雨來了，宅邸停電了！'+(hasItem('candle')&&!(P.light>0)&&P.stow>0&&!sc().out?(isTouch?'（點上方的蠟燭拿出來照亮吧）':'（按 L 拿出蠟燭照亮吧）'):''))}
   }
   if(blackOn>0)blackOn--;
   updateNpcs();
