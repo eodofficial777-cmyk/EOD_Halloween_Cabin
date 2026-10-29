@@ -179,8 +179,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 /* Setup */
 .field{margin-bottom:14px}
 .field label{display:block;color:var(--gold);font-family:var(--f-disp);margin-bottom:4px;letter-spacing:.08em}
-#optGender,#optFaction,#optDiff,#mDiff{display:flex;gap:6px;flex-wrap:wrap}.diffNote{margin:4px 0 0;font-size:.85em;color:var(--dim)}
-#optGender button,#optFaction button,#optDiff button,#mDiff button{font:inherit;padding:4px 12px;background:#1a0d0c;color:var(--cream);border:2px solid var(--dim);border-radius:2px;cursor:pointer}#optGender button.on,#optFaction button.on,#optDiff button.on,#mDiff button.on{border-color:var(--cream);background:#5a1e1e}
+#optGender,#optFaction,#optDiff,#optCil,#mDiff{display:flex;gap:6px;flex-wrap:wrap}.diffNote{margin:4px 0 0;font-size:.85em;color:var(--dim)}
+#optGender button,#optFaction button,#optDiff button,#optCil button,#mDiff button{font:inherit;padding:4px 12px;background:#1a0d0c;color:var(--cream);border:2px solid var(--dim);border-radius:2px;cursor:pointer}#optGender button.on,#optFaction button.on,#optDiff button.on,#optCil button.on,#mDiff button.on{border-color:var(--cream);background:#5a1e1e}
 .flab{display:block;margin-bottom:4px}
 #nm{width:100%;max-width:280px;box-sizing:border-box;background:#1a0d0c;border:2px solid var(--dim);color:var(--cream);padding:6px 10px;font:inherit;border-radius:2px}
 .opts{display:flex;gap:8px;flex-wrap:wrap}
@@ -270,6 +270,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
         <div class="field"><label for="nm">你的名字</label><input id="nm" maxlength="10" placeholder="輸入角色名稱" autocomplete="off"></div>
         <div class="field"><span class="flab">性別</span><div id="optGender" class="genders" role="radiogroup" aria-label="性別"></div></div>
         <div class="field"><span class="flab">陣營</span><div id="optFaction" class="genders" role="radiogroup" aria-label="陣營"></div></div>
+        <div class="field"><span class="flab">喜歡香菜嗎？</span><div id="optCil" class="genders" role="radiogroup" aria-label="喜歡香菜嗎"></div></div>
         <div class="field"><span class="flab">難易度</span><div id="optDiff" class="genders" role="radiogroup" aria-label="難易度"></div><p class="diffNote" id="diffNote"></p></div>
         <button type="button" id="rndBtn" class="btn">🎲 隨機搭配</button>
       </div>
@@ -811,7 +812,7 @@ function drawEntity(g,id,X,Y,dir,f,t,st,blink){
 }
 
 /* ---------------- 地圖 ---------------- */
-const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&()]~^:!{}L|+*0'.split(''));
+const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&()]~^:!{}L|+*0;'.split(''));
 function buildOutside(){
   const W=46,H=29,m=[];
   for(let y=0;y<H;y++){const r=[];for(let x=0;x<W;x++)r.push((x<3||x>42||y<2||y>26)?'f':'g');m.push(r)}
@@ -1382,6 +1383,10 @@ function drawTile(g,c,X,Y,tx,ty,sc){
         if(tx===17&&ty===20){R(g,X+4,Y+5,8,7,'#a8581c');R(g,X+5,Y+4,6,9,'#a8581c');R(g,X+5,Y+5,2,6,'#c8743a');R(g,X+7,Y+2,2,3,'#3a5a32');R(g,X+6,Y+7,1,1,'#2a1a10');R(g,X+9,Y+7,1,1,'#2a1a10');R(g,X+6,Y+10,4,1,'#2a1a10')}
         break}
       if(h%4===0)R(g,X+7,Y+6,3,1,'#3a5a32');if(h%5===0)R(g,X+1,Y+15,2,1,'#3a5a32');if(h%7===1){R(g,X+3,Y+10,5,2,'#3a4654');R(g,X+4,Y+10,2,1,'#5a6a7a')}break}
+    case ';':{/* 香菜田：泥土畦、一叢叢鋸齒狀的葉子，偶爾開著小白花；最左邊插著木牌 */R(g,X,Y,16,16,'#1f2e1c');R(g,X,Y+5,16,10,'#3a2a1c');R(g,X,Y+5,16,1,'#4a3826');R(g,X,Y+14,16,1,'#2e2014');
+      for(const[a,b]of[[1,6],[5,4],[9,6],[12,4],[3,9],[8,9],[12,10]]){R(g,X+a,Y+b+2,1,4,'#3a6a2a');R(g,X+a-1,Y+b,3,2,'#5aa83a');R(g,X+a-2,Y+b+1,1,1,'#5aa83a');R(g,X+a+2,Y+b+1,1,1,'#5aa83a');R(g,X+a,Y+b,1,1,'#8ad05a')}
+      if((h>>>2)%3===0){R(g,X+6,Y+2,1,1,'#f4f0e8');R(g,X+7,Y+3,1,1,'#f4f0e8');R(g,X+11,Y+3,1,1,'#f4f0e8')}
+      if(at(-1,0)!==';'){R(g,X+1,Y,2,8,'#5a3a20');R(g,X-1,Y-1,8,5,K);R(g,X,Y,6,3,'#8a6a3a');R(g,X+1,Y+1,4,1,'#3f8a3a')}break}
     case 'a':R(g,X,Y,16,16,'#3a2a1c');R(g,X,Y+4,16,1,'#2e2014');R(g,X,Y+11,16,1,'#2e2014');break;
     case 'e':{/* 南瓜田：藤蔓、葉子、熟透和還青的南瓜 */R(g,X,Y,16,16,'#3a2a1c');R(g,X,Y+4,16,1,'#2e2014');R(g,X,Y+12,16,1,'#2e2014');R(g,X,Y+7,16,1,'#2f4a22');R(g,X+2,Y+8,12,1,'#3a5a26');
       for(const[a,b]of[[1,5],[6,3],[11,6],[3,9],[9,10]]){R(g,X+a,Y+b,3,2,'#3f6b2a');R(g,X+a,Y+b,1,1,'#5a8a3a')}R(g,X+4,Y+6,1,1,'#2f4a22');R(g,X+13,Y+9,1,2,'#3a5a26');
@@ -1489,6 +1494,7 @@ const EXP={
 };
 /* 放大後新增的家具（新座標）：% 木箱、$ 斗櫃，其他字元同地圖 */
 const ADD={
+  outside:[[35,13,';'],[36,13,';'],[37,13,';'],[38,13,';'],[39,13,';'],[40,13,';']],/* 南瓜田之外的香菜田 */
   hall:[[1,9,'$'],[24,11,'%'],[5,14,'%']], kitchen:[[8,1,'L'],[16,9,'x'],[13,11,'%'],[14,11,'y'],[1,10,'('],[2,10,'('],[1,11,'('],[2,11,'('],[10,7,')'],[11,7,')'],[12,7,')'],[10,8,')'],[11,8,')'],[12,8,')'],[16,7,']'],[16,8,']']],
   dining:[[18,6,'$'],[1,6,'$']], exhibit:[[5,10,'%'],[5,4,'v']], f2:[[16,1,'L'],[6,2,'$'],[19,7,'%'],[5,7,'%']],
   roomL:[[8,2,'$'],[15,10,'%']], roomR:[[8,2,'$'],[2,10,'%'],[17,3,'D']], chapel:[[18,8,'%'],[1,8,'%']],
@@ -1527,7 +1533,7 @@ const SAVE_KEY='eod_hw_cabin_save',END_KEY='eod_hw_cabin_endings';
 let S=null;
 function newState(name,outfit,ears,look){return{name,outfit,ears,look,scene:'hall',x:10,y:8,dir:'down',flags:{ch:0},ev:[],items:[],inv:{candy:0,ammo:0},mag:0}}
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
-function save(){if(S&&mode==='play'){S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag=P.ammo;ls.set(SAVE_KEY,JSON.stringify(S))}}
+function save(){if(S&&mode==='play'){S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag=P.ammo;S.light=P.light||0;S.stow=P.stow||0;S.rainStow=P.rainStow||0;ls.set(SAVE_KEY,JSON.stringify(S))}}
 function loadSave(){try{return JSON.parse(ls.get(SAVE_KEY)||'null')}catch(e){return null}}
 function endings(){try{return JSON.parse(ls.get(END_KEY)||'[]')}catch(e){return[]}}
 
@@ -2146,6 +2152,11 @@ async function gatherScene(){
   await say('lala','那、那個！我剛剛盤點過廚房的物資了……大家省著吃的話，大概只能撐三天……');
   await say('lala','怎麼辦，苦惱到都想做鬆餅了！');
   await say('ian','那就做啊！大叔我負責吃！');
+  await say('lala','對、對了！晚餐的南瓜濃湯，我在上面撒了香菜！');
+  {const cp=S.cilantro||'never';
+    if(cp==='love'){await n('你的眼睛亮了起來，一口氣把湯上的香菜全撈進嘴裡。');await say('lala','{me}也喜歡香菜嗎！太好了，下次我多撒一點！')}
+    else if(cp==='hate'){await n('你默默拿起湯匙，把湯上的香菜一片一片挑到碗邊。');await say('shisho','……挑得真仔細。排成一圈，像在辦一場小型葬禮。');await say('lala','對、對不起！下次你那碗我不放！')}
+    else{await n('你盯著湯上綠綠的小葉子，猶豫了一下。……香菜，到底是什麼味道？');await say('ian','沒吃過？試試看嘛！大叔我什麼都吃！')}}
   await say('kaicho','總之，大家先各自在宅邸裡看看吧。有什麼發現，再互相交換情報。別太勉強自己喔。');
   await say('kaicho','{NEW}，就麻煩你到處走走，跟每個人都聊一聊吧。大家都在附近。');
   await say('lala','會長，你晚餐一口都沒吃耶？');
@@ -3193,7 +3204,7 @@ function restartGame(){
   if(!restartArm){restartArm=1;b.textContent='確定從頭開始？再按一次';setTimeout(()=>{restartArm=0;b.textContent='從頭開始'},3000);return}
   restartArm=0;b.textContent='從頭開始';
   const old=S;$('menu').hidden=true;busy=false;dlg.hidden=true;choiceState=null;dlgRes=null;IDLE=null;PITCH=null;clearPorts();
-  S=newState(old.name,old.outfit,old.ears,old.look);startPlay(true);chapterSave(0);
+  S=newState(old.name,old.outfit,old.ears,old.look);for(const k of['gender','faction','diff','cilantro'])if(old[k])S[k]=old[k];startPlay(true);chapterSave(0);
 }
 
 /* ---------------- 隨劇情慢慢變多的裝飾 ----------------
@@ -3399,8 +3410,14 @@ async function espresso(){
   if(c===1){if(here)await say('shisho','明智的選擇。那杯不是給人類喝的。');return}
   F.espresso=(F.espresso||0)+1;shake=6;
   await n('……！！');
-  await n('苦。非常苦。苦完之後，一股濃濃的香菜味從鼻子直衝腦門。');
-  await n('你的眼睛睜得好大好大。……大概三天都不用睡了。');
+  let cp=S.cilantro||'never';if(cp==='never')cp=await cilantroFirst('三倍濃縮的香菜咖啡');
+  if(cp==='hate'){
+    await n('苦。非常苦。然後——香菜。滿滿的、濃縮了三倍的香菜。');shake=12;P.stun=90;
+    await n('你的靈魂好像離開了身體，在天花板上飄了三秒才回來。');
+    if(here){await say('shisho','討厭香菜還敢喝？……勇氣可嘉。');await say('shisho','你現在的臉色，比那傢伙還白。')}
+    ach('h_cilantro');return}
+  await n('苦。非常苦。苦完之後，一股濃濃的香菜香從鼻子直衝腦門——');
+  await n('……好喝。你的眼睛睜得好大好大。……大概三天都不用睡了。');
   if(here){
     if(F.espresso===1){
       await say('shisho','……你喝了我的咖啡。');
@@ -3858,6 +3875,11 @@ async function talk(id){
     await say('boss','你去過教堂了？牆上那把鍋。');await say('boss','是我們夜鷺的人。很久以前，她來過這裡。');
     await say('boss','她說那晚打得很痛快。天海幫、地聯幫、還是什麼東西……她沒說清楚。我也懶得問。');await say('boss','好麻煩。不過，她煎的蛋很好吃。');return}
   if(id==='batk'&&S.flags.gardenDone&&!S.flags.gardenBat){S.flags.gardenBat=1;await n('小蝙蝠的身上，沾著一點點五顏六色的花粉。……牠好像，偷偷去看過迷宮裡的花了。')}
+  if(id==='ji'&&S.flags.cilField&&!S.flags.jiCil&&chOf()>=1){S.flags.jiCil=1;const cp=S.cilantro||'never';
+    await say('ji','你去過屋外那片香菜田了？長得不錯吧～我昨晚偷偷澆了一點「好東西」。');
+    if(cp==='love')await say('ji','喜歡香菜？品味還不錯嘛～現在那片的香味，是普通香菜的三倍喔。');
+    else if(cp==='hate')await say('ji','討厭香菜？那你一定要再去聞一次～味道是普通香菜的三倍喔～');
+    else await say('ji','還沒吃過香菜？那更要去嚐嚐。吃完記得來跟天才報告心得～');return}
   if(id==='lala'&&(S.flags.g_heart1||S.flags.g_heart2)&&!['down','sleep'].includes(NPCS.lala.state)){const F=S.flags,two=F.g_heart1&&F.g_heart2;
     if(!F.lalaHeart){F.lalaHeart=1;F.lalaHeart2=two?1:0;await say('lala','{me}，你脖子上掛的那個……是南瓜口味的史萊姆鬆餅！？');await n('護身符被拉拉盯著看，扁扁地抖了一下。');
       await say('lala','被打得好服貼……這是誰打的呀？打法好專業……我打四百下，牠們都還會跑耶！');
@@ -4840,6 +4862,8 @@ async function finalSupper(){
   await say('ji','粽子就免了～在營地吃到都膩了。我只要鬆餅。');
   await n('薊從盤子裡挑了最會抖的那片鬆餅，一口咬下去。');
   await say('ji','嗯～終於有人吃的食物了～');
+  if(S.cilantro==='love')await n('你在粽子上偷偷撒了一點香菜。……意外地很搭。');
+  else if(S.cilantro==='hate'){await n('拉拉正要往粽子上撒香菜，被你一把攔了下來。');await say('lala','對、對不起！我差點忘了！')}
   await say('ian','首領，這粽子是誰包的啊？冰得這麼好，大叔我都想去拜師了！');
   await say('boss','報紙是好幾年前的。冰了很久。');
   await say('boss','……結打得很緊。很會照顧人的那種人包的。好吃就好。');
@@ -4864,7 +4888,7 @@ function drawRadioPop(){
 /* 地下墓室比較暗 */
 function cryptDark(px,py){
   dctx.globalCompositeOperation='source-over';dctx.clearRect(0,0,320,208);dctx.fillStyle='rgba(4,2,8,.6)';dctx.fillRect(0,0,320,208);
-  dctx.globalCompositeOperation='destination-out';const gr=dctx.createRadialGradient(px,py,10,px,py,90);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,0)');dctx.fillStyle=gr;dctx.fillRect(0,0,320,208);
+  dctx.globalCompositeOperation='destination-out';const lit=P.light>0,gr=dctx.createRadialGradient(px,py,lit?36:10,px,py,lit?150:90);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,0)');dctx.fillStyle=gr;dctx.fillRect(0,0,320,208);
   ctx.drawImage(dark,0,0);
 }
 
@@ -4942,7 +4966,8 @@ function walkable(x,y){
 }
 function changeScene(to,x,y,dir){
   [x,y]=toNew(to,x,y);
-  if(SCENES[to].out&&P.light>0){P.light=0;setTimeout(()=>toast('雨一淋，蠟燭就熄了。'),300)}
+  if(SCENES[to].out&&P.light>0){P.stow=P.light;P.light=0;P.rainStow=1;setTimeout(()=>toast('外面在下雨，你把蠟燭收進燈罩裡。'),300)}
+  else if(!SCENES[to].out&&P.rainStow&&P.stow>0){P.light=P.stow;P.stow=0;P.rainStow=0;setTimeout(()=>toast('回到屋裡，你把蠟燭重新拿了出來。'),300)}
   S.scene=to;sfx('door');for(const w of WEBS)w.torn=0;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(SOKO[to]){sokoInit(to);setTimeout(()=>run(()=>sokoIntro(to)),60)}legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
   if(to==='dining'&&chOf()===0&&!S.flags.gathered)run(gatherScene);
   else if(to==='dining'&&chOf()===1&&!S.flags.discovered)run(discovery);
@@ -5139,7 +5164,9 @@ async function furnitureBook(){
 const WEBS=[{sc:'roomR',x:1,y:10,c:'bl'},{sc:'roomR',x:16,y:10,c:'br'},{sc:'roomR',x:16,y:4,c:'tr'},
   {sc:'attic',x:10,y:1,c:'tr'},{sc:'attic',x:1,y:5,c:'bl'},{sc:'attic',x:10,y:5,c:'br'}];
 const webAt=(x,y)=>S?WEBS.find(w=>w.sc===S.scene&&w.x===x&&w.y===y)||null:null;
-function webCheck(){const w=webAt(P.x,P.y);if(!w||w.torn)return;w.torn=1;P.sticky=Math.max(P.sticky||0,60*3);sfx('swing');
+function webCheck(){const w=webAt(P.x,P.y);if(!w||w.torn)return;w.torn=1;
+  if(P.light>0){spark(P.x*T+8,P.y*T+6,'#ffcc55',8);toast('燭火一碰，角落的蜘蛛網「滋」地燒掉了。');toastT=140;return}
+ P.sticky=Math.max(P.sticky||0,60*3);sfx('swing');
   addDirt('dust');toast('哇！被角落的蜘蛛網纏住了！黏黏的，動作變慢了……');toastT=160}
 function drawWebs(cx,cy,key){
   for(const w of WEBS){if(w.sc!==key)continue;const X=w.x*T-cx,Y=w.y*T-cy,fx=w.c[1]==='r',fy=w.c[0]==='b',c='rgba(225,225,235,.75)',c2='rgba(225,225,235,.45)';
@@ -5245,7 +5272,7 @@ function drawChapelStuff(cx,cy){
       R(g,X+8,Y+1,7,9,K);R(g,X+9,Y+2,5,7,'#e8dfc8');R(g,X+9,Y+2,5,1,'#5a5a5a');R(g,X+10,Y+4,3,2,'#8a8a8a');R(g,X+10,Y+7,3,1,'#a89e88');R(g,X+12,Y+7,2,2,'#2a1a10');R(g,X+13,Y+8,1,1,'#1b1018');R(g,X+4,Y,1,1,'#d9a640');R(g,X+11,Y+1,1,1,'#c8202a')}
   })}
 }
-ITEMS.candle={t:'一支蠟燭',d:'從大廳燭台上拿的蠟燭。到南瓜燈、烤爐或教堂的燭台取火，就能暫時照亮周圍。到屋外淋到雨會熄掉。'};
+ITEMS.candle={t:'一支蠟燭',d:'從大廳燭台上拿的蠟燭，附一個小小的玻璃燈罩。到南瓜燈、烤爐或教堂的燭台取火，可以燒大約三分鐘。點著的時候：停電和地下的黑暗裡看得比較遠、碰到蜘蛛網會直接燒掉、蝙蝠不太敢靠近，走近藏起來的密道時，燭火還會往那邊歪。按 L（或點上方的蠟燭）可以收進燈罩，火苗會留著；到屋外淋雨前也會自動收好。'};
 /* 管風琴：用 Web Audio 彈出萬聖節的曲子 */
 let AC=null,ORGAN_T=0;
 function noteHz(n){const m=n.match(/^([A-G])(#|b)?(\d)$/),b={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0);return 440*Math.pow(2,(b+12*(+m[3]+1)-69)/12)}
@@ -5407,10 +5434,10 @@ async function hallThing(o){
     case 'organ':return organ();
     case 'stand':
       if(!hasItem('candle')){await n('一座高高的黃銅燭台，插著好幾支還沒點燃的蠟燭。');await n('你拿了一支。……說不定停電的時候用得上。');addItem('candle');
-        return n(`（帶著蠟燭，到巨大南瓜燈、廚房的烤爐或教堂的燭台取火，就能暫時照亮周圍。）`)}
+        return n(`（帶著蠟燭，到巨大南瓜燈、廚房的烤爐或教堂的燭台取火。點著的蠟燭可以照亮停電和地下的黑暗、燒掉蜘蛛網、讓蝙蝠不敢靠近。${isTouch?'點上方的蠟燭':'按 L 或點上方的蠟燭'}可以收進燈罩，火苗會留著。）`)}
       return n('一座高高的黃銅燭台。你已經拿了一支蠟燭了。');
     case 'gpump':
-      if(hasItem('candle')&&!(P.light>0))return lightCandle('巨大南瓜燈');
+      if(hasItem('candle')&&!(P.light>0)&&!(P.stow>0))return lightCandle('巨大南瓜燈');
       await n('一顆比人還大的南瓜燈，擺在大廳正中央。裡面的火光一閃一閃，把整個大廳照得橘橘的。');
       return n(chOf()>=5?'……它的笑容好像柔和了一點。大概是因為主人終於交到朋友了吧。':'……你越看越覺得，那張刻出來的笑臉，跟某個地方的標誌好像。');
     case 'armor':
@@ -5431,7 +5458,22 @@ let BROOM_T=0;
 /* 拿蠟燭取火：暫時照亮周圍（停電時不容易被玫瑰絆倒、被麵糰偷襲） */
 async function lightCandle(src){
   await n(`你把蠟燭湊近${src}——`);
-  P.light=60*60;ach('h_candle');toast('蠟燭點燃了！周圍亮了起來。（大約一分鐘）');toastT=200;
+  P.light=CANDLE_MAX;P.stow=0;P.rainStow=0;ach('h_candle');toast(`蠟燭點燃了！大約可以燒三分鐘。（${isTouch?'點上方的蠟燭':'按 L'}可以收進燈罩，火苗會留著）`);toastT=260;
+}
+const CANDLE_MAX=60*180;
+/* 蠟燭收進燈罩／拿出來：收著的時候不會燒，火苗也不會熄 */
+function toggleCandle(){
+  if(!S||busy||!hasItem('candle'))return;
+  if(P.light>0){P.stow=P.light;P.light=0;P.rainStow=0;toast('你把蠟燭收進燈罩裡。火苗還留著。');return}
+  if(P.stow>0){if(sc().out)return warn('外面在下雨，拿出來會被淋熄。進屋再拿吧。');P.light=P.stow;P.stow=0;toast('你把蠟燭拿了出來，周圍亮了起來。');return}
+  warn('蠟燭沒有點著。到巨大南瓜燈、廚房的烤爐或教堂的燭台取火吧。');
+}
+/* 點著蠟燭靠近還沒打開的密道，燭火會往那邊歪 */
+function candleDraft(){
+  P.draft=null;if(!(P.light>0)||!S||typeof SECRETS==='undefined')return;
+  for(const p of SECRETS)for(const side of['a','b']){const e=p[side];if(e.sc!==S.scene||!e.t||secOpen(p.id))continue;
+    for(const[x,y]of e.t){const d=Math.abs(x-P.x)+Math.abs(y-P.y);if(d<=3){P.draft=Math.sign(x-P.x);const F=S.flags;F.draft=F.draft||{};
+      if(!F.draft[p.id]&&!busy){F.draft[p.id]=1;toast('燭火忽然往旁邊一歪……那個方向，好像有風從縫隙裡吹出來。');toastT=220}return}}}
 }
 function fireSource(sc,x,y){
   const c=tileAt(x,y);
@@ -5500,7 +5542,7 @@ function drawHallStuff(cx,cy){
 function drawCandleGlow(px,py,cx,cy){
   if(!(P.light>0)||mode!=='play')return;const g=ctx,X=px-cx+13,Y=py-cy+5,fl=(tick>>2)%2;
   g.fillStyle=`rgba(255,190,90,${.08+fl*.02})`;g.beginPath();g.arc(X,Y,34,0,6.28);g.fill();
-  R(g,X-1,Y,3,6,'#efe3c8');R(g,X,Y-3-fl,1,3,'#ffcc55');R(g,X-1,Y-2,3,1,'rgba(255,200,90,.6)');
+  const dr=P.draft||0;R(g,X-1,Y,3,6,'#efe3c8');R(g,X+dr,Y-3-fl,1,2,'#ffcc55');R(g,X+dr*2,Y-4-fl,1,1,'#ffe08a');R(g,X-1,Y-2,3,1,'rgba(255,200,90,.6)');
 }
 /* 宅邸裡的小意外：黑暗中被調皮的玫瑰絆倒、廚房的麵糰趁機偷襲、展覽室的書掉下來 */
 function nearTile(ch){for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(tileAt(P.x+dx,P.y+dy)===ch)return true;return false}
@@ -5550,6 +5592,7 @@ function update(){
   sokoBarSync();
   if(ORGAN_T>0)ORGAN_T--;if(BROOM_T>0)BROOM_T--;
   if(mode==='play'&&!busy&&P.light>0&&--P.light===0)toast('蠟燭燒完了。（可以再去取火）');
+  if(mode==='play'&&tick%20===0)candleDraft();
   if(mode==='play'&&!busy){if(P.napCd>0)P.napCd--;if(P.stun>0)P.stun--;if(P.sticky>0)P.sticky--;if(P.hazCd>0)P.hazCd--}
   if(P.morph&&mode==='play'&&!busy&&--P.morph.t<=0){P.morph=null;toast('藥效退了，你變回原樣了。')}
   if(toastT>0&&--toastT===0)$('toast').hidden=true;
@@ -5661,6 +5704,21 @@ async function useSecret({p,side}){
   (F.secUsed=F.secUsed||{})[p.id]=1;const d=p[other];warpNew(d.sc,...d.land);
   if(SECRETS.every(q=>F.secUsed[q.id])&&F.liftRide)ach('h_secret');
 }
+/* 香菜田：喜歡、討厭、沒吃過的人，看到的是完全不同的東西 */
+async function cilantroField(){
+  const F=S.flags,cp=S.cilantro||'never';F.cilField=1;
+  if(cp==='love'){await n('一整片綠油油的香菜田！葉子上掛著雨珠，清爽的香氣撲鼻而來。');await n('……你忍不住蹲下來，深深地吸了好幾口氣。');
+    if(F.cilEat!==chOf()&&P.hp<MAXHP){F.cilEat=chOf();P.hp=Math.min(MAXHP,P.hp+1);updateHUD();await n('你摘了一片葉子放進嘴裡。……幸福。（回復半顆心）')}}
+  else if(cp==='hate'){await n('……一整片香菜田。');await n('光是站在旁邊，那股味道就讓你頭皮發麻。');await n('到底是誰，在南瓜田旁邊種這種東西啊！')}
+  else{await n('一片綠油油的小草，聞起來有一股很特別的味道……有點像肥皂，又有點像檸檬。');
+    if((await choose('……這就是傳說中的香菜？要摘一片嚐嚐看嗎？',['嚐一片','還是算了']))===0)await cilantroFirst('一片香菜葉')}
+  await n('田邊的小木牌寫著：「香菜田——每年萬聖節，總有一半的客人想把它燒掉。」');
+}
+/* 沒吃過香菜的人第一次吃到：決定這輩子愛不愛 */
+async function cilantroFirst(what){
+  if(Math.random()<.5){S.cilantro='love';await n(`……！${what}的味道在嘴裡散開——好清爽！原來香菜是這種味道！`);await n('（你好像愛上香菜了。）');return 'love'}
+  S.cilantro='hate';await n(`……！！${what}一入口——肥、肥皂！嘴巴裡有肥皂！`);await n('（你好像不太能接受香菜。）');return 'hate';
+}
 async function cellDiary(){
   const F=S.flags;
   if(!F.cellDiary){await n('桌上攤著一本發霉的日記，旁邊的蠟燭只剩一小截。');
@@ -5689,10 +5747,11 @@ function objectAt(nx,ny){
   {const wd=wanderAt(nx,ny);if(wd)return()=>wanderLook(wd)}
   if(POP&&POP.sc===s&&POP.x===nx&&POP.y===ny)return()=>{POP=null;return n('……什麼都沒有。剛剛明明有東西在這裡的。')};
   if(s==='exhibit'&&nx===12&&ny===2)return furnitureBook;
-  if(hasItem('candle')&&!(P.light>0)){const fs=fireSource(s,nx,ny);if(fs)return()=>lightCandle(fs)}
+  if(hasItem('candle')&&!(P.light>0)&&!(P.stow>0)){const fs=fireSource(s,nx,ny);if(fs)return()=>lightCandle(fs)}
   if(s==='chapel'&&tileAt(nx,ny)==='q'&&!decorAt(nx,ny)&&!(SEARCH[sk]&&!S.flags['s_'+sk]))return pewNap;
   if(s==='bath'&&tileAt(nx,ny)==='~')return async()=>{const c=await choose('要泡個澡嗎？',['泡澡','不用了']);if(c===0)await takeBath()};
   if(tileAt(nx,ny)==='L')return dumbwaiter;
+  if(s==='outside'&&tileAt(nx,ny)===';')return cilantroField;
   {const se=secretAt(nx,ny);if(se)return()=>useSecret(se)}
   if(s==='cell'&&tileAt(nx,ny)==='*')return cellDiary;
   {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
@@ -6012,6 +6071,7 @@ function drawItemIcon(g,k,x,y){
   else if(k==='rice'){R(g,x-4,y-2,8,5,'#e8b84a');R(g,x-3,y-3,6,1,'#e8b84a');R(g,x-3,y+3,6,1,'#e8b84a');R(g,x-2,y-2,3,1,'#f6dc8a');R(g,x+1,y,1,1,'#b8862a');R(g,x-2,y+1,1,1,'#b8862a')}
   else if(k==='pine'){R(g,x-5,y-3,10,7,'#b8762a');R(g,x-4,y-2,8,5,'#f0c860');R(g,x-3,y-2,6,1,'#f6dc8a');R(g,x-4,y+2,8,1,'#d8a040')}
   else if(k==='milk'){R(g,x-3,y-4,6,8,K);R(g,x-2,y-3,4,6,'#f2b8c6');R(g,x-2,y-1,4,2,'#efe8dc');R(g,x-1,y-5,2,1,'#ff5fa2')}
+  else if(k==='candle'){const on=P.light>0,st=P.stow>0;R(g,x-3,y-3,7,8,on?'rgba(255,200,90,.25)':'rgba(200,220,235,.15)');R(g,x-1,y-1,3,6,'#efe3c8');R(g,x-1,y+4,3,1,'#c9bfb0');if(on||st){R(g,x,y-4,1,3,on?'#ffcc55':'#b8862a');if(on)R(g,x,y-5,1,1,'#fff2a0')}R(g,x-3,y-3,1,8,'#8a8f96');R(g,x+3,y-3,1,8,'#8a8f96')}
   else if(k==='magic'){R(g,x-1,y-6,2,2,'#c9a13c');R(g,x-3,y-4,6,7,K);['#ff5fa2','#ffd25a','#a8ff6a','#5fd0ff','#c08af0'].forEach((c,i)=>R(g,x-2,y-3+i,4,1,c));R(g,x-1,y-3,1,1,'#fff')}
 }
 function gainLoot(L){
@@ -6023,7 +6083,7 @@ function gainLoot(L){
   toast('獲得：'+got.join('、'));
   if(S.flags.melee&&S.flags.gun)ach('h_arsenal');
   checkWude();
-  if((L.melee||L.gun)&&!S.flags.tut){S.flags.tut=1;setTimeout(()=>{toast(isTouch?'按「砍」近戰、「射」開槍、「糖」吃東西補血，也可以直接點上方的道具':'J／X 近戰・K／C 開槍・R 換彈・H 吃東西・V 神奇藥水・1～5 用上方的道具');toastT=360},2600)}
+  if((L.melee||L.gun)&&!S.flags.tut){S.flags.tut=1;setTimeout(()=>{toast(isTouch?'按「砍」近戰、「射」開槍、「糖」吃東西補血，也可以直接點上方的道具':'J／X 近戰・K／C 開槍・R 換彈・H 吃東西・V 神奇藥水・L 蠟燭・1～6 用上方的道具');toastT=360},2600)}
 }
 /* 近戰：沒撿到武器時是空手（傷害 1、距離短、不能打掉鬼火） */
 function doMelee(){
@@ -6106,7 +6166,8 @@ function updFoe(e,pcx,pcy){
       else{moveE(e,ux*F.spd,uy*F.spd);if(--e.cd<=0&&dist<170)e.blink=50}
       break;
     case 'nbat':case 'bat':
-      if(dist<170){const w=Math.sin(e.t/8)*.7;moveE(e,ux*F.spd-uy*w,uy*F.spd+ux*w)}
+      if(P.light>0&&dist<70){moveE(e,-ux*F.spd*.8,-uy*F.spd*.8)}/* 蝙蝠怕燭火 */
+      else if(dist<170){const w=Math.sin(e.t/8)*.7;moveE(e,ux*F.spd-uy*w,uy*F.spd+ux*w)}
       else moveE(e,Math.sin(e.t/30)*.4,Math.cos(e.t/37)*.4);
       break;
     case 'hound':
@@ -6391,15 +6452,15 @@ const PXD={0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001
 function pxText(t,x,y,c){for(const ch of String(t)){const m=PXD[ch];if(m)for(let i=0;i<15;i++)if(m[i]==='1')R(ctx,x+i%3,y+((i/3)|0),1,1,c);x+=4}}
 /* 上方道具欄：點一下就使用（鍵盤按 1～5） */
 let HUD_SLOTS=[];
-function useHudItem(k){if(!S||busy||mode!=='play')return;if(k==='magic')useMagic();else if(P.hp>=MAXHP)warn('體力是滿的，先留著吧。');else useCandy(k)}
+function useHudItem(k){if(!S||busy||mode!=='play')return;if(k==='candle')return toggleCandle();if(k==='magic')useMagic();else if(P.hp>=MAXHP)warn('體力是滿的，先留著吧。');else useCandy(k)}
 function hudTap(e){if(!HUD_SLOTS.length)return false;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*320,y=(e.clientY-r.top)/r.height*208;
   const sl=HUD_SLOTS.find(s=>x>=s.x&&x<s.x+s.w&&y>=s.y&&y<s.y+s.h);if(!sl)return false;useHudItem(sl.k);return true}
 function drawHUD(){
   if(!S.inv)S.inv={candy:0,ammo:0};
   for(const h of['heart1','heart2'])if(S.flags['g_'+h]&&!S.items.includes('g_'+h))S.items.push('g_'+h);
   if(CB.hurt>0){ctx.fillStyle=`rgba(200,20,30,${CB.hurt*.3})`;ctx.fillRect(0,0,320,208)}
-  const SW=isTouch?27:31,itemsH=[...Object.keys(SNACK),'magic'].filter(k=>S.inv[k]>0),hw=Math.max(8+MAXHP/2*9,(S.flags.gun?50:5)+itemsH.length*SW);HUD_SLOTS=[];
-  R(ctx,2,2,hw,itemsH.length||S.flags.gun?21:12,'rgba(14,10,12,.65)');
+  const SW=isTouch?27:31,itemsH0=[...Object.keys(SNACK),'magic'].filter(k=>S.inv[k]>0),itemsH=[...itemsH0],hw=Math.max(8+MAXHP/2*9,(S.flags.gun?50:5)+(itemsH.length+(hasItem('candle')?1:0))*SW);HUD_SLOTS=[];
+  R(ctx,2,2,hw,itemsH.length||hasItem('candle')||S.flags.gun?21:12,'rgba(14,10,12,.65)');
   ctx.font='8px DotGothic16, monospace';ctx.textBaseline='top';
   for(let i=0;i<MAXHP/2;i++){
     const x=5+i*9,y=4,v=P.hp-i*2;heartAt(x,y,v>=2?'#e0213a':'#3a2224');
@@ -6411,7 +6472,8 @@ function drawHUD(){
     else for(let i=0;i<GUN_MAG;i++)R(ctx,5+i*4,13,2,5,i<P.ammo?'#d9a640':'#4a3a2a');
     pxText('/'+S.inv.ammo,30,13,S.inv.ammo?'#e8d9bf':'#a05050');hx=50;
   }
-  itemsH.forEach((k,i)=>{HUD_SLOTS.push({k,x:hx-2,y:2,w:SW,h:22});if(!isTouch){pxText(String(i+1),hx,13,'#8a7a6a');hx+=4}drawItemIcon(ctx,k,hx+4,15);pxText('x'+S.inv[k],hx+10,13,'#e8d9bf');hx+=27})
+  if(hasItem('candle'))itemsH.push('candle');
+  itemsH.forEach((k,i)=>{HUD_SLOTS.push({k,x:hx-2,y:2,w:SW,h:22});if(!isTouch){pxText(String(i+1),hx,13,'#8a7a6a');hx+=4}drawItemIcon(ctx,k,hx+4,15);if(k==='candle'){const t=P.light>0?P.light:P.stow||0;if(t)pxText(String(Math.ceil(t/60)),hx+10,13,P.light>0?'#ffcc55':'#8a7a6a')}else pxText('x'+S.inv[k],hx+10,13,'#e8d9bf');hx+=27})
 }
 
 /* ---------------- 繪製 ---------------- */
@@ -6674,6 +6736,8 @@ function renderSetup(){
     const on=(setupSel.gender||'x')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.gender=id;renderSetup()};box.appendChild(b)}}
   {const box=$('optFaction');box.innerHTML='';for(const[id,lab]of[['assoc','協會'],['yelu','夜鷺'],['wander','流浪者']]){const b=document.createElement('button');b.type='button';b.textContent=lab;b.style.color=FAC_COLOR[id];
     const on=(setupSel.faction||'wander')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.faction=id;renderSetup()};box.appendChild(b)}}
+  {const box=$('optCil');box.innerHTML='';for(const[id,lab]of[['love','喜歡'],['hate','討厭'],['never','沒吃過']]){const b=document.createElement('button');b.type='button';b.textContent=lab;
+    const on=(setupSel.cilantro||'never')===id;b.classList.toggle('on',on);b.setAttribute('role','radio');b.setAttribute('aria-checked',on);b.onclick=()=>{setupSel.cilantro=id;renderSetup()};box.appendChild(b)}}
   diffButtons($('optDiff'),setupSel.diff||'normal',id=>{setupSel.diff=id;renderSetup()});$('diffNote').textContent=DIFF_NOTE[setupSel.diff||'normal'];
   thumbs('optCut',HAIRCUTS,'cut',1);thumbs('optOutfit',OUTFITS,'outfit');thumbs('optEars',EARS,'ears',1);thumbs('optTail',TAILS,'tail',1);thumbs('optAcc',ACCS,'accs',1);
   const cur={...setupSel};if(!cur.cloth)cur.cloth=(OUTFITS.find(x=>x.id===cur.outfit)||OUTFITS[0]).o.cloth;
@@ -6698,7 +6762,7 @@ $('goBtn').onclick=()=>{
   const name=$('nm').value.trim()||'新來的你';clearInterval(pvTimer);
   ls.set(LOOK_KEY,JSON.stringify(setupSel));
   const{outfit,ears,look}=selLook();
-  $('setup').hidden=true;S=newState(name,outfit,ears,look);S.gender=setupSel.gender||'x';S.faction=setupSel.faction||'wander';S.diff=setupSel.diff||'normal';startPlay(true);chapterSave(0);
+  $('setup').hidden=true;S=newState(name,outfit,ears,look);S.gender=setupSel.gender||'x';S.faction=setupSel.faction||'wander';S.diff=setupSel.diff||'normal';S.cilantro=setupSel.cilantro||'never';startPlay(true);chapterSave(0);
   if(look.accs.length>=3)ach('h_dress');if(outfit==='vamp'&&look.accs.includes('fang'))ach('h_vampfan');
 };
 $('nm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('goBtn').click()}e.stopPropagation()});
@@ -6708,7 +6772,7 @@ function startPlay(isNew){
   mode='play';$('title').hidden=true;$('hud').style.visibility='visible';
   if(S.v!==2){[S.x,S.y]=toNew(S.scene,S.x,S.y);S.v=2}
   syncMaxHP();
-  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,light:0,napCd:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
+  Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,light:S.light||0,stow:S.stow||0,rainStow:S.rainStow||0,draft:null,napCd:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
   clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
   applyWorld();spawnSlimes();if(SOKO[S.scene])sokoInit(S.scene);fade=1;nextBlack=60*180;blackOn=0;updateHUD();
@@ -6737,6 +6801,7 @@ window.addEventListener('keydown',e=>{
   if(lk==='h'||lk==='q'){if(!busy)useCandy();return}
   if(/^[1-9]$/.test(e.key)){const sl=HUD_SLOTS[+e.key-1];if(sl&&!busy)useHudItem(sl.k);return}
   if(lk==='v'){if(!busy)useMagic();return}
+  if(lk==='l'){toggleCandle();return}
   if(lk==='b'){if(!busy)useSpecial();return}
   if(lk==='m'){audioInit();setSound('music',!SND.music);toast('音樂'+(SND.music?'開啟':'關閉'));toastT=90;return}
   const d=KEYDIR[e.key];
