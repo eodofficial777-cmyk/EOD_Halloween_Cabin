@@ -64,6 +64,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #sokoBar{position:absolute;right:1.5%;bottom:3%;display:flex;gap:6px;z-index:5}#sokoBar[hidden]{display:none}
 #sokoBar button{font:inherit;font-size:clamp(11px,1.6cqw,16px);padding:3px 10px;background:rgba(20,14,16,.85);color:var(--cream);border:2px solid var(--cream);border-radius:2px;cursor:pointer}
 #sokoBar button:hover{background:rgba(142,28,28,.95)}
+#allyFeed{position:absolute;left:1.5%;bottom:3%;max-width:72%;display:flex;flex-direction:column;gap:3px;pointer-events:none}
+#allyFeed div{padding:2px 10px;font-size:clamp(11px,1.6cqw,16px);line-height:1.35;background:rgba(18,10,14,.85);border-left:3px solid #d9a640;color:var(--cream);transition:opacity .4s}
 #toast{position:absolute;top:4%;left:50%;transform:translateX(-50%);padding:4px 14px;font-size:clamp(12px,1.9cqw,19px);white-space:nowrap;background:rgba(142,28,28,.95);border:2px solid var(--cream);border-radius:2px;pointer-events:none}
 
 /* Portraits (RMVA 式半身立繪) */
@@ -231,6 +233,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div id="dlg" class="win" hidden><canvas id="face" width="24" height="24"></canvas><div class="dbody"><div id="dname"></div><div id="dtext"></div></div><div class="next">▼</div></div>
     <div id="choices" class="win" hidden></div>
     <div id="toast" hidden></div>
+    <div id="allyFeed" aria-live="polite"></div>
     <div id="sokoBar" hidden><button type="button" id="sokoUndo">↶ 上一步</button><button type="button" id="sokoReset">⟲ 重來</button></div>
     <div id="bossbar" hidden><span>南瓜稻草人</span><i><b id="bossfill"></b></i></div>
     <div id="pitchTx"></div>
@@ -1837,6 +1840,14 @@ async function run(fn){
   busy=false;dlg.hidden=true;dlgRes=null;clearPorts();save();updateHUD();
 }
 let toastT=0;
+/* 夥伴的助攻台詞：另外疊在左下角，不跟頭目狀態搶同一個提示框 */
+let ALLYMSG=[];
+function allyMsg(t){const last=ALLYMSG[ALLYMSG.length-1];if(last&&last.t===t&&last.life>200)return;ALLYMSG.push({t,life:320});if(ALLYMSG.length>3)ALLYMSG.shift()}
+function drawAllyMsg(){
+  ALLYMSG=ALLYMSG.filter(m=>--m.life>0);const box=$('allyFeed');if(!box)return;
+  const key=ALLYMSG.map(m=>m.t).join('|');if(box._k!==key){box._k=key;box.innerHTML='';for(const m of ALLYMSG){const d=document.createElement('div');d.textContent=m.t;box.appendChild(d);m.el=d}}
+  for(const m of ALLYMSG)if(m.el)m.el.style.opacity=Math.min(1,m.life/40);
+}
 function toast(t){const el=$('toast');el.textContent=t;el.hidden=false;toastT=150}
 
 /* ---------------- 劇本 ---------------- */
@@ -1882,6 +1893,8 @@ const ACHS=[
   {id:'h_legs',t:'斷腿助攻',d:'IAN 的下半身幫你踢飛了 10 隻災獸。',hint:'有一雙腿，比你還想戰鬥。',stat:'legs',goal:10},
   {id:'h_hints',t:'其實早就有跡象',d:'在南瓜幽靈坦白之前，就找到了拉拉、司書、薊、首領沒被作祟的伏筆。',hint:'有四個人，從來沒被纏上。為什麼？'},
   {id:'h_bath',t:'香噴噴',d:'在古典大浴缸裡泡了個澡。',hint:'洗去一身疲憊。'},
+  {id:'h_keeps',t:'滿滿的回憶',d:'收齊了八位夥伴送的信物。',hint:'幫完大家的忙之後，再去跟他們聊聊吧。'},
+  {id:'h_bald',t:'洗到毛禿',d:'在古典大浴缸裡泡了 10 次澡。……頭上的耳朵好像有點稀疏了。',hint:'泡澡很舒服。舒服到停不下來。',stat:'bath',goal:10},
   {id:'h_candyroom',t:'秘密糖果倉庫',d:'用稻草人的鑰匙，打開了迷宮裡的秘密倉庫。',hint:'樹籬裡藏著一扇小門。鑰匙在誰手上？'},
   {id:'h_lost',t:'失物招領',d:'把散落在宅邸各處的八樣失物，都還給了主人。',hint:'角落裡，偶爾有東西在閃。'},
   {id:'h_wish_talk',t:'雕像說話了',d:'許願時，騎士雕像開口說了一句話。',hint:'運氣非常、非常好的時候。'},
@@ -1989,6 +2002,32 @@ const QUESTS={
   boss:  {t:'陪大南瓜發呆',who:'首領'},
 };
 const QS=()=>S.flags.q||(S.flags.q={});
+/* 支線完成後，再跟那個人說一次話，會收到一件信物 */
+const KEEP={
+  kaicho:{t:'會長的感謝卡',d:'一張字跡工整的小卡：「謝謝你，讓我能好好喝上一口番茄汁。下次，換我照顧你。——會長」卡片角落，畫了一隻小小的蝙蝠。',
+    lines:[['kaicho','{me}，這個……給你。只是一張小卡片。'],['kaicho','謝謝你幫了我這麼多。……這次，換我記住你了。']],bat:[['n','小蝙蝠拍著翅膀飛過來，嘴裡叼著一張小卡片，「啪」地放到你手上。'],['n','……卡片上的字跡工整得不像是蝙蝠寫的。']]},
+  shisho:{t:'研究部的借書證',d:'司書親手做的借書證，上面寫著你的名字。背面寫著：「展覽室的書，可以借你。不能吃。——那是我的工作。」',
+    lines:[['shisho','拿去。研究部的借書證。'],['shisho','……別誤會。只是方便我以後使喚你找書。']]},
+  sui:{t:'羊駝毛球',d:'幽靈羊駝身上掉下來的一撮毛，被翠捏成了一顆小球。半透明，摸起來涼涼的。翠說戴著它，羊駝就不會吐你口水了。……大概。',
+    lines:[['sui','喏！這個給你！羊駝的毛，我捏成球了！'],['sui','……不准笑！我的手藝可是很好的！']]},
+  lala:{t:'迷你鬆餅吊飾',d:'拉拉用剩下的麵糊烤的小鬆餅吊飾。被打了整整四百下，現在很乖，只是偶爾還會輕輕抖一下。',
+    lines:[['lala','這、這個給你！我用剩下的麵糊烤的……'],['lala','對不起，形狀有點歪！可是我打了四百下，它很乖的！']]},
+  boss:{t:'南瓜藤手環',d:'首領隨手用南瓜藤編的手環。她說「多的，不要就丟掉」。……可是每一個結都編得很仔細，還留著淡淡的南瓜香。',
+    lines:[['n','首領沒有起身，只是把一個東西丟到你懷裡。'],['boss','多的。不要就丟掉。']]},
+  ian:{t:'IAN 的簽名球',d:'一顆用南瓜籽縫成的棒球，上面有 IAN 用麥克筆簽的大大的名字。「大叔我的第一號簽名球，收好啊！」',
+    lines:[['ian','來來來，大叔我的簽名球！第一號就給你啦！'],['ian','以後大叔我變成名人，這顆可是很值錢的，收好啊！']]},
+  ji:{t:'薊的空藥水瓶',d:'一個畫著荊棘標誌的空藥水瓶。薊說這是「天才的第一號作品容器，以後會很值錢」。瓶底還殘留一點粉紅色的泡泡。',
+    lines:[['ji','送你～天才的第一號作品容器。'],['ji','以後會很值錢的喔～好好收著，別拿去裝洛神湯。']]},
+  po:{t:'睡教護身符',d:'小波用枕頭套縫的、歪歪扭扭的小護身符，上面寫著「想睡就睡」。縫到一半好像睡著了，線頭還垂著。',
+    lines:[['po','……給你。睡教的護身符。'],['po','……縫到一半睡著了。……算了，就這樣吧。']]},
+};
+for(const k in KEEP)ITEMS['ks_'+k]={t:KEEP[k].t+'（信物）',d:KEEP[k].d};
+const keepN=()=>Object.keys(KEEP).filter(k=>hasItem('ks_'+k)).length;
+async function giveKeep(id,qid){
+  const K=KEEP[qid];for(const[w,t]of(id==='batk'&&K.bat?K.bat:K.lines))await(w==='n'?n(t):say(w,t));
+  addItem('ks_'+qid);sfx('pickup');toast(`收到了信物：${K.t}（${keepN()}/${Object.keys(KEEP).length}）`);toastT=220;
+  if(keepN()>=Object.keys(KEEP).length)ach('h_keeps');
+}
 const qGet=id=>QS()[id];
 const qOn=id=>!!(S&&qGet(id)&&qGet(id).st==='on');
 const qDoneP=id=>!!(S&&qGet(id)&&qGet(id).st==='done');
@@ -3508,7 +3547,8 @@ async function takeBath(){
   if(L.length){await n(L.map(k=>DIRT[k].t).join('、')+'……全部都洗掉了。');if(L.length>=3)ach('h_bath3')}
   await n('浴缸裡浮起一大堆粉紅色的泡泡，聞起來像玫瑰和香草。');
   await n('……身體暖呼呼的，體力全部恢復了。');
-  F.dirt=[];F.dirtTalk=0;F.freshTalk=0;P.fresh=60*90;P.hp=MAXHP;ach('h_bath');
+  F.baths=(F.baths||0)+1;if(F.baths===10){await n('……起身的時候，你發現浴缸的排水孔被一團毛塞住了。');await n('你摸了摸頭上的耳朵。……好像，比剛來的時候稀疏了一點。')}
+  F.dirt=[];F.dirtTalk=0;F.freshTalk=0;P.fresh=60*90;P.hp=MAXHP;ach('h_bath');achAdd('bath');
   toast('洗得香噴噴的了！體力全滿。');
 }
 
@@ -3728,7 +3768,7 @@ const lampOn=k=>(S.flags.lamps||[]).includes(k);
 function lightLamp(k){
   (S.flags.lamps=S.flags.lamps||[]).push(k);shake=6;
   toast(`南瓜燈點亮了：${LAMPS[k]}（${lampsN()}/4）`);toastT=240;
-  if(lampsN()>=4){setTimeout(()=>{toast('地下墓室深處傳來「喀啦」一聲……封印解開了！');toastT=300},2600);ach('m_seal')}
+  if(lampsN()>=4){setTimeout(()=>{toast('封印解開了！挑戰南瓜幽靈之後就會進入結局，想做的支線記得先完成喔。');toastT=360},2600);ach('m_seal')}
   updateHUD();
 }
 async function readSeal(){
@@ -3785,7 +3825,7 @@ async function lampRoomL(){
     if(c===4)return;
     if(c===0)return n('喀。盒子打了一個小小的嗝。……鎖沒有開。');
     if(c===1)return n('喀。盒子哼起了搖籃曲。……鎖沒有開，你倒是有點睏了。');
-    if(c===3){P.hp=Math.max(1,P.hp-1);updateHUD();shake=5;return n('喀。盒子「喀嚓」咬了你的手指一下！（體力 -1）……那天晚上，小波到底喝了幾盒？')}
+    if(c===3){P.hp=Math.max(1,P.hp-1);updateHUD();shake=5;return n('喀。盒子「喀嚓」咬了你的手指一下！（體力 -1）……那天晚上，小波到底喝了幾杯？')}
     await n('喀啦。盒子打開了——裡面還有一個更小的盒子。');
     await n('小盒子的鎖頭是一個小小的枕頭形狀，上面刻著：「說出睡教的第三條戒律」。');
     S.flags.boxOpen1=1;
@@ -3797,7 +3837,7 @@ async function lampRoomL(){
     else await n('（小教堂的牆上，好像寫著睡教的戒律。）');return}
   await n('你小聲地說：「枕頭是神聖的。」');
   await n('小盒子打開了，裡面躺著一盞小小的南瓜燈。');
-  await n('南瓜燈自己亮了起來。床上的小波翻了個身：「……十二盒……洛神湯……」');
+  await n('南瓜燈自己亮了起來。床上的小波翻了個身：「……十二杯……洛神湯……」');
   lightLamp('roomL');
 }
 async function lampField(){
@@ -3928,6 +3968,7 @@ async function talk(id){
     await say('boss','你去過教堂了？牆上那把鍋。');await say('boss','是我們夜鷺的人。很久以前，她來過這裡。');
     await say('boss','她說那晚打得很痛快。天海幫、地聯幫、還是什麼東西……她沒說清楚。我也懶得問。');await say('boss','好麻煩。不過，她煎的蛋很好吃。');return}
   if(id==='batk'&&S.flags.gardenDone&&!S.flags.gardenBat){S.flags.gardenBat=1;await n('小蝙蝠的身上，沾著一點點五顏六色的花粉。……牠好像，偷偷去看過迷宮裡的花了。')}
+  {const qid=id==='batk'?'kaicho':id,q=qGet(qid);if(KEEP[qid]&&q&&(q.st==='done'||q.st==='alt')&&!hasItem('ks_'+qid)&&!['down','pile','nohead'].includes(NPCS[id].state)){await giveKeep(id,qid);return}}
   if(id==='ji'&&S.flags.cilField&&!S.flags.jiCil&&chOf()>=1){S.flags.jiCil=1;const cp=S.cilantro||'never';
     await say('ji','你去過屋外那片香菜田了？長得不錯吧～我昨晚偷偷澆了一點「好東西」。');
     if(cp==='love')await say('ji','喜歡香菜？品味還不錯嘛～現在那片的香味，是普通香菜的三倍喔。');
@@ -4657,7 +4698,7 @@ async function talk4(id){
         await n('……小波昨晚半夢半醒的時候，好像看到了什麼。');
         addEv('dream');return;
       }
-      return n(F.riddle?'小波在說夢話：「……十二盒……洛神湯……鹹鹹甜甜……好好喝……」':'小波翻了個身，把枕頭抱得更緊了。');
+      return n(F.riddle?'小波在說夢話：「……十二杯……洛神湯……鹹鹹甜甜……好好喝……」':'小波翻了個身，把枕頭抱得更緊了。');
     case 'horse':return n('幽靈羊駝一直盯著墓園的地面，耳朵豎得直直的。');
     case 'batk':case 'cone':return talkChase(id);
   }
@@ -4709,6 +4750,18 @@ function legsStep(ox,oy){const L=NPCS.legs;if(!legsOn()||L.scene!==S.scene)retur
 function legsWarp(){if(!legsOn())return;Object.assign(NPCS.legs,{scene:S.scene,x:P.x,y:P.y,queue:[],mv:null,patrol:null,qdone:null})}
 
 /* ---------------- 地下墓室與南瓜幽靈 ---------------- */
+/* 走進南瓜幽靈的房間前：提醒還沒完成的支線和還沒拿的信物（不強制） */
+async function finalGate(){
+  const F=S.flags,left=Object.keys(QUESTS).filter(id=>{const q=qGet(id);return!q||!['done','alt'].includes(q.st)}),
+    keepLeft=Object.keys(KEEP).filter(id=>{const q=qGet(id);return q&&['done','alt'].includes(q.st)&&!hasItem('ks_'+id)});
+  await n('再往前走，就是南瓜幽靈的房間了。地底下傳來嘻嘻嘻的笑聲。');
+  await n('（挑戰南瓜幽靈之後，就會直接迎向結局。）');
+  if(left.length)await n('還沒完成的支線：'+left.map(id=>QUESTS[id].who+'「'+QUESTS[id].t+'」').join('、')+'。');
+  if(keepLeft.length)await n('還有 '+keepLeft.map(id=>QUESTS[id].who).join('、')+' 的信物還沒拿。完成支線後，再去跟他們說說話吧。');
+  const c=await choose(left.length||keepLeft.length?'要現在就去挑戰南瓜幽靈嗎？':'準備好了嗎？',['前往決戰','再準備一下']);
+  if(c===1){P.y=9;P.dir='down';P.moving=false;return n('你退回了墓室的走廊。……想做的事都做完了，再回來吧。')}
+  F.finalOk=1;if(F.finalMet)startFinal();else await finalIntro();
+}
 async function finalIntro(){
   S.flags.finalMet=true;
   await n('地下墓室的最深處，堆滿了南瓜燈。燭光一閃一閃的。');
@@ -4780,7 +4833,7 @@ function allySweep(){
   if(!CB.allies||--CB.sweepT>0)return;CB.sweepT=60*2;
   const f=CB.foes.find(x=>!x.arena&&x.type!=='ghost'&&x.hp>0&&!x.spawn&&!x.launch);if(!f)return;
   const ids=Object.keys(SWEEP),id=ids[(Math.random()*ids.length)|0];
-  f.hp=0;spark(f.x,f.y,'#fff6c8',10);if(toastT<30)toast(SWEEP[id].replaceAll('{f}',FOES[f.type]?FOES[f.type].name:'怪物'));toastT=90;
+  f.hp=0;spark(f.x,f.y,'#fff6c8',10);allyMsg(SWEEP[id].replaceAll('{f}',FOES[f.type]?FOES[f.type].name:'怪物'));
 }
 function assistTick(e){
   allySweep();
@@ -4788,7 +4841,7 @@ function assistTick(e){
   if(--CB.assistT>0)return;CB.assistT=60*9;
   let ids=Object.keys(ASSISTS).filter(id=>id!=='batk');
   const id=e.invis>0&&!(e.reveal>0)?'batk':ids[(Math.random()*ids.length)|0];
-  toast(ASSISTS[id](e));toastT=180;
+  allyMsg(ASSISTS[id](e));
 }
 function updGhost(e,pcx,pcy){
   const F=FOES.ghost;e.kx=e.ky=0;
@@ -4968,7 +5021,7 @@ function finish(type){
   const ec=$('endCv'),g=ec.getContext('2d');drawLineup(g,type);
   $('endS').textContent='THE END';
   $('endT').textContent='終幕　天亮了';
-  $('endP').textContent='南瓜幽靈的惡作劇結束了。會長變回了人，IAN 也縫好了。大家一起走出宅邸，迎接了第一道陽光。……明年萬聖節，宅邸還會再請大家來玩吧。';
+  {const kn=keepN();$('endP').textContent='南瓜幽靈的惡作劇結束了。會長變回了人，IAN 也縫好了。大家一起走出宅邸，迎接了第一道陽光。'+(kn?`口袋裡，裝著大家送的 ${kn} 件信物。`:'')+'……明年萬聖節，宅邸還會再請大家來玩吧。'}
   setTimeout(()=>{$('ending').hidden=false;$('toCredits').focus()},500);
 }
 function drawLineup(g,type){
@@ -6017,7 +6070,7 @@ const ALLIES={
 };
 let meleeHeld=false,gunHeld=false,meleeQ=0,gunQ=0;  /* Q：冷卻中按下的那一下先記著，冷卻一結束就補發 */
 const isTouch=matchMedia('(hover:none) and (pointer:coarse)').matches;
-function clearCombat(){{const b=document.getElementById('pS');if(b)b.hidden=true}Object.assign(CB,{slimes:[],mini:null,foes:[],shots:[],eshots:[],fx:[],drops:[],lock:null,lockKind:null,spawnT:600+Math.random()*600,graveT:300+Math.random()*300,swing:0,muzzle:0});$('bossbar').hidden=true}
+function clearCombat(){ALLYMSG=[];{const b=document.getElementById('pS');if(b)b.hidden=true}Object.assign(CB,{slimes:[],mini:null,foes:[],shots:[],eshots:[],fx:[],drops:[],lock:null,lockKind:null,spawnT:600+Math.random()*600,graveT:300+Math.random()*300,swing:0,muzzle:0});$('bossbar').hidden=true}
 function camOrigin(){const s=sc(),[px,py]=pPix();
   return[s.w*T<=VW*T?Math.floor((s.w*T-VW*T)/2):Math.max(0,Math.min(s.w*T-VW*T,Math.round(px+8-VW*T/2))),
          s.h*T<=VH*T?Math.floor((s.h*T-VH*T)/2):Math.max(0,Math.min(s.h*T-VH*T,Math.round(py+8-VH*T/2)))]}
@@ -6108,7 +6161,7 @@ function startReload(){if(!S.flags.gun||P.reload>0||P.ammo>=GUN_MAG)return;if(S.
 const SNACK={
   candy:{t:'萬聖節糖果',heal:2,c:'#ff5fa2',eat:'吃了一顆糖果',d:'吃一顆回復一顆心。'},
   rice:{t:'乘乘米果',heal:3,c:'#e8b84a',eat:'喀滋喀滋地吃了一片乘乘米果',d:'黃黃的橢圓形米果，鹹鹹甜甜的。回復一顆半的心。'},
-  milk:{t:'洛神湯',heal:2,c:'#9a1f3a',eat:'喝了一瓶洛神湯（原本貼著番茄汁的標籤）',d:'被換掉標籤的洛神湯。酸酸甜甜，還帶一點梅子的鹹味，熬得剛剛好……沒有署名，可是你就是知道是誰煮的。回復一顆心。'},
+  milk:{t:'洛神湯',heal:2,c:'#9a1f3a',eat:'喝了一杯洛神湯（原本貼著番茄汁的標籤）',d:'被換掉標籤的洛神湯。酸酸甜甜，還帶一點梅子的鹹味，熬得剛剛好……沒有署名，可是你就是知道是誰煮的。回復一顆心。'},
   pine:{t:'鳳梨酥',heal:4,c:'#f0c860',eat:'吃了一塊鳳梨酥，內餡好扎實',d:'黃色長方形的鳳梨酥，酥皮會掉滿地。回復兩顆心。'},
 };
 const ITEM_NAME={milk:'洛神湯',candy:'糖果',rice:'乘乘米果',pine:'鳳梨酥',magic:'神奇藥水'};
@@ -6340,7 +6393,7 @@ function updateCombat(){
       if(CB.foes.filter(e=>e.leash).length<2)spawnRandom(1,FOE_OUT[foeCh()],{region:[9,3,41,9]});
     }
   }
-  if(S.scene==='crypt'&&chOf()===4&&!S.flags.finalDone&&!CB.lock&&!P.moving&&P.y<=7){if(S.flags.finalMet)startFinal();else run(finalIntro);return}
+  if(S.scene==='crypt'&&chOf()===4&&!S.flags.finalDone&&!CB.lock&&!P.moving&&P.y<=7){if(!S.flags.finalOk)run(finalGate);else if(S.flags.finalMet)startFinal();else run(finalIntro);return}
   if(S.scene==='maze'&&!S.flags.bossMaze&&!CB.lock&&!P.moving&&P.x>=MZ.x0&&P.x<=MZ.x1&&P.y>=MZ.y0&&P.y<=MZ.y1){startBoss();return}
   if(!S.flags.tut0&&CB.foes.some(e=>!e.spawn&&!e.leash)){S.flags.tut0=1;toast(isTouch?'災獸出現了！按「砍」空手也能揍':'災獸出現了！J／X 空手也能揍');toastT=300}
   /* NPC 助攻 */
@@ -6353,7 +6406,7 @@ function updateCombat(){
     o.acd=A.cd;o.swing=12;const sx=Math.sign(f.x-ax)||1;o.dir=Math.abs(f.x-ax)>Math.abs(f.y-ay)?(sx>0?'right':'left'):(f.y>ay?'down':'up');
     f.launch={vx:sx*3.2,vy:-3.2,life:60};f.flash=8;spark(f.x,f.y,'#fff6c8',8);
     if(id==='legs')achAdd('legs');
-    if(tick-CB.allyT>240){CB.allyT=tick;toast(A.lines[(Math.random()*A.lines.length)|0].replace('{f}',FOES[f.type].name))}
+    if(tick-CB.allyT>240){CB.allyT=tick;allyMsg(A.lines[(Math.random()*A.lines.length)|0].replace('{f}',FOES[f.type].name))}
   }
   const fool=P.morph&&P.morph.k==='monster';
   for(const e of CB.foes)if(fool)updFoe(e,e.x+Math.cos(e.t/40+e.r)*80,e.y+Math.sin(e.t/50+e.r)*80);else updFoe(e,pcx,pcy);
@@ -6590,6 +6643,7 @@ function render(){
   for(const e of ents){if(e.obj){e.obj();continue}if(e.id==='me'&&P.inv>0&&(tick>>2)%2)continue;const ex=Math.round(e.x-cx),ey=Math.round(e.y-cy-8+(e.bob||0));drawEntity(ctx,e.id,ex,ey,e.dir||'down',e.f||0,tick,e.st,e.blink);if(e.id==='me'&&mode==='play')drawDirt(ctx,ex,ey)}
   if(s.over)ctx.drawImage(s.over,-cx,-cy);
   drawDed(cx,cy);
+  if(mode==='play')drawAllyMsg();else if($('allyFeed').childElementCount){ALLYMSG=[];$('allyFeed').innerHTML='';$('allyFeed')._k=''}
   if(mode==='play'&&S)drawCombat(cx,cy);
   // markers
   if(mode==='play'&&S.flags.discovered&&!busy&&CB.lockKind!=='final'){
