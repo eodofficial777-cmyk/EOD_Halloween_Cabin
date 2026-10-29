@@ -4603,6 +4603,90 @@ function drawPField(cx,cy){
     g.restore();
     if(on&&(tick>>5)%2){R(g,X+11,Y-1,3,1,'#b9a58e');R(g,X+13,Y,1,1,'#b9a58e');R(g,X+11,Y+1,3,1,'#b9a58e')}})}
 }
+/* ---------------- 會自己走的家具：沒人看的時候，它們就長出腳 ---------------- */
+const WANDER=[
+  {id:'hchair',sc:'hall',k:'chair',p:[[3,6],[3,11],[9,12],[20,12],[21,6],[9,5]]},
+  {id:'hframe',sc:'hall',k:'frame',wall:1,p:[[5,1],[9,1]]},
+  {id:'hframe2',sc:'hall',k:'frame',wall:1,p:[[20,1],[16,1]]},
+  {id:'fpot',sc:'f2',k:'pot',p:[[3,5],[22,5],[22,6],[3,6]]},
+  {id:'dcdl',sc:'dining',k:'cdl',p:[[2,1],[17,1],[17,7],[2,7]]},
+  {id:'eframe',sc:'exhibit',k:'frame',wall:1,p:[[3,0],[8,0]]},
+  {id:'rchair',sc:'roomR',k:'chair',p:[[4,7],[14,8],[9,9]]},
+  {id:'kpot',sc:'kitchen',k:'teapot',p:[[2,3],[14,3],[14,5],[8,6]]},
+];
+const WS={};for(const w of WANDER)WS[w.id]={x:w.p[0][0],y:w.p[0][1],ox:0,oy:0,mv:0,wi:1,t:120,away:0};
+const WANDER_T={
+  chair:['一張普通的木椅子。','一張木椅子。……剛剛它是在這裡的嗎？','椅腳底下的地毯，有四道細細的拖痕，一路拖到很遠的地方。','你盯著椅子看了很久。椅子也一動也不動。……動也不動得太用力了。'],
+  frame:['一幅肖像畫。畫裡的人表情很僵硬。','這幅畫……剛剛不是掛在那邊嗎？','畫框的四個角，長著像蜘蛛一樣細細的腳。你一看，它們就縮了回去。','畫裡的人，眼睛往旁邊瞄了一下。……好像在看它等一下要爬去哪裡。'],
+  pot:['一盆觀葉植物。葉子有點捲。','盆栽底下的土撒了一路，像一串小小的腳印。','盆栽的葉子朝著窗戶伸得長長的。……可是這裡根本沒有陽光。','你一轉頭，盆栽就往牆邊挪了一小步。'],
+  cdl:['一座銀色燭台，三根蠟燭靜靜地燒著。','燭台的蠟油滴了一路，從桌子另一頭一直滴到這裡。','燭台的底座，有幾根細細的、像腳趾一樣的東西縮了進去。','……燭火全部朝你的方向歪了一下。'],
+  teapot:['一只白色的茶壺，壺嘴還冒著熱氣。','茶壺……剛剛不是在料理台上嗎？','茶壺底下伸出四隻小小的腳，踮了一下，又縮回去了。','壺蓋「喀噠」地跳了一下，好像在偷笑。'],
+};
+const wanderAt=(x,y)=>S?WANDER.find(w=>w.sc===S.scene&&WS[w.id].x===x&&WS[w.id].y===y)||null:null;
+async function wanderLook(w){const st=WS[w.id];st.seen=(st.seen||0)+1;const L=WANDER_T[w.k];await n(L[Math.min(L.length-1,st.seen-1)]);if(st.seen>=L.length)st.seen=1;
+  const F=S.flags;F.wseen=F.wseen||[];if(!F.wseen.includes(w.id))F.wseen.push(w.id)}
+function lookingAt(x,y){const[dx,dy]=DV[P.dir],vx=x-P.x,vy=y-P.y,d=Math.hypot(vx,vy);return d<9&&(vx*dx+vy*dy)>d*.5}
+function wanderFree(w,x,y){if(w.wall)return true;const c=tileAt(x,y);if(!c||SOLID.has(c)||hallObj(w.sc,x,y)||npcAt(x,y)||(P.x===x&&P.y===y))return false;
+  return!WANDER.some(o=>o!==w&&o.sc===w.sc&&WS[o.id].x===x&&WS[o.id].y===y)}
+function wanderStep(w,toward){const st=WS[w.id];
+  let opts;if(toward){const[tx,ty]=w.p[st.wi],sx=Math.sign(tx-st.x),sy=Math.sign(ty-st.y);opts=[[sx,0],[0,sy]].filter(([a,b])=>a||b);if(!opts.length){st.wi=(st.wi+1)%w.p.length;return false}}
+  else opts=[[1,0],[-1,0],[0,1],[0,-1]].sort(()=>Math.random()-.5);
+  for(const[a,b]of opts){const nx=st.x+a,ny=st.y+b;if(wanderFree(w,nx,ny)){st.ox=-a;st.oy=-b;st.x=nx;st.y=ny;st.mv=20;return true}}
+  return false}
+function wanderTick(){
+  if(!S||mode!=='play')return;
+  for(const w of WANDER){const st=WS[w.id];
+    if(S.scene!==w.sc){st.away=1;continue}
+    if(st.away){st.away=0;for(let i=(Math.random()*4)|0;i>0;i--){wanderStep(w,true);st.mv=0}}
+    if(st.mv>0){st.mv--;continue}
+    if(busy)continue;
+    if(!w.wall&&P.x===st.x&&P.y===st.y){wanderStep(w,false);continue}
+    if(--st.t>0)continue;
+    if(lookingAt(st.x,st.y)){st.t=40;continue}
+    wanderStep(w,true);st.t=70+Math.random()*120}
+  popTick()}
+/* 突然冒出來的東西：在你背後出現，一轉身就不見 */
+let POP=null,popT=60*40;
+function popTick(){
+  const sc=SCENES[S.scene];if(POP){if(POP.sc!==S.scene||--POP.t<=0){POP=null;return}if(POP.t<POP.max-20&&lookingAt(POP.x,POP.y)){spark(POP.x*T+8,POP.y*T+8,'#b9a58e',6);POP=null}return}
+  if(busy||sc.out||SOKO[S.scene]||CB.lock||CB.foes.length||--popT>0)return;
+  popT=60*(40+Math.random()*50);const[dx,dy]=DV[P.dir];
+  for(const d of[3,4,2]){const x=P.x-dx*d,y=P.y-dy*d,c=tileAt(x,y);if(c&&!SOLID.has(c)&&!npcAt(x,y)&&!hallObj(S.scene,x,y)&&!wanderAt(x,y)){
+    POP={sc:S.scene,x,y,t:240,max:240,k:['chair','teapot','doll','phead'][(Math.random()*4)|0]};return}}
+}
+function drawWanderThing(g,k,X,Y,moving,f){
+  const legs=moving||k==='doll';
+  if(k==='chair'){R(g,X+3,Y-2,2,12,'#5a3a20');R(g,X+11,Y-2,2,12,'#5a3a20');R(g,X+3,Y-2,10,2,'#6b4a2a');R(g,X+3,Y+2,10,1,'#6b4a2a');R(g,X+2,Y+8,12,3,'#7a5530');R(g,X+2,Y+8,12,1,'#9a7040');
+    if(legs){R(g,X+3,Y+11,1,3+f,'#3a2414');R(g,X+12,Y+11,1,4-f,'#3a2414');R(g,X+2,Y+13+f,2,1,'#3a2414');R(g,X+12,Y+14-f,2,1,'#3a2414');R(g,X+6,Y+4,1,1,'#fff6c8');R(g,X+9,Y+4,1,1,'#fff6c8')}
+    else{R(g,X+3,Y+11,1,4,'#3a2414');R(g,X+12,Y+11,1,4,'#3a2414')}}
+  else if(k==='pot'){R(g,X+4,Y+8,8,7,K);R(g,X+5,Y+9,6,5,'#a8582a');R(g,X+4,Y+8,8,1,'#c87038');for(const[a,b]of[[3,2],[7,0],[10,3],[5,5],[9,5]])R(g,X+a,Y+b,3,4,'#3f7a3a');
+    if(legs){R(g,X+5,Y+15,1,1+f,'#8a4a20');R(g,X+10,Y+15,1,2-f,'#8a4a20');R(g,X+6,Y+11,1,1,'#fff6c8');R(g,X+9,Y+11,1,1,'#fff6c8')}}
+  else if(k==='cdl'){R(g,X+7,Y+2,2,11,'#c8ccd4');R(g,X+3,Y+2,10,2,'#c8ccd4');R(g,X+5,Y+12,6,2,'#a8acb4');for(const a of[3,7,11]){R(g,X+a,Y-4,2,6,'#efe3c8');R(g,X+a,Y-6-((tick>>3)+a)%2,1,2,'#ffcc55')}
+    if(legs){R(g,X+5,Y+14,1,1+f,'#a8acb4');R(g,X+10,Y+14,1,2-f,'#a8acb4');R(g,X+7,Y+15,1,1,'#a8acb4')}}
+  else if(k==='teapot'){R(g,X+3,Y+5,10,8,K);R(g,X+4,Y+6,8,6,'#f4f6fb');R(g,X+12,Y+6,3,2,'#f4f6fb');R(g,X+1,Y+7,2,4,'#dfe4ee');R(g,X+6,Y+3,4,2,'#dfe4ee');R(g,X+7,Y+2,2,1,'#c9a54a');
+    if((tick>>4)%3===0)R(g,X+14,Y+2,1,3,'rgba(255,255,255,.5)');
+    if(legs){R(g,X+5,Y+13,1,1+f,'#dfe4ee');R(g,X+10,Y+13,1,2-f,'#dfe4ee');R(g,X+6,Y+8,1,1,K);R(g,X+9,Y+8,1,1,K)}}
+  else if(k==='frame'){R(g,X+1,Y+3,14,11,'#c9a54a');R(g,X+2,Y+4,12,9,'#2a2030');R(g,X+6,Y+6,4,4,'#d8c8b0');R(g,X+5,Y+10,6,3,'#4a2a3a');R(g,X+7,Y+7,1,1,K);R(g,X+9,Y+7,1,1,K);
+    if(legs){for(const[a,b]of[[0,4],[0,11],[15,4],[15,11]])R(g,X+a+(a?1:-1)*f,Y+b,1,1,'#2a1a10');R(g,X-1,Y+5,1,5,'#2a1a10');R(g,X+16,Y+5,1,5,'#2a1a10')}}
+  else if(k==='doll'){R(g,X+5,Y+3,6,6,'#efe3c8');R(g,X+6,Y+5,1,1,K);R(g,X+9,Y+5,1,1,K);R(g,X+7,Y+7,2,1,'#8e1c24');R(g,X+4,Y+9,8,5,'#7a4a8a');R(g,X+5,Y+14,2,2,'#efe3c8');R(g,X+9,Y+14,2,2,'#efe3c8');R(g,X+4,Y+2,8,2,'#5a3a20')}
+  else if(k==='phead'){R(g,X+3,Y+6,10,9,K);R(g,X+4,Y+7,8,7,'#e2741c');R(g,X+7,Y+4,2,3,'#3f6b2a');R(g,X+5,Y+9,2,2,'#ffd25a');R(g,X+9,Y+9,2,2,'#ffd25a');R(g,X+6,Y+12,4,1,'#ffd25a')}
+}
+function drawWander(cx,cy,key){
+  for(const w of WANDER){if(w.sc!==key)continue;const st=WS[w.id],k=st.mv/20,X=Math.round((st.x+st.ox*k)*T-cx),Y=Math.round((st.y+st.oy*k)*T-cy),f=(tick>>3)%2;
+    if(w.wall)drawWanderThing(ctx,w.k,X,Y,st.mv>0,f);else Q(st.y*T,()=>drawWanderThing(ctx,w.k,X,Y,st.mv>0,f))}
+  if(POP&&POP.sc===key){const X=POP.x*T-cx,Y=POP.y*T-cy,a=Math.min(1,(POP.max-POP.t)/30,POP.t/30);Q(POP.y*T,()=>{ctx.save();ctx.globalAlpha=a;drawWanderThing(ctx,POP.k,X,Y,false,0);ctx.restore()})}
+}
+async function furnitureBook(){
+  await n('書架上有一本書，書背自己往外挪了一點，好像很想被你看見。');
+  await n('《宅邸家具遷徙紀錄》——作者不詳。');
+  await n('「本宅邸之家具，於無人注視時會長出細腳，自行移動。」');
+  await n('「椅子偏好門邊。盆栽追逐窗光（雖然這裡從來沒有）。畫框只沿牆面爬行，從不下地。燭台與茶壺喜歡夜行，常常跟在人的背後。」');
+  await n('「與移動中的家具對視時，它們會原地裝死。請配合演出，不要拆穿。」');
+  await n('「另：偶爾會有不屬於本宅邸的東西，出現在你的身後。轉身即消失，不必理會。」');
+  await n('頁邊有一行工整的小字：「已驗證。椅子很難吃。——研究部長」');
+  if(NPCS.shisho.scene==='exhibit')await say('shisho','那本我吃了一半。……家具會走路，有什麼好大驚小怪的？你們走路的時候，我也沒說什麼。');
+  S.flags.furnBook=1;
+}
 /* ---------------- 大廳：管風琴、巨大南瓜燈、奇怪的裝飾、燭台 ---------------- */
 const HALL_OBJ=[
   {k:'organ',x:4,y:2,w:4,h:2},{k:'stand',x:9,y:3,w:1,h:1},{k:'gpump',x:12,y:8,w:2,h:2},
@@ -4849,7 +4933,7 @@ function update(){
   if(PITCH)pitchTick();
   idleTick();
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
-  if(mode==='play'){pfTick();raceTick();suiAmbient();chaseTick()}
+  if(mode==='play'){pfTick();raceTick();suiAmbient();chaseTick();wanderTick()}
   sokoBarSync();
   if(ORGAN_T>0)ORGAN_T--;if(BROOM_T>0)BROOM_T--;
   if(mode==='play'&&!busy&&P.light>0&&--P.light===0)toast('蠟燭燒完了。（可以再去取火）');
@@ -4897,6 +4981,9 @@ function objectAt(nx,ny){
   const s=S.scene,[x,y]=toOld(s,nx,ny),sk=SEARCH[s+'@'+nx+','+ny]?s+'@'+nx+','+ny:s+':'+x+','+y;
   const pr=propAt(nx,ny);if(pr)return()=>takeProp(pr);
   {const ho=hallObj(s,nx,ny);if(ho)return()=>s==='chapel'?chapelThing(ho):hallThing(ho)}
+  {const wd=wanderAt(nx,ny);if(wd)return()=>wanderLook(wd)}
+  if(POP&&POP.sc===s&&POP.x===nx&&POP.y===ny)return()=>{POP=null;return n('……什麼都沒有。剛剛明明有東西在這裡的。')};
+  if(s==='exhibit'&&nx===12&&ny===2)return furnitureBook;
   if(hasItem('candle')&&!(P.light>0)){const fs=fireSource(s,nx,ny);if(fs)return()=>lightCandle(fs)}
   if(s==='chapel'&&tileAt(nx,ny)==='q'&&!decorAt(nx,ny))return pewNap;
   if(s==='bath'&&tileAt(nx,ny)==='~')return async()=>{const c=await choose('要泡個澡嗎？',['泡澡','不用了']);if(c===0)await takeBath()};
@@ -4993,6 +5080,8 @@ function tileText(c,x,y){
   if(c==='P'&&s==='exhibit')return'古典壁畫。這幅畫好像被人整幅舉起來又放回去，掛歪了一點。';
   if(c==='w'&&s==='dining')return'從這扇窗看得到外面的森林。剛才，好像有一顆頭從窗外飛過去？';
   const TT={u:'大理石雕像。底座有一圈被整座舉起來過的痕跡……這棟宅邸裡，誰有這種力氣？',p:'盆栽的葉子有點枯，大概很久沒照到太陽了。',P:'一幅古典壁畫。畫框邊緣有被搬動過的刮痕。',w:'窗外是濃濃的霧，雨一直沒停。',B:'書架上的書，幾乎每一本都缺了一角。',b:'柔軟的床。不知道為什麼，床單少了一條。',S:'爐子上的平底鍋還溫溫的，飄著奶油香。',K:'流理台上堆著剛煎好的鬆餅，旁邊是一大桶麵糊。',c:'椅子被拉開了一半。',r:'玫瑰開得很紅……紅得跟會長身旁那灘液體一樣。',e:'田裡種著南瓜和番茄。番茄好像全被摘光了。',f:'濃霧裡傳來不明生物的嚎叫。還是別靠近森林比較好。',h:'修剪整齊的樹籬。',J:'玻璃溫室。裡面暖暖的燈光透出來，有玫瑰的香味。',H:'宅邸的外牆。窗戶裡透出微弱的燭光。',I:'樓梯扶手摸起來滑滑的，好像常常有人從這裡滾下去。',O:'一顆比人還大的南瓜。首領說，這是她最好的朋友。'};
+  const TT2={u:'大理石雕像。……它的頭，剛剛是朝另一邊的。',p:'盆栽底下的土撒了一小圈，像是剛剛才被放下來。',P:'壁畫裡的人換了一個姿勢。……你確定剛剛不是這樣？',w:'窗戶上有一個手印。在玻璃的外面。',B:'有一本書自己往外挪了一點。你把它推回去，它又挪了出來。',c:'椅子被拉開了一半。……你剛剛明明把它推回去了。',I:'扶手上的灰塵裡，有一排小小的、像椅腳一樣的腳印。',b:'床單底下鼓起一塊。你一伸手，它就扁了下去。'};
+  if(TT2[c]&&TT[c]){const F=S.flags,lk=F.looks=F.looks||{};lk[c]=(lk[c]||0)+1;if(lk[c]%3===0)return TT2[c]}
   return TT[c]||null;
 }
 
@@ -5624,6 +5713,7 @@ function render(){
       R(ctx,X+12,Y+6,3,3,'#efe8dc');R(ctx,X+12,Y+6,3,1,'#8a4a2a');R(ctx,X+1,Y+7,3,1,'#d9a050')}
     else{for(let i=0;i<4;i++){R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,5,'#efe8dc');R(ctx,X+3+(i%2)*5,Y+12-((i/2)|0)*5,5,1,'#5a3a22')}R(ctx,X+6,Y+2,5,5,'#efe8dc');R(ctx,X+6,Y+2,5,1,'#5a3a22')}}
   if(S&&mode==='play')drawMazeStuff(cx,cy,key);
+  if(S&&mode==='play')drawWander(cx,cy,key);
   if(S&&mode==='play'&&key==='hall')drawHallStuff(cx,cy);
   if(S&&mode==='play'&&key==='chapel')drawChapelStuff(cx,cy);
   if(S&&mode==='play'&&SOKO[key])drawPField(cx,cy);
