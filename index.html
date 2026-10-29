@@ -811,7 +811,7 @@ function drawEntity(g,id,X,Y,dir,f,t,st,blink){
 }
 
 /* ---------------- 地圖 ---------------- */
-const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&()]~^:!{}L'.split(''));
+const SOLID=new Set('#wPITcKSFpuvBbfhrtCHeOJzjQWAlqZYMkVxy%$&()]~^:!{}L|+*0'.split(''));
 function buildOutside(){
   const W=46,H=29,m=[];
   for(let y=0;y<H;y++){const r=[];for(let x=0;x<W;x++)r.push((x<3||x>42||y<2||y>26)?'f':'g');m.push(r)}
@@ -1042,6 +1042,15 @@ const SCENES={
     '#.......#....#.......#',
     '##########DD##########'],
     exits:[[10,15,'chapel',14,8,'down'],[11,15,'chapel',14,8,'down']]},
+  /* 儲藏室木桶底下的秘密牢房：從木梯爬上去回儲藏室，牆角崩開的隧道通往地下墓室 */
+  cell:{name:'地下牢房',map:[
+    '############',
+    '#+.0|.....=#',
+    '#...|......#',
+    '#..*/......#',
+    '#...|......#',
+    '############'],
+    exits:[[10,1,'storage',3,4,'left']]},
   outside:{name:'屋外',out:1,map:buildOutside(),
     exits:[[11,11,'hall',1,6,'right'],[16,15,'hall',9,11,'up'],[17,15,'hall',10,11,'up'],[6,5,'chapel',7,10,'up'],[28,12,'greenhouse',7,10,'up'],[33,18,'maze',1,10,'right'],[3,20,'pf1',1,1,'right']]},
 };
@@ -1110,17 +1119,31 @@ function drawTile(g,c,X,Y,tx,ty,sc){
     if(sc==='chapel'){/* 教堂內牆：淺色石磚、每隔幾格一根石柱、底部木護牆板 */R(g,X,Y,16,16,'#4e464c');for(let r=0;r<3;r++){R(g,X,Y+r*4+3,16,1,'#3a3438');const o=(r+ty)%2?0:8;R(g,X+o,Y+r*4,1,3,'#3a3438')}R(g,X,Y,16,1,'#5e565c');
       if(tx%5===0&&at(0,1)!=='#'&&at(0,1)!==''&&tx>0&&tx<15){R(g,X+5,Y,6,13,'#6a6268');R(g,X+5,Y,1,13,'#7e767c');R(g,X+10,Y,1,13,'#4a4448');R(g,X+4,Y,8,2,'#7e767c');R(g,X+4,Y+11,8,2,'#5a5258')}
       R(g,X,Y+13,16,3,'#3a2214');R(g,X,Y+13,16,1,'#5a3a20');return}
-    if(sc==='crypt'){/* 墓室石牆：粗糙石塊、偶爾有放骷髏的壁龕、鐵鍊、青苔 */R(g,X,Y,16,16,'#2a2430');for(let r=0;r<4;r++){R(g,X,Y+r*4+3,16,1,'#1a161e');const o=((h>>>r)%3)*5;R(g,X+o,Y+r*4,1,3,'#1a161e');R(g,X+o+1,Y+r*4,3,1,'#342e3a')}
+    if(sc==='crypt'||sc==='cell'){/* 墓室石牆：粗糙石塊、偶爾有放骷髏的壁龕、鐵鍊、青苔 */R(g,X,Y,16,16,'#2a2430');for(let r=0;r<4;r++){R(g,X,Y+r*4+3,16,1,'#1a161e');const o=((h>>>r)%3)*5;R(g,X+o,Y+r*4,1,3,'#1a161e');R(g,X+o+1,Y+r*4,3,1,'#342e3a')}
       if(h%7===0){R(g,X+4,Y+3,8,8,'#0e0b12');R(g,X+5,Y+2,6,1,'#0e0b12');R(g,X+6,Y+5,4,4,'#d8d0c0');R(g,X+6,Y+6,1,1,K);R(g,X+9,Y+6,1,1,K);R(g,X+7,Y+8,2,1,'#a89e8e')}
       else if(h%11===1){for(let i=0;i<5;i++)R(g,X+7+(i%2),Y+i*2,2,2,'#5a5a62');R(g,X+6,Y+10,4,2,'#4a4a52')}
       if(h%5===2)R(g,X+(h%12),Y+10,3,3,'#2a3a2a');R(g,X,Y+13,16,3,'#141018');R(g,X,Y+13,16,1,'#3a3240');return}
     R(g,X,Y,16,16,'#2b1a1f');R(g,X+2,Y,1,13,'#36212a');R(g,X+10,Y,1,13,'#36212a');R(g,X+6,Y+3,1,1,'#43282f');R(g,X+14,Y+8,1,1,'#43282f');R(g,X,Y+13,16,3,'#1a0e12');R(g,X,Y+13,16,1,'#5a3a2a');
     if(sc==='f2'&&ty===1&&tx%6===3){/* 壁燈：黃銅底座、短蠟燭、一圈暖光 */R(g,X+4,Y+2,8,8,'rgba(255,200,110,.12)');R(g,X+6,Y+8,4,3,'#b8862a');R(g,X+7,Y+11,2,1,'#8a6420');R(g,X+5,Y+7,6,1,'#d9a640');R(g,X+7,Y+4,2,3,'#f6f0e6');R(g,X+7,Y+2,2,2,'#ffcc55');R(g,X+7,Y+2,1,1,'#fff6c8')}};
   const grass=(b,l)=>{R(g,X,Y,16,16,b);for(let i=0;i<4;i++)R(g,X+((h>>>(i*4))%15),Y+((h>>>(i*4+2))%13),1,2,l)};
+  if(sc==='cell'&&'|/+*0=#'.includes(c)){/* 秘密牢房的東西 */
+    if(c==='#'){wall();
+      if(ty===0&&tx>=1&&tx<=3){/* 牆上刻的正字記號 */for(let i=0;i<(tx===3?2:4);i++)R(g,X+2+i*3,Y+4,1,6,'#8a8090');if(tx<3)R(g,X+1,Y+6,13,1,'#8a8090')}
+      if(tx===0&&(ty===2||ty===3)){/* 鐵鍊 */for(let i=0;i<5;i++)R(g,X+10+(i%2),Y+i*3,2,2,'#5a5a62');R(g,X+9,Y+13,4,2,'#4a4a52')}
+      return}
+    R(g,X,Y,16,16,'#24202a');R(g,X,Y,16,1,'#2a2530');R(g,X+(h%12)+2,Y+((h>>>4)%12)+2,2,1,'#1a161e');
+    if(c==='|'){for(const a of[2,6,10,14]){R(g,X+a-1,Y,2,16,'#3a3a42');R(g,X+a-1,Y,1,16,'#5a5a62')}R(g,X,Y+2,16,2,'#3a3a42');R(g,X,Y+12,16,2,'#3a3a42');R(g,X+5,Y+7,2,1,'#7a3a1a');R(g,X+9,Y+5,1,1,'#7a3a1a')}
+    else if(c==='/'){/* 被打開的牢門：門板歪到一邊，鎖頭被啃掉了 */for(const a of[1,4])R(g,X+a,Y,2,16,'#3a3a42');R(g,X,Y+2,6,2,'#3a3a42');R(g,X,Y+12,6,2,'#3a3a42');R(g,X+9,Y+8,3,3,'#4a4a52');R(g,X+10,Y+9,2,2,'#24202a');R(g,X+12,Y+12,2,1,'#5a5a62')}
+    else if(c==='+'){/* 稻草床：毯子、稻草、旁邊一圈小小的圓形壓痕 */R(g,X+1,Y+15,14,1,'rgba(0,0,0,.3)');R(g,X+1,Y+3,14,12,'#8a7240');R(g,X+1,Y+3,14,1,'#b8a060');for(let i=2;i<15;i+=3)R(g,X+i,Y+4+(i%2),1,3,'#c8b070');R(g,X+3,Y+8,10,6,'#5a3a4a');R(g,X+3,Y+8,10,1,'#7a5a6a');R(g,X+10,Y+4,3,2,'#e0c890');R(g,X+11,Y+4,1,1,'#f0dca0')}
+    else if(c==='*'){/* 小木桌：攤開的日記、燒短的蠟燭 */R(g,X+1,Y+15,14,1,'rgba(0,0,0,.3)');R(g,X+2,Y+12,2,4,'#3a2214');R(g,X+12,Y+12,2,4,'#3a2214');R(g,X+1,Y+5,14,7,K);R(g,X+2,Y+6,12,5,'#6b4a2a');R(g,X+2,Y+6,12,1,'#8a6a40');
+      R(g,X+3,Y+6,7,4,'#d8ccb0');R(g,X+6,Y+6,1,4,'#a89e8e');for(const a of[4,7])R(g,X+a,Y+7,2,1,'#5a4a3a');R(g,X+11,Y+3,2,4,'#efe3c8');R(g,X+11,Y+1,1,2,'#ffcc55');R(g,X+10,Y+7,4,1,'#c9a54a')}
+    else if(c==='0'){/* 生鏽的鐵桶 */R(g,X+3,Y+14,10,2,'rgba(0,0,0,.3)');R(g,X+3,Y+5,10,10,K);R(g,X+4,Y+6,8,8,'#5a5a62');R(g,X+4,Y+6,8,2,'#2a2a30');R(g,X+4,Y+9,8,1,'#7a3a1a');R(g,X+5,Y+11,2,2,'#7a3a1a');R(g,X+2,Y+4,12,2,'#6a6a72')}
+    else if(c==='='){/* 往上的木梯，頂上透下儲藏室的光 */R(g,X+2,Y,12,5,'rgba(255,220,150,.22)');R(g,X+4,Y,2,16,'#6b4026');R(g,X+10,Y,2,16,'#6b4026');for(let i=2;i<16;i+=4)R(g,X+4,Y+i,8,1,'#8a5a30')}
+    return}
   switch(c){
     case '.':if(sc==='candy'){R(g,X,Y,16,16,'#5a3a3e');for(let i=0;i<4;i++){R(g,X,Y+i*4,16,1,'#6a464a');R(g,X,Y+i*4+3,16,1,'#46282c')}if(h%7===0)R(g,X+5,Y+6,2,2,['#ff5fa2','#5fd0ff','#ffd25a'][h%3])}
       else if(sc==='bath'){R(g,X,Y,16,16,(tx+ty)%2?'#e8e2d8':'#3a3640');R(g,X,Y,16,1,(tx+ty)%2?'#f6f0e6':'#4a4650')}
-      else if(sc==='crypt'){/* 墓室地板：粗石板、裂縫，偶爾有碎骨和青苔 */R(g,X,Y,16,16,'#1c1920');for(const[a,b,w,hh]of[[0,0,9,7],[9,0,7,8],[0,7,7,9],[7,8,9,8]]){R(g,X+a,Y+b,w-1,hh-1,['#26222a','#24202a','#2a2530'][(h+a+b)%3]);R(g,X+a,Y+b,w-1,1,'#302b34')}
+      else if(sc==='crypt'||sc==='cell'){/* 墓室地板：粗石板、裂縫，偶爾有碎骨和青苔 */R(g,X,Y,16,16,'#1c1920');for(const[a,b,w,hh]of[[0,0,9,7],[9,0,7,8],[0,7,7,9],[7,8,9,8]]){R(g,X+a,Y+b,w-1,hh-1,['#26222a','#24202a','#2a2530'][(h+a+b)%3]);R(g,X+a,Y+b,w-1,1,'#302b34')}
         if(h%5===0){R(g,X+4,Y+4,1,3,'#141018');R(g,X+5,Y+6,2,1,'#141018')}if(h%11===0)R(g,X+9,Y+10,2,1,'#e2741c');if(h%19===3){R(g,X+3,Y+11,5,1,'#c8c0b0');R(g,X+2,Y+10,1,3,'#c8c0b0');R(g,X+8,Y+10,1,3,'#c8c0b0')}if(h%13===5)R(g,X+10,Y+3,3,2,'#26342a')}
       else if(sc==='greenhouse'){/* 溫室的紅陶磚地：磚縫、亮邊、青苔、掉落的花瓣和泥土 */R(g,X,Y,16,16,'#4a2e24');for(const[a,b]of[[0,0],[8,0],[0,8],[8,8]]){R(g,X+a,Y+b,7,7,((tx+ty+a+b)>>3)%2?'#5e3c30':'#5a3a2e');R(g,X+a,Y+b,7,1,'#6e4a3a')}
         if(h%5===0)R(g,X+7,Y+3,1,2,'#3a5a2a');if(h%13===1){R(g,X+3,Y+10,2,1,'#c8202a');R(g,X+4,Y+11,1,1,'#9a1424')}if(h%9===4)R(g,X+10,Y+4,3,2,'#3e2a1c')}
@@ -1844,6 +1867,7 @@ const ACHS=[
   {id:'h_snack3',t:'台灣零食巡禮',d:'吃過糖果、乘乘米果和鳳梨酥。',hint:'這座宅邸裡，藏著家鄉的味道。'},
   {id:'h_wish_wink',t:'雕像眨眼了',d:'許願時，騎士雕像對你眨了眨眼。',hint:'石頭也會有表情。'},
   {id:'h_trip',t:'玫瑰的惡作劇',d:'在溫室裡被調皮的玫瑰絆倒了。',hint:'溫室的花，在黑暗裡特別有精神。'},
+  {id:'h_secret',t:'密道探險家',d:'走過宅邸裡所有的秘密通道（還有送餐梯）。',hint:'這棟房子的牆後面，好像不只有牆。'},
   {id:'h_ambush',t:'麵糰伏擊',d:'在廚房被史萊姆麵糰偷襲了。',hint:'廚房的碗裡，有東西在等你經過。'},
   {id:'h_bookhit',t:'知識砸進腦袋',d:'在展覽室被掉下來的書砸到頭。',hint:'書架很高，書很重。'},
   {id:'h_shishono',t:'謝絕髒客',d:'全身髒兮兮的，被司書擋在展覽室門外。',hint:'有個地方，謝絕某種客人。'},
@@ -4894,6 +4918,7 @@ function walkable(x,y){
   if(S.scene==='kitchen'&&ox===0&&oy===3)return chOf()===2&&!!S.flags.disc2;
   if(S.scene==='chapel'&&ox===14&&oy===9)return chOf()===4&&!!S.flags.ded4;
   if(hintSpot(x,y))return false;
+  if(secretAt(x,y))return false;
   if(lostAt(x,y)||gearAt(x,y)||pfAt(x,y)||bedAt(x,y)||hallObj(S.scene,x,y))return false;
   if(S.scene==='maze'&&x===SHED.x&&y===SHED.y)return false;
   if(RACE&&S.scene==='maze'&&Math.round(RACE.fx/T)===x&&Math.round(RACE.fy/T)===y)return false;
@@ -5299,7 +5324,7 @@ function bgmWant(){
   if(CB.lockKind==='final'||CB.lockKind==='boss')return'boss';
   if(chOf()>=5)return'ending';
   {const[px,py]=pCenter();if(CB.lock||CB.foes.some(f=>f.hp>0&&!f.dormant&&Math.hypot(f.x-px,f.y-py)<150))SND.battleT=150;else if(SND.battleT>0)SND.battleT--;if(SND.battleT>0)return'battle'}
-  if(S.scene==='crypt')return'crypt';
+  if(S.scene==='crypt'||S.scene==='cell')return'crypt';
   if(SCENES[S.scene].out||SOKO[S.scene])return'outside';
   return'mansion';
 }
@@ -5588,9 +5613,68 @@ async function dumbwaiter(){
     await n('拉開一看——是送餐梯。這種老宅子，總會藏著一兩條給僕人用的秘密通道。');await n('……裡面的空間，硬擠的話，好像剛好塞得下一個人。');F.liftSeen=1}
   const c=await choose(up?'要擠進送餐梯，拉繩子上二樓嗎？':'要擠進送餐梯，拉繩子下廚房嗎？',['擠進去','算了']);if(c!==0)return;
   await n('你縮成一團擠進去，拉動繩子。喀啦……喀啦……滑輪在黑暗裡慢慢轉著。');
-  if(!F.liftRide){F.liftRide=1;await n('角落裡摸到一個小盤子，上面放著一顆糖果，壓著一張紙條：「給下次搭乘的人」。');gainLoot({candy:1})}
+  if(!F.liftRide){F.liftRide=1;if(SECRETS.every(q=>(F.secUsed||{})[q.id]))ach('h_secret');await n('角落裡摸到一個小盤子，上面放著一顆糖果，壓著一張紙條：「給下次搭乘的人」。');gainLoot({candy:1})}
   else await n(LIFT_RIDE[Math.floor(Math.random()*LIFT_RIDE.length)]);
   changeScene(L.to,D.x,D.y+1,'down');
+}
+/* ---------------- 秘密通道：推開／拉開某樣東西，後面是密道 ----------------
+   座標都是放大後的新座標；a、b 是通道的兩頭，任一頭打開後兩邊都能走 */
+const SECRETS=[
+  {id:'chapel',a:{sc:'exhibit',t:[[2,9]],land:[2,10,'down']},b:{sc:'chapel',t:[[1,13]],land:[2,13,'right']}},
+  {id:'maze',a:{sc:'roomR',t:[[15,2],[16,2]],land:[15,3,'down']},b:{sc:'maze',t:[[1,20]],land:[2,20,'right']}},
+  {id:'cell',a:{sc:'storage',t:[[2,4]],land:[3,4,'left']},b:{sc:'cell',land:[9,1,'left']}},
+  {id:'crypt',a:{sc:'cell',t:[[11,4]],land:[10,4,'left']},b:{sc:'crypt',t:[[0,10]],land:[1,10,'right']},gate:()=>chOf()>=4&&!!S.flags.ded4},
+];
+const SEC_T={
+  chapel:{a:[['這個書架上，有一本書比其他的凸出來一點。','書背上沒有字。'],'把書推回去','喀。書架往旁邊滑開了——後面是一條往下的石階，飄出一股蠟燭和舊木頭的味道。'],
+    b:[['告解室的木板牆，敲起來是空心的。','牆角有一道細細的縫，吹出一股舊書的味道。'],'推推看','木板牆「嘎」地往裡面轉開，後面是一條往下的石階。'],
+    go:'你沿著窄窄的石階往下走，又往上爬，推開一塊木板——'},
+  maze:{a:[['一座大衣櫃，門卡住了打不開。裡面好像有東西在輕輕敲門。'],'用力拉開','門「砰」地彈開了。衣櫃裡掛滿了大衣……往裡面伸手，摸不到底。\n腳底下，好像踩到了泥土。'],
+    b:[['樹籬底下，藏著一塊長滿青苔的木頭蓋板。'],'掀開來','蓋板底下是一條往下的土坑，坑壁釘著木頭踏板。……隱約聞得到樟腦丸的味道。'],
+    go:'你撥開一件又一件大衣，一直往裡面走，走著走著——'},
+  cell:{a:[['這個木桶推起來輕得奇怪。底下好像有風吹上來。'],'把木桶推開','木桶滑開，底下是一扇方形的地板門。一道木梯往下延伸，消失在黑暗裡。'],
+    go:'你抓著木梯，一格一格往下爬……'},
+  crypt:{a:[['這面牆的石頭鬆鬆的，縫隙裡吹來一陣冷風。'],'用力推','石頭嘩啦啦地崩了一角，露出一條窄窄的隧道。'],
+    b:[['墓室角落的石牆，有幾塊石頭鬆鬆的。'],'用力推','石頭嘩啦啦地崩了一角，後面是一條窄窄的隧道。'],
+    go:'你彎著腰鑽進隧道，在黑暗裡摸索著往前爬……',
+    shut:['隧道的另一頭，被一扇生鏽的鐵柵欄擋住了。','柵欄另一邊，隱約傳來墓室裡的回音。……現在還過不去。']},
+};
+function secretAt(x,y){if(!S)return null;for(const p of SECRETS)for(const side of['a','b']){const e=p[side];if(e.sc===S.scene&&e.t&&e.t.some(([a,b])=>a===x&&b===y))return{p,side}}return null}
+const secOpen=id=>!!((S.flags.sec||{})[id]);
+function warpNew(to,x,y,dir){const[ox,oy]=toOld(to,x,y);changeScene(to,ox,oy,dir)}
+async function useSecret({p,side}){
+  const F=S.flags,Tx=SEC_T[p.id],me=Tx[side],other=side==='a'?'b':'a';F.sec=F.sec||{};
+  if(!secOpen(p.id)){
+    if(p.id==='maze'&&side==='a')achSeen('locked','roomR:Z',Object.keys(LOCKED).length,'h_locked');
+    for(const t of me[0])await n(t);
+    const c=await choose('',[me[1],'算了']);if(c!==0)return;
+    sfx('creak');await n(me[2]);F.sec[p.id]=1;return}
+  const c=await choose('要走進密道嗎？',['走進去','算了']);if(c!==0)return;
+  if(p.gate&&!p.gate()){for(const t of Tx.shut)await n(t);return}
+  await n(Tx.go);
+  (F.secUsed=F.secUsed||{})[p.id]=1;const d=p[other];warpNew(d.sc,...d.land);
+  if(SECRETS.every(q=>F.secUsed[q.id])&&F.liftRide)ach('h_secret');
+}
+async function cellDiary(){
+  const F=S.flags;
+  if(!F.cellDiary){await n('桌上攤著一本發霉的日記，旁邊的蠟燭只剩一小截。');
+    for(const t of['「第 1 天：被關進來了。理由：偷吃廚房的鬆餅。」','「第 3 天：送進來的伙食，只有鬆餅。」','「第 7 天：鬆餅開始會動了。」','「第 30 天：我跟鬆餅成為了朋友。牠們晚上睡在我的稻草床旁邊。」','「第 31 天：鬆餅幫我把門鎖吃掉了。我要出去了。」','「——某個嘴饞的人」'])await n(t);
+    F.cellDiary=1;await n('日記最後一頁夾著兩顆糖果。……是留給下一個被關進來的人的吧。');gainLoot({candy:2});return}
+  await n('日記的最後一行寫著：「鬆餅幫我把門鎖吃掉了。我要出去了。」');await n('……牢門上被啃掉的痕跡，大小跟史萊姆鬆餅的嘴巴，剛好一樣。');
+}
+function drawSecrets(cx,cy,key){
+  if(!S)return;
+  for(const p of SECRETS)for(const side of['a','b']){const e=p[side];if(e.sc!==key||!e.t)continue;const open=secOpen(p.id);
+    for(const[x,y]of e.t){const X=x*T-cx,Y=y*T-cy;
+      if(p.id==='maze'&&side==='b'){/* 樹籬底下的木蓋板 */if(open){R(ctx,X+2,Y+3,12,11,'#1a120c');R(ctx,X+3,Y+4,10,9,'#0a0806');for(let i=0;i<3;i++)R(ctx,X+5,Y+5+i*3,6,1,'#5a3a20');R(ctx,X+1,Y+1,14,3,'#5a3a20');R(ctx,X+1,Y+1,14,1,'#7a5232')}
+        else{R(ctx,X+2,Y+3,12,11,'#4a3420');R(ctx,X+2,Y+3,12,1,'#6b4a2a');R(ctx,X+7,Y+3,1,11,'#3a2414');R(ctx,X+3,Y+5,3,2,'#2a5232');R(ctx,X+10,Y+10,3,2,'#2a5232');R(ctx,X+11,Y+7,1,2,'#8a8f96')}continue}
+      if(!open)continue;
+      if(p.id==='chapel'&&side==='a'){/* 書架滑開，後面是石階 */R(ctx,X+1,Y,13,16,'#0e0a0c');for(let i=0;i<4;i++)R(ctx,X+2,Y+3+i*3,11,2,['#3a3234','#2e2628','#241e20','#1a1416'][i]);R(ctx,X+12,Y,4,16,'#2a170e');R(ctx,X+13,Y+2,3,5,'#7a2b2b');R(ctx,X+13,Y+9,3,5,'#3a5a6a')}
+      else if(p.id==='chapel'){/* 告解室的木板牆轉開 */R(ctx,X+2,Y+2,10,13,'#0e0a0c');for(let i=0;i<3;i++)R(ctx,X+3,Y+5+i*3,8,2,['#3a3234','#2e2628','#241e20'][i]);R(ctx,X+11,Y+1,3,14,'#6b4026')}
+      else if(p.id==='maze'){/* 衣櫃門大開，裡面掛著大衣 */R(ctx,X+2,Y+1,12,15,'#0e0a0c');R(ctx,X+2,Y+1,12,1,'#8a8f96');R(ctx,X+3,Y+2,3,10,'#5a3a4a');R(ctx,X+7,Y+2,3,11,'#3a4a5a');R(ctx,X+11,Y+2,2,9,'#6a5a3a')}
+      else if(p.id==='cell'){/* 木桶推到旁邊，底下是地板門 */R(ctx,X,Y,16,16,'#4f3326');R(ctx,X+2,Y+2,12,12,'#2a1a10');R(ctx,X+3,Y+3,10,10,'#0a0806');R(ctx,X+4,Y+3,2,10,'#6b4026');R(ctx,X+10,Y+3,2,10,'#6b4026');R(ctx,X+4,Y+6,8,1,'#8a5a30');R(ctx,X+4,Y+10,8,1,'#8a5a30');R(ctx,X+12,Y,4,5,'#7a5232');R(ctx,X+12,Y+2,4,1,'#4a4a52')}
+      else if(p.id==='crypt'){/* 牆崩開的洞 */R(ctx,X+3,Y+3,10,11,'#050407');R(ctx,X+2,Y+6,12,6,'#050407');R(ctx,X+1,Y+13,5,2,'#3a3440');R(ctx,X+10,Y+14,4,2,'#3a3440');R(ctx,X+12,Y+2,2,2,'#2a2430')}
+    }}
 }
 function objectAt(nx,ny){
   const s=S.scene,[x,y]=toOld(s,nx,ny),sk=SEARCH[s+'@'+nx+','+ny]?s+'@'+nx+','+ny:s+':'+x+','+y;
@@ -5603,6 +5687,8 @@ function objectAt(nx,ny){
   if(s==='chapel'&&tileAt(nx,ny)==='q'&&!decorAt(nx,ny))return pewNap;
   if(s==='bath'&&tileAt(nx,ny)==='~')return async()=>{const c=await choose('要泡個澡嗎？',['泡澡','不用了']);if(c===0)await takeBath()};
   if(tileAt(nx,ny)==='L')return dumbwaiter;
+  {const se=secretAt(nx,ny);if(se)return()=>useSecret(se)}
+  if(s==='cell'&&tileAt(nx,ny)==='*')return cellDiary;
   {const hs=hintSpot(nx,ny);if(hs)return async()=>{for(const t of hs.t)await n(t);hintSeen(hs.id)}}
   {const l=lostAt(nx,ny);if(l)return()=>takeLost(l)}
   {const gr=gearAt(nx,ny);if(gr)return()=>openGear(gr)}
@@ -5670,7 +5756,8 @@ function tileText(c,x,y){
     if(s==='roomR'&&c==='M'&&blackOn>0){ach('h_mirror');return'停電了。鏡子裡一片漆黑，只剩一雙眼睛還亮著。\n你眨了眨眼——鏡子裡那雙眼睛，晚了一拍才眨。'}
     return LOCKED[s+':'+c];
   }
-  const ST={chapel:{Z:'告解室。簾子後面空無一人……應該吧。',A:'祭壇上鋪著白布，十字架擦得發亮。這裡的空氣特別乾淨。',q:'木頭長椅。鋪著軟綿綿的小被被。',l:'燭台上的蠟燭燒得很慢，好像永遠不會燒完。',W:'彩繪玻璃上畫著一個舉燈的人。雷光閃過時，他好像在看你。'},
+  const ST={cell:{'|':'生鏽的鐵柵欄。欄杆上有一圈一圈的牙印……很小、很圓。','/':'牢門開著。鎖頭不見了，只剩一圈被啃過的痕跡。','+':'一張稻草床。稻草被壓出一個人形，旁邊還有好幾圈小小的、圓圓的壓痕。……像是鬆餅睡過的。','0':'生鏽的鐵桶。裡面是空的。……還好是空的。'},
+    chapel:{Z:'告解室。簾子後面空無一人……應該吧。',A:'祭壇上鋪著白布，十字架擦得發亮。這裡的空氣特別乾淨。',q:'木頭長椅。鋪著軟綿綿的小被被。',l:'燭台上的蠟燭燒得很慢，好像永遠不會燒完。',W:'彩繪玻璃上畫著一個舉燈的人。雷光閃過時，他好像在看你。'},
     greenhouse:{r:'溫室裡的玫瑰開得又大又紅……\n你一靠近，整排玫瑰「唰」地一起轉過來，盯著你看。\n……發現你是薊的朋友，又慢慢轉了回去。',J:'玻璃外是雨和霧，溫室裡卻暖暖的，像另一個季節。',z:'薊的調藥桌。一束束乾燥的、葉子有七片尖尖分岔的草倒掛著，聞了會想笑。桌角的標籤寫著：「個人秘方・請勿外流」。',j:'一張白色鐵椅，上面攤著一本翻開的園藝雜誌。',Q:'小噴泉的水很清，倒映著溫室的玻璃頂。'},
     maze:{h:'高高的樹籬，看不見另一邊。',Q:'迷宮中央的噴泉。噴泉中間站著一座抱著頭的騎士雕像。',r:'樹籬轉角種著一叢紅玫瑰。'},
     roomL:{b:'柔軟的床。床單少了一條，枕頭上有一小撮鬆餅屑。',B:'一個小書櫃。最上層放著一本《如何在任何地方睡著》。'},
@@ -6317,7 +6404,7 @@ function render(){
   if(shake>0){cx+=Math.round((Math.random()-.5)*4);cy+=Math.round((Math.random()-.5)*4)}
   R(ctx,0,0,320,208,'#07050a');
   ctx.drawImage(s.cache,-cx,-cy);
-  if(S&&mode==='play'){drawDecor(cx,cy);drawProps(cx,cy)}
+  if(S&&mode==='play'){drawDecor(cx,cy);drawProps(cx,cy);drawSecrets(cx,cy,S.scene)}
   if(key0()==='chapel'&&qDoneP('po')){const[ax]=toNew('chapel',7,1),X=ax*T+8-cx,Y=T-cy;R(ctx,X-6,Y+2,12,7,K);R(ctx,X-5,Y+3,10,5,'#f4f6fb');R(ctx,X-2,Y+5,1,1,K);R(ctx,X+1,Y+5,1,1,K)}
   const key=S?S.scene:'outside';
   // floor-level objects
@@ -6382,7 +6469,7 @@ function render(){
   if(key==='f2'&&S&&S.flags.atticOpen){const[ax,ay]=toNew('f2',9,1),X=ax*T-cx,Y=ay*T-cy;R(ctx,X+1,Y,14,16,'#120c0e');R(ctx,X+3,Y,2,16,'#7a5232');R(ctx,X+11,Y,2,16,'#7a5232');for(let i=0;i<4;i++)R(ctx,X+3,Y+2+i*4,10,2,'#8e6440')}
   if(key==='hall')drawChandelier(s.w*T/2-cx,6-cy);
   if(key==='chapel'&&S&&chOf()===4&&S.flags.ded4){const[ax,ay]=toNew('chapel',14,9),X=ax*T-cx,Y=ay*T-cy;R(ctx,X,Y,16,16,'#0c080a');for(let i=0;i<4;i++)R(ctx,X+2,Y+2+i*4,12,2,'#4a4448');R(ctx,X,Y,2,16,'#6a6e72');R(ctx,X+14,Y,2,16,'#6a6e72')}
-  if(key==='crypt'&&mode==='play'){const[ppx,ppy]=pPix();cryptDark(ppx-cx+8,ppy-cy+4)}
+  if((key==='crypt'||key==='cell')&&mode==='play'){const[ppx,ppy]=pPix();cryptDark(ppx-cx+8,ppy-cy+4)}
   if(S&&chOf()===5&&s.out){ctx.fillStyle='rgba(255,190,120,.16)';ctx.fillRect(0,0,320,208)}
   else if(s.out){
     /* 霧：邊緣柔和的霧團，慢慢往右飄 */
