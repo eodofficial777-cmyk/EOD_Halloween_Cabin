@@ -1060,7 +1060,8 @@ function drawTile(g,c,X,Y,tx,ty,sc){
       else if(sc==='bath'){R(g,X,Y,16,16,(tx+ty)%2?'#e8e2d8':'#3a3640');R(g,X,Y,16,1,(tx+ty)%2?'#f6f0e6':'#4a4650')}
       else if(sc==='crypt'){/* 墓室地板：粗石板、裂縫，偶爾有碎骨和青苔 */R(g,X,Y,16,16,'#1c1920');for(const[a,b,w,hh]of[[0,0,9,7],[9,0,7,8],[0,7,7,9],[7,8,9,8]]){R(g,X+a,Y+b,w-1,hh-1,['#26222a','#24202a','#2a2530'][(h+a+b)%3]);R(g,X+a,Y+b,w-1,1,'#302b34')}
         if(h%5===0){R(g,X+4,Y+4,1,3,'#141018');R(g,X+5,Y+6,2,1,'#141018')}if(h%11===0)R(g,X+9,Y+10,2,1,'#e2741c');if(h%19===3){R(g,X+3,Y+11,5,1,'#c8c0b0');R(g,X+2,Y+10,1,3,'#c8c0b0');R(g,X+8,Y+10,1,3,'#c8c0b0')}if(h%13===5)R(g,X+10,Y+3,3,2,'#26342a')}
-      else if(sc==='greenhouse'){R(g,X,Y,16,16,'#5a3a2e');R(g,X,Y,16,1,'#4a2e24');R(g,X,Y,1,16,'#4a2e24');R(g,X+8,Y+8,8,1,'#4a2e24');R(g,X+8,Y+8,1,8,'#4a2e24')}
+      else if(sc==='greenhouse'){/* 溫室的紅陶磚地：磚縫、亮邊、青苔、掉落的花瓣和泥土 */R(g,X,Y,16,16,'#4a2e24');for(const[a,b]of[[0,0],[8,0],[0,8],[8,8]]){R(g,X+a,Y+b,7,7,((tx+ty+a+b)>>3)%2?'#5e3c30':'#5a3a2e');R(g,X+a,Y+b,7,1,'#6e4a3a')}
+        if(h%5===0)R(g,X+7,Y+3,1,2,'#3a5a2a');if(h%13===1){R(g,X+3,Y+10,2,1,'#c8202a');R(g,X+4,Y+11,1,1,'#9a1424')}if(h%9===4)R(g,X+10,Y+4,3,2,'#3e2a1c')}
       else if(sc==='chapel'){/* 教堂石板地：方正的石板、亮邊、偶爾有裂痕和滴下的蠟 */R(g,X,Y,16,16,'#332e31');for(const[a,b]of[[0,0],[8,0],[0,8],[8,8]]){R(g,X+a,Y+b,7,7,((tx+ty+a+b)>>3)%2?'#433d41':'#3e383c');R(g,X+a,Y+b,7,1,'#4e484c')}
         if(h%4===0){R(g,X+3,Y+4,1,2,'#2a2528');R(g,X+4,Y+6,2,1,'#2a2528')}if(h%23===2)R(g,X+11,Y+11,2,1,'#efe3c8')}else floor();break;
     case ',':if(sc==='chapel'){R(g,X,Y,16,16,'#6e1b22');const L=at(-1,0)!==',',Rr=at(1,0)!==',';if(L){R(g,X,Y,2,16,'#d9a640');R(g,X+2,Y,1,16,'#4e1218')}if(Rr){R(g,X+14,Y,2,16,'#d9a640');R(g,X+13,Y,1,16,'#4e1218')}R(g,X+(L?6:2),Y+4,2,2,'#8e2a32');R(g,X+(L?6:2),Y+12,2,2,'#8e2a32');if(ty%2)R(g,X+(L?10:5),Y+8,1,1,'#d9a640');break}R(g,X,Y,16,16,'#6e1b22');R(g,X+3,Y+3,1,1,'#8e2a32');R(g,X+11,Y+11,1,1,'#8e2a32');R(g,X+11,Y+3,1,1,'#561419');R(g,X+3,Y+11,1,1,'#561419');R(g,X+7,Y+7,2,2,'#a8323a');break;
@@ -1078,10 +1079,17 @@ function drawTile(g,c,X,Y,tx,ty,sc){
       else if(v===1){R(g,X+9,Y+5,2,2,'#efe3c8');R(g,X+4,Y+8,8,1,'#0e1626');R(g,X+5,Y+6,2,2,'#2a3a2a');R(g,X+6,Y+5,1,1,'#2a3a2a')}
       else{R(g,X+5,Y+6,4,3,'#e2741c');R(g,X+6,Y+5,1,1,'#3f6b2a');R(g,X+9,Y+7,2,2,'#7a1f24');R(g,X+4,Y+8,8,1,'#5a3a20')}
       R(g,X+6,Y+12,4,1,'#d9a640')}break;
-    case '{':{floor();R(g,X,Y+1,16,14,'#5a3420');R(g,X,Y+7,16,1,'#3a2214');R(g,X,Y+14,16,1,'#3a2214');
-      const cs=['#ff5fa2','#5fd0ff','#a8ff6a','#ffd25a','#e2741c','#c08af0'];for(let r=0;r<2;r++)for(let i=0;i<3;i++){const c=cs[(tx*3+i+r*2)%6],x=X+1+i*5,y=Y+2+r*7;R(g,x,y,4,5,'rgba(220,235,245,.55)');R(g,x+1,y+2,2,3,c);R(g,x,y,4,1,'#c9a13c')}break}
-    case '}':{floor();R(g,X,Y+1,16,14,'#3a2214');R(g,X,Y+7,16,1,'#22120a');for(let r=0;r<2;r++)for(let i=0;i<3;i++){const x=X+2+i*5,y=Y+2+r*7;R(g,x,y+1,3,4,['#9ad8c8','#c08af0','#ff9ac0'][(i+r+tx)%3]);R(g,x+1,y,1,1,'#c9a13c');R(g,x,y+3,3,1,'#e2741c')}
-      if(tx===8&&ty===1){R(g,X+7,Y+9,3,4,'#120a08')}break}
+    case '{':{floor();/* 糖果架：木頭層架、玻璃糖果罐（蓋子、標籤、裡面滿滿的糖），偶爾插著棒棒糖 */
+      R(g,X,Y,16,16,K);R(g,X+1,Y,14,16,'#5a3420');R(g,X+1,Y,14,1,'#7a5232');R(g,X+1,Y+7,14,2,'#7a5232');R(g,X+1,Y+8,14,1,'#3a2214');R(g,X+1,Y+14,14,2,'#7a5232');R(g,X+1,Y+15,14,1,'#3a2214');
+      const cs=['#ff5fa2','#5fd0ff','#a8ff6a','#ffd25a','#e2741c','#c08af0'];
+      for(let r=0;r<2;r++)for(let i=0;i<3;i++){const c=cs[(tx*3+i+r*2)%6],c2=cs[(tx*3+i+r*2+3)%6],x=X+2+i*4,y=Y+1+r*8;
+        R(g,x,y+1,4,5,'rgba(200,225,240,.35)');R(g,x,y+3,4,3,c);R(g,x+1,y+3,1,1,c2);R(g,x+2,y+4,1,1,'#fff');R(g,x+3,y+5,1,1,c2);R(g,x,y,4,1,'#c9a13c');R(g,x,y+1,1,5,'rgba(255,255,255,.35)');R(g,x+1,y+2,2,1,'#efe8dc')}
+      if((tx+ty)%3===0){R(g,X+14,Y+2,1,5,'#efe8dc');R(g,X+13,Y,3,3,'#ff5fa2');R(g,X+14,Y+1,1,1,'#fff')}break}
+    case '}':{floor();/* 南瓜標誌的藥水架：每瓶都畫著咧嘴笑的南瓜，有一格是空的 */
+      R(g,X,Y,16,16,K);R(g,X+1,Y,14,16,'#3a2214');R(g,X+1,Y,14,1,'#5a3420');R(g,X+1,Y+7,14,2,'#5a3420');R(g,X+1,Y+8,14,1,'#22120a');R(g,X+1,Y+14,14,2,'#5a3420');
+      for(let r=0;r<2;r++)for(let i=0;i<3;i++){const x=X+2+i*4,y=Y+1+r*8;if(tx===8&&ty===1&&r===1&&i===1){R(g,x,y+5,3,1,'#120a08');R(g,x+1,y+4,1,1,'#2a1a10');continue}
+        const c=['#9ad8c8','#c08af0','#ff9ac0','#a8ff6a'][(i+r+tx)%4];R(g,x,y+2,3,4,c);R(g,x,y+2,1,4,'rgba(255,255,255,.4)');R(g,x+1,y,1,2,'#c8ccd2');R(g,x+1,y-1+1,1,1,'#8a5a30');R(g,x,y+3,3,2,'#e2741c');R(g,x+1,y+4,1,1,K)}
+      break}
     case '~':{const bg=(tx+ty)%2?'#e8e2d8':'#3a3640';R(g,X,Y,16,16,bg);const L=at(-1,0)!=='~',Rr=at(1,0)!=='~',Tp=at(0,-1)!=='~';
       const x0=X+(L?2:0),w=16-(L?2:0)-(Rr?2:0);
       if(Tp){R(g,x0,Y+6,w,10,'#f6f4ee');R(g,x0,Y+5,w,2,'#d9a640');R(g,x0+(L?1:0),Y+8,w-(L?1:0)-(Rr?1:0),8,'#9ad0e0');R(g,X+3+((tx*5)%7),Y+9,3,2,'#ffd2e6');R(g,X+9-((tx*3)%5),Y+12,2,2,'#fff');R(g,X+6,Y+10,2,2,'#ffb8d8');
@@ -1216,13 +1224,23 @@ function drawTile(g,c,X,Y,tx,ty,sc){
       for(const[a,b]of[[1,5],[6,3],[11,6],[3,9],[9,10]]){R(g,X+a,Y+b,3,2,'#3f6b2a');R(g,X+a,Y+b,1,1,'#5a8a3a')}R(g,X+4,Y+6,1,1,'#2f4a22');R(g,X+13,Y+9,1,2,'#3a5a26');
       if(h%3===0){R(g,X+5,Y+10,6,5,K);R(g,X+6,Y+11,4,3,'#d06a1a');R(g,X+7,Y+11,1,3,'#a8521a');R(g,X+7,Y+9,2,2,'#3f6b2a');R(g,X+6,Y+11,1,1,'#f08a3a')}
       else if(h%3===1){R(g,X+10,Y+2,4,3,'#5a7a2a');R(g,X+11,Y+2,1,3,'#4a6a22');R(g,X+11,Y+1,1,1,'#3f6b2a')}break}
-    case 'J':{/* 溫室玻璃牆：窗框、反光，裡面透出暖光和植物 */R(g,X,Y,16,16,'#4a4038');for(const[a,b]of[[1,1],[9,1],[1,9],[9,9]]){R(g,X+a,Y+b,6,6,b<5?'#2e4a50':'#284248');R(g,X+a,Y+b,6,6,'rgba(255,210,140,.07)')}
+    case 'J':if(sc==='greenhouse'){/* 溫室內側的玻璃牆：窗外是雨夜，玻璃上爬著藤蔓 */R(g,X,Y,16,16,'#4a4038');R(g,X+1,Y+1,6,6,'#141e2c');R(g,X+9,Y+1,6,6,'#141e2c');R(g,X+1,Y+9,6,6,'#101826');R(g,X+9,Y+9,6,6,'#101826');
+        for(const[a,b]of[[2,2],[11,3],[4,10],[12,11],[3,6],[10,13]])R(g,X+a,Y+b,1,2,'#3a5a7a');R(g,X+2,Y+1,1,1,'#8ab0d0');R(g,X+10,Y+9,1,1,'#8ab0d0');
+        if(h%3===0){R(g,X,Y+2,2,10,'#2f5a28');R(g,X+2,Y+4,2,1,'#3f6b2a');R(g,X+1,Y+8,3,1,'#3f6b2a')}R(g,X,Y+7,16,2,'#5a5048');R(g,X+7,Y,2,16,'#5a5048');R(g,X,Y,16,1,'#6a6058');break}{/* 溫室玻璃牆：窗框、反光，裡面透出暖光和植物 */R(g,X,Y,16,16,'#4a4038');for(const[a,b]of[[1,1],[9,1],[1,9],[9,9]]){R(g,X+a,Y+b,6,6,b<5?'#2e4a50':'#284248');R(g,X+a,Y+b,6,6,'rgba(255,210,140,.07)')}
       R(g,X+2,Y+11,3,4,'#2f5a2a');R(g,X+10,Y+12,4,3,'#3a6a2a');R(g,X+3,Y+10,1,1,'#4a8a3a');if(h%2)R(g,X+11,Y+11,1,1,'#c8202a');if(h%3===0)R(g,X+3,Y+4,2,3,'#2f5a2a');
       R(g,X+2,Y+2,1,3,'#8ab0b8');R(g,X+3,Y+2,1,1,'#8ab0b8');R(g,X+10,Y+2,1,2,'#7aa0a8');R(g,X+10,Y+10,1,1,'#7aa0a8');R(g,X,Y,16,1,'#5a5048');R(g,X,Y+7,16,2,'#3a3028');R(g,X+7,Y,2,16,'#3a3028');break}
-    case 'z':R(g,X,Y,16,16,'#5a3a2e');R(g,X,Y+2,16,11,'#5a3a20');R(g,X,Y+2,16,2,'#7a5232');R(g,X+2,Y,2,4,['#ff5fa2','#5fd0ff','#a8ff6a'][h%3]);R(g,X+7,Y+1,3,3,'#c9b38a');R(g,X+11,Y,2,4,['#a8ff6a','#ff5fa2','#ffd25a'][h%3]);R(g,X+3,Y+6,10,1,'#3f6b35');R(g,X+5,Y+7,1,3,'#3f6b35');R(g,X+10,Y+7,1,4,'#3f6b35');break;
+    case 'z':{R(g,X,Y,16,16,'#5a3a2e');/* 薊的調藥桌：抽屜、彩色藥瓶、研缽、倒掛的七角葉藥草、翻開的筆記 */const L=at(-1,0)!=='z',Rr=at(1,0)!=='z';
+      R(g,X,Y+4,16,12,K);R(g,X,Y+5,16,10,'#5a3a20');R(g,X,Y+5,16,2,'#7a5232');R(g,X,Y+5,16,1,'#9a7048');R(g,X+3,Y+9,10,4,'#4a2a18');R(g,X+7,Y+10,2,1,'#d9a640');if(L)R(g,X,Y+4,1,12,'#3a2214');if(Rr)R(g,X+15,Y+4,1,12,'#3a2214');
+      const v=tx%3;if(v===0){for(const[a,c]of[[1,'#ff5fa2'],[5,'#5fd0ff'],[10,'#a8ff6a']]){R(g,X+a,Y+1,3,4,c);R(g,X+a,Y+1,1,4,'rgba(255,255,255,.4)');R(g,X+a+1,Y,1,1,'#c8ccd2')}R(g,X+13,Y+2,2,3,'#ffd25a')}
+      else if(v===1){R(g,X+2,Y+2,5,3,'#8a8a92');R(g,X+3,Y+2,3,1,'#3f6b2a');R(g,X+6,Y,1,3,'#6a5a4a');R(g,X+9,Y+2,6,3,'#efe8dc');R(g,X+9,Y+2,3,3,'#e8e0d0');R(g,X+10,Y+3,1,1,'#8a7a6a');R(g,X+13,Y+3,1,1,'#ff5fa2')}
+      else{R(g,X+3,Y+3,3,2,'#c08af0');R(g,X+4,Y+1,1,2,'#c8ccd2');R(g,X+8,Y+2,6,3,'#5a6a2a');R(g,X+9,Y+1,4,1,'#5a6a2a')}
+      R(g,X+2,Y-3,1,4,'#6a5a4a');R(g,X+1,Y-2,3,1,'#3f8a3a');R(g,X+12,Y-3,1,4,'#6a5a4a');R(g,X+11,Y-2,3,1,'#3f8a3a');R(g,X+12,Y-1,1,1,'#5fae3a');break}
     case 'j':R(g,X,Y,16,16,'#5a3a2e');/* 白色鑄鐵長椅 */R(g,X+1,Y+15,14,1,'rgba(0,0,0,.3)');R(g,X+1,Y+1,14,3,'#e8e4dc');R(g,X+1,Y+3,14,1,'#a8a49c');for(let i=3;i<14;i+=3)R(g,X+i,Y+1,1,2,'#a8a49c');
       R(g,X+1,Y+5,14,4,'#d8d4cc');R(g,X+1,Y+5,14,1,'#f4f0e8');R(g,X+1,Y+7,14,1,'#b8b4ac');R(g,X+2,Y+9,1,5,'#a8a49c');R(g,X+13,Y+9,1,5,'#a8a49c');R(g,X+1,Y+13,2,1,'#a8a49c');R(g,X+13,Y+13,2,1,'#a8a49c');R(g,X+3,Y+10,1,1,'#a8a49c');R(g,X+12,Y+10,1,1,'#a8a49c');break;
-    case 'Q':if(sc!=='maze'){R(g,X,Y,16,16,'#2e5a7a');if(at(0,-1)!=='Q')R(g,X,Y,16,3,'#8a867e');if(at(0,1)!=='Q')R(g,X,Y+13,16,3,'#8a867e');if(at(-1,0)!=='Q')R(g,X,Y,3,16,'#8a867e');if(at(1,0)!=='Q')R(g,X+13,Y,3,16,'#8a867e');R(g,X+5+(h%5),Y+6,3,1,'#8ac0e0');if(at(-1,0)!=='Q'&&at(0,-1)!=='Q'){R(g,X+12,Y+12,4,4,'#b8b4ac');R(g,X+13,Y+9,2,4,'#d8d4cc')}break}
+    case 'Q':if(sc!=='maze'){/* 溫室噴泉：石砌池緣、水波、浮著玫瑰花瓣，中間有一座小天使雕像在噴水 */const Tp=at(0,-1)!=='Q',Bt=at(0,1)!=='Q',L=at(-1,0)!=='Q',Rr=at(1,0)!=='Q';
+        R(g,X,Y,16,16,'#2e5a7a');R(g,X+2,Y+2,12,12,'#36668a');if(Tp){R(g,X,Y,16,3,'#8a867e');R(g,X,Y,16,1,'#b8b4ac')}if(Bt){R(g,X,Y+13,16,3,'#8a867e');R(g,X,Y+15,16,1,'#5a5650')}if(L){R(g,X,Y,3,16,'#8a867e');R(g,X,Y,1,16,'#a8a49c')}if(Rr){R(g,X+13,Y,3,16,'#8a867e');R(g,X+15,Y,1,16,'#6a6660')}
+        R(g,X+5+(h%5),Y+7,3,1,'#8ac0e0');R(g,X+4+(h%3),Y+10,2,1,'#5a8ab0');if(h%2)R(g,X+6+(h%4),Y+5,2,1,'#c8202a');
+        if(!L&&!Tp){R(g,X-3,Y-6,6,9,K);R(g,X-2,Y-5,4,7,'#d8d4cc');R(g,X-2,Y-5,4,1,'#efe8dc');R(g,X-4,Y-3,2,2,'#efe8dc');R(g,X+2,Y-3,2,2,'#efe8dc');R(g,X-1,Y-8,2,3,'#d8d4cc');R(g,X-1,Y-10,2,2,'rgba(200,230,250,.6)');R(g,X-3,Y-2,1,3,'rgba(200,230,250,.5)');R(g,X+2,Y-2,1,3,'rgba(200,230,250,.5)')}break}
       /* 迷宮中央的噴泉：八角池、水波，中間站著抱著頭的騎士雕像 */R(g,X,Y,16,16,'#3e3428');R(g,X+2,Y,12,16,K);R(g,X,Y+2,16,12,K);R(g,X+3,Y+1,10,14,'#8a867e');R(g,X+1,Y+3,14,10,'#8a867e');R(g,X+3,Y+1,10,1,'#b8b4ac');R(g,X+1,Y+3,1,10,'#a8a49c');
       R(g,X+3,Y+3,10,10,'#2e5a7a');R(g,X+4,Y+4,8,8,'#36668a');R(g,X+4+(h%5),Y+11,2,1,'#8ac0e0');R(g,X+9,Y+5,2,1,'#8ac0e0');R(g,X+4,Y+7,1,1,'#5a8ab0');
       if(sc==='maze'){R(g,X+5,Y+10,6,2,'#9a968e');R(g,X+6,Y+3,4,8,K);R(g,X+7,Y+4,2,7,'#b8b4ac');R(g,X+5,Y+5,6,3,K);R(g,X+6,Y+5,4,2,'#a8a49c');R(g,X+7,Y+4,1,6,'#d8d4cc');R(g,X+10,Y+5,3,3,K);R(g,X+10,Y+5,2,2,'#d8d4cc');R(g,X+11,Y+6,1,1,'#7a7a82');R(g,X+6,Y+2,4,2,'#9a968e');R(g,X+7,Y+2,2,1,'#c8c4bc')}break;
@@ -3471,6 +3489,7 @@ async function lampChapel(){
   lightLamp('chapel');
 }
 async function lampMaze(){
+  if(!S.flags.hintSui){await n('騎士雕像抱著的頭，好像可以轉動。……可是「回家的方向」是哪邊？');await n('（翠常常在迷宮裡迷路，也許她知道訣竅。）')}
   const c=await choose('騎士雕像抱著的頭，好像可以轉動。要轉向哪邊？',['朝北','朝東','朝南','朝西','先不要']);
   if(c===4)return;
   if(c===0){await n('你把頭轉向北邊。');await n('……喀。頭從雕像手上掉了下來，滾進噴泉裡。');await n('你捲起袖子把它撈了回來。雕像的表情好像有點不好意思。');return}
@@ -3509,6 +3528,7 @@ async function lampRoomL(){
   lightLamp('roomL');
 }
 async function lampField(){
+  if(!S.flags.hintBoss){await n('南瓜田裡，有一盞熄滅的南瓜燈座。……可是「大南瓜的弟弟」是哪一顆？');await n('（大南瓜是首領最好的朋友。去問問首領吧。）');return}
   await n('首領說，田裡第三排、最右邊那顆，是大南瓜的弟弟。');
   await n('……可是第三排的南瓜，每一顆都長得一模一樣，而且好像都在偷偷看你。');
   for(;;){
@@ -5326,14 +5346,14 @@ function objectAt(nx,ny){
     if(nx===SHED.x&&ny===SHED.y)return gardenShed;
     if(S.flags.bossMaze&&nx===STRAW.x&&ny===STRAW.y)return strawPile;
     if(nx===0&&ny===1&&S.flags.mazeKey&&!S.flags.candyOpen)return candyDoor;
-    if(nx===MZ.qx&&ny===MZ.qy){if(chOf()===4&&S.flags.riddle&&S.flags.hintSui&&!lampOn('maze'))return lampMaze;return wishWell}
+    if(nx===MZ.qx&&ny===MZ.qy){if(chOf()===4&&S.flags.riddle&&!lampOn('maze'))return lampMaze;return wishWell}
   }
   if(s==='candy'&&tileAt(nx,ny)==='}')return potionRack;
   if(s==='crypt'&&ny===8&&nx>=9&&nx<=12&&chOf()===4&&lampsN()<4)return readSeal;
   if(chOf()===4&&S.flags.riddle){
     if(s==='roomL'&&nx===15&&ny===3&&!lampOn('roomL'))return lampRoomL;
     if(s==='roomL'&&nx===15&&ny===3)return()=>n('打開的小盒子。南瓜燈在裡面亮著。');
-    if(s==='outside'&&nx===7&&ny===18&&S.flags.hintBoss&&!lampOn('field'))return lampField;
+    if(s==='outside'&&nx===7&&ny===18&&!lampOn('field'))return lampField;
   }
   if(s==='outside'&&chOf()===4&&nx===BOTTLE.x&&ny===BOTTLE.y)return bottleSpot;
   const tc=tileAt(nx,ny),pot=hasItem('potion')&&qOn('ji')&&!CB.lock,tested=k=>qGet('ji').tested.includes(k);
@@ -6061,7 +6081,7 @@ function render(){
   // markers
   if(mode==='play'&&S.flags.discovered&&!busy&&CB.lockKind!=='final'){
     const F=S.flags,ch=chOf(),sp=[];
-    const pend=ch===4?{ian:'cut',legs:hasEv('seam')?'shoe':'seam',po:'dream',lala:'lala4',shisho:'growth',boss:'laugh',sui:'gate',ji:hasEv('bottle')?'notji':null}:ch===1?{lala:'lala',shisho:'ghost',sui:'sui',boss:'boss',ian:'ian',ji:'potion'}:ch===2?{ian:'alibi',shisho:'ghost2',sui:'sight',boss:'boss2',ji:'potion2'}:{sui:'gesture',ji:'witness',ian:'ianhr'};
+    const pend=ch===4?{ian:'cut',legs:hasEv('seam')?'shoe':'seam',po:'dream',lala:'lala4',shisho:'growth',boss:F.riddle?'hint_boss':'laugh',sui:F.riddle?'hint_sui':'gate',ji:hasEv('bottle')?'notji':null}:ch===1?{lala:'lala',shisho:'ghost',sui:'sui',boss:'boss',ian:'ian',ji:'potion'}:ch===2?{ian:'alibi',shisho:'ghost2',sui:'sight',boss:'boss2',ji:'potion2'}:{sui:'gesture',ji:'witness',ian:'ianhr'};
     for(const [id,o] of Object.entries(NPCS)){
       if(o.scene!==key)continue;
       let need=pend[id]&&!hasEv(pend[id]);
@@ -6161,7 +6181,7 @@ function updateHUD(){
     else if(k<REQ4.length)t=`第四幕｜IAN 怎麼會斷成兩半？調查線索 <b>${k}/${REQ4.length}</b>`;
     else if(!F.ded4)t='第四幕｜線索齊了。到 <b>墓園</b> 找 IAN 的上半身，公布推理。';
     else if(!F.riddle)t='第四幕｜往 <b>小教堂</b> 的地下墓室深處前進！';
-    else if(lampsN()<4)t=`第四幕｜點亮四盞南瓜燈：<b>小教堂、花園迷宮、小波的臥室、南瓜田</b>（${lampsN()}/4）`;
+    else if(lampsN()<4)t=`第四幕｜點亮四盞南瓜燈：<b>小教堂、花園迷宮、小波的臥室、南瓜田</b>（${lampsN()}/4）。謎題抄在筆記裡，卡住了就問問熟悉那裡的人`;
     else t='第四幕｜封印解開了！前往 <b>地下墓室深處</b>。';
   }else if(ch===5){t='終幕｜天亮了。';
   }else{
