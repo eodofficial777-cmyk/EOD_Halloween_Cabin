@@ -1206,8 +1206,8 @@ function applyWorld(){
   if(!llamaOk)set('horse','outside',33,13);
   if(S&&qGet('sui')&&qGet('sui').st==='alt')NPCS.horse.scene=null;
   if(ch===0){
-    if(!F.gathered){set('kaicho','dining',1,3);set('lala','dining',4,1);set('ian','dining',7,1);set('ji','dining',10,1);set('boss','dining',12,1);
-      set('shisho','dining',4,6);set('sui','dining',7,6);set('po','dining',10,6,'stand');NPCS.kaicho.dir='right'}
+    if(!F.gathered){/* 開場晚餐：大家坐在長桌兩側的椅子上 */set('kaicho','dining',1,3);set('lala','dining',4,2);set('ian','dining',7,2);set('ji','dining',10,2);set('boss','dining',12,2);
+      set('shisho','dining',4,5);set('sui','dining',7,5);set('po','dining',10,5,'stand');NPCS.kaicho.dir='right';for(const id of['shisho','sui','po'])NPCS[id].dir='up'}
     else{set('kaicho','greenhouse',10,7);set('lala','kitchen',9,4);set('po','hall',12,6,'stand')}
   }else if(ch===1){
     set('kaicho','dining',7,6,'down');
@@ -4606,8 +4606,8 @@ function drawPField(cx,cy){
 /* ---------------- 會自己走的家具：沒人看的時候，它們就長出腳 ---------------- */
 const WANDER=[
   {id:'hchair',sc:'hall',k:'chair',p:[[3,6],[3,11],[9,12],[20,12],[21,6],[9,5]]},
-  {id:'hframe',sc:'hall',k:'frame',wall:1,p:[[5,1],[9,1]]},
-  {id:'hframe2',sc:'hall',k:'frame',wall:1,p:[[20,1],[16,1]]},
+  {id:'hframe',sc:'hall',k:'frame',wall:1,p:[[0,2],[0,5]]},
+  {id:'hframe2',sc:'hall',k:'frame',wall:1,p:[[25,12],[25,7]]},
   {id:'fpot',sc:'f2',k:'pot',p:[[3,5],[22,5],[22,6],[3,6]]},
   {id:'dcdl',sc:'dining',k:'cdl',p:[[2,1],[17,1],[17,7],[2,7]]},
   {id:'eframe',sc:'exhibit',k:'frame',wall:1,p:[[3,0],[8,0]]},
@@ -4622,11 +4622,15 @@ const WANDER_T={
   cdl:['一座銀色燭台，三根蠟燭靜靜地燒著。','燭台的蠟油滴了一路，從桌子另一頭一直滴到這裡。','燭台的底座，有幾根細細的、像腳趾一樣的東西縮了進去。','……燭火全部朝你的方向歪了一下。'],
   teapot:['一只白色的茶壺，壺嘴還冒著熱氣。','茶壺……剛剛不是在料理台上嗎？','茶壺底下伸出四隻小小的腳，踮了一下，又縮回去了。','壺蓋「喀噠」地跳了一下，好像在偷笑。'],
 };
+const isExit=(sc,x,y)=>(SCENES[sc].exits||[]).some(e=>{const[ex,ey]=toNew(sc,e[0],e[1]);return ex===x&&ey===y});
+const searchKey=(sc,x,y)=>{const[ox,oy]=toOld(sc,x,y);return!!(SEARCH[sc+'@'+x+','+y]||SEARCH[sc+':'+ox+','+oy])};
 const wanderAt=(x,y)=>S?WANDER.find(w=>w.sc===S.scene&&WS[w.id].x===x&&WS[w.id].y===y)||null:null;
 async function wanderLook(w){const st=WS[w.id];st.seen=(st.seen||0)+1;const L=WANDER_T[w.k];await n(L[Math.min(L.length-1,st.seen-1)]);if(st.seen>=L.length)st.seen=1;
   const F=S.flags;F.wseen=F.wseen||[];if(!F.wseen.includes(w.id))F.wseen.push(w.id)}
 function lookingAt(x,y){const[dx,dy]=DV[P.dir],vx=x-P.x,vy=y-P.y,d=Math.hypot(vx,vy);return d<9&&(vx*dx+vy*dy)>d*.5}
-function wanderFree(w,x,y){if(w.wall)return true;const c=tileAt(x,y);if(!c||SOLID.has(c)||hallObj(w.sc,x,y)||npcAt(x,y)||(P.x===x&&P.y===y))return false;
+/* 會動的家具不能停在門口、可調查的東西、道具或角色身上 */
+function spotBusy(sc,x,y){const c=tileAt(x,y);return!c||SOLID.has(c)||c==='D'||isExit(sc,x,y)||hallObj(sc,x,y)||npcAt(x,y)||propAt(x,y)||lostAt(x,y)||gearAt(x,y)||hintSpot(x,y)||decorAt(x,y)||searchKey(sc,x,y)}
+function wanderFree(w,x,y){if(w.wall)return true;if(spotBusy(w.sc,x,y)||(P.x===x&&P.y===y))return false;
   return!WANDER.some(o=>o!==w&&o.sc===w.sc&&WS[o.id].x===x&&WS[o.id].y===y)}
 function wanderStep(w,toward){const st=WS[w.id];
   let opts;if(toward){const[tx,ty]=w.p[st.wi],sx=Math.sign(tx-st.x),sy=Math.sign(ty-st.y);opts=[[sx,0],[0,sy]].filter(([a,b])=>a||b);if(!opts.length){st.wi=(st.wi+1)%w.p.length;return false}}
@@ -4651,7 +4655,7 @@ function popTick(){
   const sc=SCENES[S.scene];if(POP){if(POP.sc!==S.scene||--POP.t<=0){POP=null;return}if(POP.t<POP.max-20&&lookingAt(POP.x,POP.y)){spark(POP.x*T+8,POP.y*T+8,'#b9a58e',6);POP=null}return}
   if(busy||sc.out||SOKO[S.scene]||CB.lock||CB.foes.length||--popT>0)return;
   popT=60*(40+Math.random()*50);const[dx,dy]=DV[P.dir];
-  for(const d of[3,4,2]){const x=P.x-dx*d,y=P.y-dy*d,c=tileAt(x,y);if(c&&!SOLID.has(c)&&!npcAt(x,y)&&!hallObj(S.scene,x,y)&&!wanderAt(x,y)){
+  for(const d of[3,4,2]){const x=P.x-dx*d,y=P.y-dy*d;if(!spotBusy(S.scene,x,y)&&!wanderAt(x,y)){
     POP={sc:S.scene,x,y,t:240,max:240,k:['chair','teapot','doll','phead'][(Math.random()*4)|0]};return}}
 }
 function drawWanderThing(g,k,X,Y,moving,f){
