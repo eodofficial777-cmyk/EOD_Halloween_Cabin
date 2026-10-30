@@ -447,8 +447,9 @@ const CH={
       if(st==='down'){R(g,9,7,1,2,'#e8e2f2');R(g,9,8,2,1,K)}}},
   /* 司書：短栗褐髮、棕紅色眼睛、右眼戴單片眼鏡，燕尾服，抱著一本厚重的書；頭上是惡魔的小角 */
   shisho:{o:O({skin:'#efcfb6',hair:'#7a4a2e',eye:'#a8402a',cloth:'#1e1c24',cloth2:'#efe8dc',pants:'#1e1c24',cut:'side'}),
-    pre(g,d){if(d==='down')spr(g,10,12,SHI_TAIL,SHI_TP);else if(d==='right')spr(g,0,12,SHI_TAIL,SHI_TP,1);/* 燕尾：背後兩片長長的衣尾 */if(d==='up'){R(g,4,17,8,5,K);R(g,5,17,3,4,'#2a2830');R(g,8,17,3,4,'#2a2830');R(g,8,17,0,4,K);R(g,7,17,2,5,K)}
-      else if(d==='right'){R(g,2,15,4,6,K);R(g,3,15,2,5,'#2a2830')}else{R(g,3,16,2,4,K);R(g,11,16,2,4,K)}},
+    pre(g,d){/* 燕尾：背後兩片長長的衣尾（先畫，尾巴才不會被蓋住） */if(d==='up'){R(g,4,17,8,5,K);R(g,5,17,3,4,'#2a2830');R(g,8,17,3,4,'#2a2830');R(g,8,17,0,4,K);R(g,7,17,2,5,K)}
+      else if(d==='right'){R(g,3,15,3,6,K);R(g,4,15,1,5,'#2a2830')}else{R(g,3,16,2,4,K);R(g,11,16,2,4,K)}
+      if(d==='down')spr(g,10,12,SHI_TAIL,SHI_TP);else if(d==='right')spr(g,-1,12,SHI_TAIL,SHI_TP,1)},
     post(g,d){const GD='#d9a640';spr(g,3,-2,HORNS.horn.rows,HORNS.horn.pal);spr(g,16-3-4,-2,HORNS.horn.rows,HORNS.horn.pal,1);
       if(d==='up'){R(g,4,12,8,1,'#2a2830');spr(g,6,12,SHI_TAIL,SHI_TP);return}
       if(d==='down'){/* 燕尾服：翻領、白襯衫、紅領結 */R(g,5,11,2,6,'#2a2830');R(g,9,11,2,6,'#2a2830');R(g,7,11,2,1,'#a8232b');R(g,6,11,1,1,'#a8232b');R(g,9,11,1,1,'#a8232b');R(g,7,13,1,1,GD);R(g,7,15,1,1,GD);
