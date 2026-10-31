@@ -421,7 +421,7 @@ const NAMES={kaicho:'會長',shisho:'司書',sui:'翠',lala:'拉拉',boss:'首�
 function O(o){o.shade=o.shade||dk(o.cloth,.3);return o}
 /* 司書的惡魔尾巴：從後腰正中央垂下，彎成 U 字再往上翹，尾端是箭頭 */
 const SHI_HORN={k:'#000000',a:'#1e1a22',b:'#4a4452',c:'#0c0a0e'};
-const SHI_TAIL=['.....k..','....kak.','...kaaak','...kkakk','kak.kak.','kak.kak.','kak.kak.','kaaaaak.','.kkkkk..'],SHI_TP={k:'#1a0e10',a:'#c0242e'};
+const SHI_TAIL=['.....k..','....kak.','...kaaak','...kkakk','kak.kak.','kak.kak.','kak.kak.','kaaaaak.','.kkkkk..'],SHI_TP={k:'#000000',a:'#26222c'};
 const CH={
   /* 會長：深藍黑色長鬢髮、紅色髮帶低馬尾、右眼纏著白繃帶、左眼紫紅色；白色荷葉領巾配紅寶石，外黑內紅的披風，金色杖頭的手杖 */
   kaicho:{o:O({skin:'#ece8f2',hair:'#1c1e3a',eye:'#b0306a',cloth:'#1d1824',cloth2:'#f4f0e8',pants:'#1d1824',cut:'short'}),
@@ -429,7 +429,7 @@ const CH={
       if(d==='right'){/* 側面：披風只垂在背後，外黑內紅 */R(g,2,10,7,11,K);R(g,3,11,5,9,CO);R(g,7,11,1,9,LN);R(g,5,13,1,6,'#2a2430');R(g,3,19,5,1,LN)}
       else{R(g,1,10,14,11,K);R(g,2,11,12,9,CO);R(g,2,17,2,3,LN);R(g,12,17,2,3,LN);R(g,2,19,12,1,LN)}
       if(d==='right'){R(g,2,7,3,6,K);R(g,3,8,2,4,'#1c1e3a');R(g,3,11,1,2,'#1c1e3a');R(g,4,7,1,1,'#c8202a')}},
-    post(g,d,t,st){const BD='#f4f0e8',BS='#a8a2b0',CN='#2a1a14',GD='#d9a640',CO='#16121a',LN='#9a1020';
+    post(g,d,t,st,dir){const BD='#f4f0e8',BS='#a8a2b0',CN='#2a1a14',GD='#d9a640',CO='#16121a',LN='#9a1020';
       const HR='#1c1e3a',HL='#3a4a7a';
       if(d==='up'){/* 背面：黑色披風蓋住背（下襬露一點紅內裡），後腦的頭髮蓋過後頸，低馬尾垂在披風上 */
         R(g,1,10,14,11,K);R(g,2,11,12,9,CO);R(g,2,11,12,1,'#2a2430');for(const x of[5,8,11])R(g,x,13,1,6,'#2a2430');R(g,2,19,12,1,LN);
@@ -447,7 +447,9 @@ const CH={
         if(st!=='down'&&st!=='juice'){R(g,13,12,2,10,K);R(g,13,13,1,8,CN);R(g,12,11,4,2,K);R(g,13,11,2,1,GD);R(g,14,11,1,1,'#f6dc8a')}}
       else{R(g,3,6,3,8,K);R(g,4,6,2,7,HR);R(g,4,6,1,2,HL);R(g,6,6,3,8,K);R(g,7,6,1,7,HR);R(g,7,6,1,2,HL);
         R(g,9,11,2,3,BD);R(g,9,12,1,1,'#c8202a');
-        R(g,5,4,5,1,BD);R(g,9,5,2,1,BD);R(g,10,6,2,2,BD);R(g,11,6,1,1,BS);R(g,7,4,1,1,BS);
+        /* 側面的繃帶：朝右時看得到纏著繃帶的右眼；朝左時露出紫紅色的左眼，只看得到往後腦繞的那條繃帶 */
+        if(dir==='left'){R(g,5,6,4,1,BD);R(g,6,6,1,1,BS);R(g,8,6,1,1,BS)}
+        else{R(g,5,6,4,1,BD);R(g,7,6,1,1,BS);R(g,9,6,3,3,BD);R(g,10,6,1,1,BS);R(g,9,8,1,1,BS);R(g,11,8,1,1,BS)}
         R(g,11,13,2,9,K);R(g,11,14,1,7,CN);R(g,10,12,3,2,K);R(g,11,12,1,1,GD)}
       if(st==='juice'&&d==='down'){R(g,9,10,4,6,'#c8202a');R(g,9,10,4,1,'#efe8dc');R(g,10,12,2,2,'#3f8a3a');R(g,8,8,1,3,'#f3e6d0')}
       if(st==='down'){R(g,9,7,1,2,'#ece8f2');R(g,9,8,2,1,K)}}},
