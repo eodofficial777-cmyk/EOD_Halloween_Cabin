@@ -458,7 +458,7 @@ const CH={
     pre(g,d){const TC='#8a1c24',GD='#d9a640';/* 燕尾：背後兩片長長的紅色衣尾，金邊（先畫，尾巴才不會被蓋住） */
       if(d==='up'){R(g,4,17,8,5,K);R(g,5,17,3,4,TC);R(g,8,17,3,4,TC);R(g,7,17,2,5,K);R(g,5,20,3,1,GD);R(g,8,20,3,1,GD)}
       else if(d==='right'){R(g,3,15,3,6,K);R(g,4,15,1,5,TC);R(g,4,19,1,1,GD)}else{R(g,3,16,2,4,K);R(g,11,16,2,4,K);R(g,3,16,1,3,TC);R(g,12,16,1,3,TC)}
-      if(d==='down')spr(g,10,12,SHI_TAIL,SHI_TP);else if(d==='right')spr(g,-1,12,SHI_TAIL,SHI_TP,1)},
+      if(d==='right')spr(g,-1,12,SHI_TAIL,SHI_TP,1)},/* 正面不畫尾巴 */
     post(g,d,t,st,dir){const GD='#d9a640',BK='#1e1c24',GL='#18141a',BD='#f4f0e8',HR='#8a2a2a';
       spr(g,3,-2,HORNS.horn.rows,SHI_HORN);spr(g,16-3-4,-2,HORNS.horn.rows,SHI_HORN,1);
       if(d==='up'){R(g,4,12,8,1,'#8a1c24');R(g,4,9,1,1,HR);R(g,7,10,2,1,HR);R(g,11,9,1,1,HR);spr(g,6,12,SHI_TAIL,SHI_TP);return}
