@@ -6683,11 +6683,12 @@ function render(){
     if(!hasEv('bottle')&&(tick>>4)%2){R(ctx,X+7,Y+1,1,5,'#fff6c8');R(ctx,X+5,Y+3,5,1,'#fff6c8')}}
   // entities
   const ents=OBJQ.map(o=>({obj:o.fn,y:o.y}));OBJQ=null;
+  /* 大南瓜跟角色一起排前後：站在南瓜後面的人會被南瓜擋住 */
+  if(key==='outside')ents.push({obj:()=>drawPumpkin(5*T-cx,9*T-cy),y:10*T});
   for(const [id,o] of Object.entries(NPCS))if(o.scene===key){const[nx,ny]=npcPos(o),w=o.mv?walkF(o.wc):[0,0];
     ents.push({id,x:nx,y:ny,st:o.state,dir:o.dir||'down',f:w[0],bob:w[1],blink:((tick+id.charCodeAt(0)*37)%230)<7})}
   if(mode==='play'||mode==='ending'){const w=P.moving?walkF(P.wc):[0,0];ents.push({id:'me',x:px,y:py,dir:P.dir,f:w[0],bob:w[1],blink:(tick%260)<7})}
   ents.sort((a,b)=>a.y-b.y);
-  if(key==='outside')drawPumpkin(5*T-cx,9*T-cy);
   if(key===SIGN.scene){const X=SIGN.x*T-cx,Y=SIGN.y*T-cy;/* 木牌：木樁、釘子、刻字 */R(ctx,X+7,Y+8,2,8,K);R(ctx,X+7,Y+8,1,8,'#6b4026');R(ctx,X+1,Y+2,14,8,K);R(ctx,X+2,Y+3,12,6,'#7a5232');R(ctx,X+2,Y+3,12,1,'#9a7048');R(ctx,X+2,Y+6,12,1,'#6a4628');R(ctx,X+4,Y+4,6,1,'#3a2214');R(ctx,X+4,Y+7,8,1,'#3a2214');R(ctx,X+3,Y+4,1,1,'#8a8a92');R(ctx,X+12,Y+4,1,1,'#8a8a92');R(ctx,X+6,Y+15,4,1,'rgba(0,0,0,.3)')}
   for(const e of ents){if(e.obj){e.obj();continue}if(e.id==='me'&&P.inv>0&&(tick>>2)%2)continue;const ex=Math.round(e.x-cx),ey=Math.round(e.y-cy-8+(e.bob||0));drawEntity(ctx,e.id,ex,ey,e.dir||'down',e.f||0,tick,e.st,e.blink);if(e.id==='me'&&mode==='play')drawDirt(ctx,ex,ey)}
   if(s.over)ctx.drawImage(s.over,-cx,-cy);
