@@ -1641,7 +1641,8 @@ function applyWorld(){
     if(!F.finalDone)set('ghost','crypt',11,3);
   }
   if(ch===5&&F.post){/* 破關後：天亮了，大家還待在宅邸裡，可以重玩支線 */
-    set('kaicho','maze',2,11).dir='left';set('lala','kitchen',9,4);set('po','hall',12,6,'stand');set('ghost','dining',8,5);
+    set('kaicho','maze',2,10);set('lala','kitchen',9,4);set('po','hall',12,6,'stand');set('ghost','dining',8,5);
+    pat('kaicho',[[2,10],[4,10],[4,8],[2,8],[2,7],[4,7],[4,10]],null,90);/* 變回人的會長，在迷宮入口的花圃附近散步 */
   }else if(ch===5){
     for(const id in NPCS)NPCS[id].scene=null;
     const C=[['kaicho',15,20],['lala',17,20],['ian',13,20],['shisho',19,20],['sui',21,20],['boss',12,21],['ji',14,21],['po',18,21,'stand'],['ghost',16,18]];
@@ -2363,7 +2364,10 @@ const POST_LINE={kaicho:'天亮了，向日葵也終於曬到太陽了。……�
   po:'……天亮了。……那就，再睡一下。',ghost:'你還在呀！……嘿嘿，那、那我們再玩一下下？',horse:'幽靈羊駝在陽光下變得更透明了。……還是在嚼東西。'};
 async function talkPost(id){const t=POST_LINE[id];if(!t)return;return id==='horse'?n(t):say(id,t)}
 async function replayQuest(id){
-  const c=await choose(`要重新挑戰「${QUESTS[id].t}」嗎？`,['重新挑戰（換個做法、換個結局）','算了']);if(c===1)return;
+  const q0=qGet(id),done=[AD.got['q_'+id],AD.got['f_'+id]],cur=q0&&q0.st==='alt'?1:0,other=ROUTES[id][1-cur];
+  await n(done[0]&&done[1]?`「${QUESTS[id].t}」的兩條結局（${ROUTES[id][0]}、${ROUTES[id][1]}）都看過了。……還想再玩一次嗎？`
+    :`上次走的是「${ROUTES[id][cur]}」。這次換個做法，也許能走到「${other}」。`);
+  const c=await choose(`要再玩一次「${QUESTS[id].t}」嗎？`,['再玩一次','先不要']);if(c===1)return;
   const QS0=QS();delete QS0[id];const F=S.flags;
   if(id==='po'){for(const k of Object.keys(PILLOWS))rmItem('p_'+k)}
   if(id==='ji')rmItem('potion');
@@ -2561,7 +2565,7 @@ function sideOptions(id){
     }
   }
   if(id==='sui'&&qGet('sui')&&qGet('sui').st==='done'&&NPCS.sui.state!=='nohead')add('跟翠和羊駝賽跑（花園迷宮）',suiRace);
-  if(F.post&&QUESTS[id]){const q=qGet(id);if(q&&(q.st==='done'||q.st==='alt'))add(`再挑戰一次「${QUESTS[id].t}」`,()=>replayQuest(id),1)}
+  if(F.post&&QUESTS[id]){const q=qGet(id);if(q&&(q.st==='done'||q.st==='alt'))add(`再玩一次「${QUESTS[id].t}」，解另一條結局`,()=>replayQuest(id),1)}
   return L;
 }
 function sideOption(id){const o=sideOptions(id)[0];return o?[o[0],o[1]]:null}
