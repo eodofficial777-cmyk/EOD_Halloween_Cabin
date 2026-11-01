@@ -91,10 +91,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #cgOv{position:absolute;inset:0;z-index:5;background:#1e1c2e;display:flex;align-items:center;justify-content:center;cursor:pointer}
 #cgOv .cgBox{width:84%;display:flex;flex-direction:column;gap:1.2%;font-family:var(--f-disp);color:#3ab8e8}
 #cgOv .cgTop{display:flex;justify-content:space-between;align-items:center;font-size:clamp(10px,1.6cqw,15px)}
-#cgOv .cgTop button{font:inherit;color:#3ab8e8;background:transparent;border:2px solid #2a8ab8;padding:2px 12px;cursor:pointer}
-#cgOv .cgFrame{border:2px solid #2aa8d8;line-height:0;background:#000}
+#cgOv .cgTop button{font:inherit;color:inherit;background:transparent;border:2px solid currentColor;padding:2px 12px;cursor:pointer}
+#cgOv .cgFrame{border:2px solid currentColor;line-height:0;background:#000}
 #cgOv .cgFrame img{width:100%;height:auto;display:block;opacity:0;transition:opacity .5s}
 #cgOv .cgFrame img.on{opacity:1}
+#cgOv .cgBox.card{width:auto;height:100%;max-width:100%;position:relative;align-items:center;justify-content:center}
+#cgOv .cgBox.card .cgTop,#cgOv .cgBox.card .cgTxt{display:none}
+#cgOv .cgBox.card .cgFrame{border:0;background:transparent;height:100%;display:flex;align-items:center}
+#cgOv .cgBox.card .cgFrame img{width:auto;height:100%;max-width:100%;object-fit:contain}
+#cgOv .cgHot{position:absolute;background:transparent;border:0;padding:0;cursor:pointer}
 #cgOv .cgTxt{text-align:center;font-size:clamp(11px,1.8cqw,17px);line-height:1.6;min-height:3.4em;margin-top:1%}
 #chap{position:absolute;inset:0;z-index:4;background:#07050a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;text-align:center}
 #chap .c1{font-family:var(--f-disp);color:var(--gold);letter-spacing:.3em;font-size:clamp(13px,2vw,18px)}
@@ -245,7 +250,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div id="ports"><div class="port L" id="portL" hidden><img alt=""><canvas width="28" height="34"></canvas><span class="ph"></span></div><div class="port R" id="portR" hidden><img alt=""><canvas width="28" height="34"></canvas><span class="ph"></span></div></div>
     <div id="dlg" class="win" hidden><canvas id="face" width="24" height="24"></canvas><div class="dbody"><div id="dname"></div><div id="dtext"></div></div><div class="next">▼</div></div>
     <div id="choices" class="win" hidden></div>
-    <div id="cgOv" hidden><div class="cgBox"><div class="cgTop"><span id="cgLoc"></span><button id="cgSkip" type="button">&gt;&gt;SKIP_SCENE</button></div><div class="cgFrame"><img id="cgImg" alt=""></div><div class="cgTxt" id="cgTxt"></div></div></div>
+    <div id="cgOv" hidden><div class="cgBox"><div class="cgTop"><span id="cgLoc"></span><button id="cgSkip" type="button">&gt;&gt;SKIP_SCENE</button></div><div class="cgFrame"><img id="cgImg" alt=""><button id="cgHot" class="cgHot" type="button" aria-label="略過" hidden></button></div><div class="cgTxt" id="cgTxt"></div></div></div>
     <div id="toast" hidden></div>
     <div id="allyFeed" aria-live="polite"></div>
     <div id="sokoBar" hidden><button type="button" id="sokoUndo">↶ 上一步</button><button type="button" id="sokoReset">⟲ 重來</button></div>
@@ -395,7 +400,7 @@ const CREDITS = [
   ['p','小波｜床單小幽靈'],
   ['h','宅邸'],
   ['p','南瓜幽靈｜想跟大家一起玩的宅邸主人'],
-  ['p','廣播頭｜不接受申訴退款'],
+  ['p','95.2｜不滿意也不退錢，給糖也沒門'],
   ['h','製作'],
   ['p','原作・世界觀　荒漠終焉 EOD'],
   ['p','企劃・劇本　荒漠終焉營運團隊'],
@@ -433,7 +438,7 @@ function dk(hex,a=.25){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&25
 const hsh=(x,y,s=0)=>(((x*73856093)^(y*19349663)^(s*83492791))>>>0);
 
 /* ---------------- 角色像素 ---------------- */
-const NAMES={kaicho:'會長',shisho:'司書',sui:'翠',lala:'拉拉',boss:'首領',ian:'IAN',ji:'薊',po:'小波',horse:'幽靈羊駝',batk:'小蝙蝠',cone:'錐齒獸',legs:'IAN 的下半身',ghost:'南瓜幽靈',radio:'廣播頭'};
+const NAMES={kaicho:'會長',shisho:'司書',sui:'翠',lala:'拉拉',boss:'首領',ian:'IAN',ji:'薊',po:'小波',horse:'幽靈羊駝',batk:'小蝙蝠',cone:'錐齒獸',legs:'IAN 的下半身',ghost:'南瓜幽靈',radio:'95.2'};
 function O(o){o.shade=o.shade||dk(o.cloth,.3);return o}
 /* 司書的惡魔尾巴：從後腰正中央垂下，彎成 U 字再往上翹，尾端是箭頭 */
 const SHI_HORN={k:'#000000',a:'#1e1a22',b:'#4a4452',c:'#0c0a0e'};
@@ -2328,7 +2333,7 @@ async function gatherScene(){
   await say('ian','好啦好啦！首領，會長也是在擔心大家嘛！');
   await say('ian','沒有超能力，大叔我還有這把鏟子跟一身力氣！真有什麼狀況，交給大叔我就對了！哈哈！');
   await say('shisho','沒了超能力，妳看起來倒是挺開心的？……整個腦袋空空的感覺，如何？');
-  await say('boss','很安靜。現在只聽得到南瓜在竊竊私語，挺好的。');
+  await say('boss','你是今天第二個問的。……很安靜。南瓜說話都比你們有禮貌。');
   await say('sui','能力沒了就算了！結果還要跟一隻口水馬綁在一起是怎樣啦！');
   await n('窗外傳來「呸」的一聲。……好像是在回嘴。');
   await say('ji','反正都在這裡了，不如來看看有什麼好玩的吧～這裡的植物，好像有很多有趣的反應呢。');
@@ -2446,7 +2451,7 @@ async function questIntro(id){
       await say('shisho','要是找不到的話……');
       await n('司書舔了舔嘴唇，盯著你的額頭看。');
       await say('shisho','你腦袋裡裝的東西，聞起來挺香的。翻一頁記憶來當點心，剛剛好。');
-      await say('shisho','……開玩笑的。大概。');
+      await say('shisho','……這次不是開玩笑。……大概。');
       qStart('shisho',{got:[]});break;
     case 'sui':
       if(S.flags.realCh===3&&S.flags.suiBack)await n('翠把剛找回來、還沾著南瓜籽的頭夾在腋下，正伸手想摸一隻半透明的羊駝——');
@@ -4093,40 +4098,61 @@ async function intro(){
   ach('m_start');
 }
 /* 序幕：先在宅邸裡跟大家打招呼。有繪師場景圖的人，第一次見面會先播一段場景展示（圖檔放在 cg/角色id.jpg） */
-const CG={
-  kaicho:{img:'cg/kaicho.jpg',loc:'花園迷宮',lines:['「撇除天候與日照問題，偶爾像這樣放鬆一下也不錯呢。」','「當然離開的方式也是正在尋找的，請不用擔心。」']},
-  shisho:{img:'cg/shisho.jpg',loc:'展覽室・書架旁',lines:['「這座宅邸的藏書大都相當美味，而且種類俱全。」','「很好。」']},
+const CG={/* 立繪圖卡：放 cg/<id>.jpg。整張圖卡（約 2000×1420，字已經畫在圖上）會直接顯示；
+  只有場景圖（比較寬）的話，會在下方用打字的方式顯示台詞；還沒有圖的話，就用一般對話框說這兩句。 */
+  kaicho:{img:'cg/kaicho.jpg',loc:'花園迷宮',col:'#3ab8e8',lines:['「連綿的陰雨可真令人心慌啊，不過能靜下來感受悠哉的氛圍，也是挺難得的體驗。」','「啊、當然大家都很努力尋找出去的方法，也別太擔心呢。」']},
+  shisho:{img:'cg/shisho.jpg',loc:'展覽室・書架旁',col:'#3ab8e8',lines:['「這裡的藏書都散發一股充滿年代感的氣味，真讓人想多待一段時間。」','「開玩笑的。」']},
+  boss:{img:'cg/boss.jpg',loc:'農園',lines:['「第一次體會腦袋空空的感覺。你平常也是這樣嗎？」','「現在變得能聽南瓜說話了。待在這裡反而能平靜些。」']},
+  ian:{img:'cg/ian.jpg',loc:'墓園',lines:['「哦！這幾天待在這還習慣嗎？」','「這裡的怪跟外面不一樣也是挺有趣的！想來練習揮棒嗎？」']},
+  ji:{img:'cg/ji.jpg',loc:'玫瑰溫室',lines:['「這不是很有趣嗎？雖然少了點會讓人快樂的草～」','「嗯哼？想當實驗材料的話，可是隨時歡迎的喲？」']},
+  po:{img:'cg/po.jpg',loc:'2F 左客房',lines:['「外面一直打雷有夠吵……」','「我只想找個安靜的地方睡覺……醒來能有阿鳳姨的鬆餅吃就好了。」']},
+  sui:{img:'cg/sui.jpg',loc:'屋外',lines:['「我為啥跑出來？還不是因為裡面有夠悶！」','「這樣掉頭就走很正常吧？」']},
+  lala:{img:'cg/lala.jpg',loc:'廚房',lines:['「您好！在這邊過得還好嗎？」','「雖然不能出去有點麻煩，不過我開始做鬆餅了唷！這是最新出爐的南瓜史萊姆鬆餅！請幫我嚐一下味道吧？」']},
+  radio:{img:'cg/radio.jpg',loc:'？？？',lines:['「喲！各位聽眾對這次故事還滿意嗎？」','「不滿意也不退錢！給糖了也沒門！」']},
 };
 const MEET_AT={kaicho:'花園迷宮',shisho:'展覽室',sui:'屋外',lala:'廚房',boss:'屋外的大南瓜旁',ian:'屋外的墓園',ji:'玫瑰溫室',po:'2F 左客房'};
-const MEET={/* pre：場景圖之後的招呼；post：支線開場之後的收尾 */
-  kaicho:{pre:[['kaicho','你也被帶到這裡來了啊。外面的霧散不掉，天也一直不亮……不過，至少這裡的花開得很漂亮。']],post:[['kaicho','晚餐的時候，大家應該會在餐廳碰面。到時候再好好聊吧。']]},
-  shisho:{pre:[['shisho','……又一個。你也是被這棟房子「請」進來的？']],post:[['shisho','晚餐？……吃完這本再說。別碰我正在讀的那本。']]},
-  sui:{pre:[['sui','喔！你也在啊！我剛剛繞了一圈，外面全是霧，連個像樣的對手都沒有！']],post:[['sui','肚子都餓了！等等開飯的時候，我要坐最好吃的那盤旁邊！']]},
-  lala:{pre:[['lala','啊，{me}！你、你好！我一轉頭就在這裡的廚房了……鬆餅還在鍋子上耶！']],post:[['lala','晚餐好了我會叫大家，等一下要到餐廳集合喔！']]},
-  boss:{pre:[],post:[['boss','……開飯的時候再叫我。']]},
-  ian:{pre:[['ian','喲！是你啊！大叔我剛剛巡了一圈，這房子大得很，墓園還比我們營地大！哈哈！']],post:[['ian','晚餐的時候見啦，大叔我肚子早就餓扁了！']]},
-  ji:{pre:[['ji','哎呀，是你。']],post:[['ji','晚餐的時候見，別遲到，遲到的人要喝我的新藥水～']]},
-  po:{pre:[['n','小波整個人捲在床上的被子裡，只露出一撮頭髮。']],post:[['po','……Zzz……嗯？……晚餐？……再五分鐘。……你先去，我晚點到。……大概。']]},
+const MEET={/* pre：立繪圖卡之後接著說的話；post：支線開場之後的收尾。['fn',函式] 可以在中間做事 */
+  kaicho:{pre:[],post:[['kaicho','晚餐的時候，大家應該會在餐廳碰面。到時候再好好聊吧。']]},
+  shisho:{pre:[['shisho','……想多待是真的。這棟宅邸的書，聞起來每一本都不一樣。'],['me','……你的黑眼圈好重，有睡覺嗎？']],post:[['shisho','晚餐？……吃完這本再說。別碰我正在讀的那本。']]},
+  sui:{pre:[['sui','而且外面還有這傢伙！……雖然牠好像不太喜歡我就是了。']],post:[['sui','肚子都餓了！等等開飯的時候，我要坐最好吃的那盤旁邊！']]},
+  lala:{pre:[['n','拉拉遞給你一片還在微微發抖的南瓜史萊姆鬆餅。'],['fn',()=>{S.inv.scake=(S.inv.scake||0)+1;sfx('pickup');toast(`獲得：南瓜史萊姆鬆餅（受傷時按 ${isTouch?'「糖」':'H'} 吃，可以補血）`);toastT=220}],['lala','不、不用現在吃也沒關係！肚子餓、或是受傷的時候再吃就好！']],post:[['lala','晚餐好了我會叫大家，等一下要到餐廳集合喔！']]},
+  boss:{pre:[['me','……我平常才沒有腦袋空空。']],post:[['boss','……開飯的時候再叫我。']]},
+  ian:{pre:[['ian','大叔我剛剛巡了一圈，這裡的墓園比我們營地還大！哈哈！']],post:[['ian','晚餐的時候見啦，大叔我肚子早就餓扁了！']]},
+  ji:{pre:[['ji','……現在還不急～先參觀一下吧？']],post:[['ji','晚餐的時候見，別遲到，遲到的人要喝我的新藥水～']]},
+  po:{pre:[['n','說完，小波把被子拉過頭頂，翻了個身。']],post:[['po','……Zzz……嗯？……晚餐？……再五分鐘。……你先去，我晚點到。……大概。']]},
 };
 function showCG(id){
-  const c=CG[id];if(!c)return Promise.resolve();
+  const c=CG[id];if(!c)return Promise.resolve(false);
   return new Promise(res=>{
-    const ov=$('cgOv'),img=$('cgImg'),tx=$('cgTxt');let done=false,shown=0,timer=0;
-    const fin=()=>{if(done)return;done=true;clearInterval(timer);ov.hidden=true;dlgRes=null;img.classList.remove('on');res()};
-    const full=c.lines.join('\n');
-    img.onerror=()=>fin();img.onload=()=>img.classList.add('on');img.src=c.img;
-    $('cgLoc').textContent='地點：'+c.loc;tx.textContent='';tx.style.whiteSpace='pre-line';
-    ov.hidden=false;dlg.hidden=true;clearPorts();sfx('ach');
-    timer=setInterval(()=>{shown++;tx.textContent=full.slice(0,shown);if(shown>=full.length)clearInterval(timer)},45);
-    const next=()=>{if(shown<full.length){shown=full.length;tx.textContent=full;clearInterval(timer)}else fin()};
-    dlgRes=next;ov.onclick=e=>{if(e.target.id!=='cgSkip')next()};$('cgSkip').onclick=e=>{e.stopPropagation();fin()};
+    const ov=$('cgOv'),box=ov.querySelector('.cgBox'),img=$('cgImg'),tx=$('cgTxt'),hot=$('cgHot');let done=false,shown=0,timer=0,full='';
+    const fin=ok=>{if(done)return;done=true;clearInterval(timer);clearTimeout(to);ov.hidden=true;dlgRes=null;img.classList.remove('on');hot.hidden=true;res(ok)};
+    const to=setTimeout(()=>fin(false),4000);
+    img.classList.remove('on');img.onerror=()=>fin(false);
+    img.onload=()=>{
+      if(done)return;clearTimeout(to);
+      const card=img.naturalWidth/img.naturalHeight<1.5;/* 整張圖卡（字畫在圖上）比場景圖窄一點 */
+      box.classList.toggle('card',card);
+      const col=c.col||'#e0541c';box.style.color=col;tx.style.color=card?'':'#d6d4de';
+      $('cgLoc').textContent='地點：'+c.loc;tx.textContent='';tx.style.whiteSpace='pre-line';
+      ov.hidden=false;dlg.hidden=true;clearPorts();sfx('ach');img.classList.add('on');
+      if(card){/* 圖卡右上角畫好的 SKIP：蓋一個看不見的按鈕 */
+        Object.assign(hot.style,{left:'74%',top:'5.5%',width:'16.5%',height:'5.5%'});hot.hidden=false;shown=1;full='x';
+        const place=()=>{const r=img.getBoundingClientRect(),pr=box.getBoundingClientRect();Object.assign(hot.style,{left:(r.left-pr.left+r.width*.742)+'px',top:(r.top-pr.top+r.height*.056)+'px',width:r.width*.163+'px',height:r.height*.052+'px'})};requestAnimationFrame(place);
+      }else{full=c.lines.join('\n');timer=setInterval(()=>{shown++;tx.textContent=full.slice(0,shown);if(shown>=full.length)clearInterval(timer)},45)}
+    };
+    img.src=c.img;
+    const next=()=>{if(shown<full.length){shown=full.length;tx.textContent=full;clearInterval(timer)}else fin(true)};
+    dlgRes=()=>{if(!ov.hidden)next()};ov.onclick=e=>{if(e.target.id!=='cgSkip'&&e.target.id!=='cgHot')next()};
+    $('cgSkip').onclick=e=>{e.stopPropagation();fin(true)};hot.onclick=e=>{e.stopPropagation();fin(true)};
   });
 }
+/* 有圖就秀圖卡，還沒有圖就照樣把那兩句話說出來 */
+async function cgOrSay(id){if(await showCG(id))return;for(const t of(CG[id]||{lines:[]}).lines)await say(id,t.replace(/^「|」$/g,''))}
 async function meetTalk(id){
   const F=S.flags;F.met=F.met||{};
   if(F.met[id]){if(await sideTalk(id))return;return say(id,{kaicho:'晚餐的時候，餐廳見吧。',shisho:'看完這本就過去。……大概。',sui:'等開飯啦！',lala:'晚餐快好了喔！',boss:'開飯的時候再叫我。',ian:'餐廳見啦！',ji:'別遲到喔～',po:'……Zzz……'}[id]||'待會餐廳見。')}
-  await showCG(id);
-  const m=MEET[id]||{pre:[],post:[]},line=([w,t])=>w==='n'?n(t):say(w,t);
+  await cgOrSay(id);
+  const m=MEET[id]||{pre:[],post:[]},line=([w,t])=>w==='fn'?t():w==='n'?n(t):say(w,t);
   for(const l of m.pre)await line(l);
   F['p_'+id]=1;if(!qGet(id))await questIntro(id);
   for(const l of m.post)await line(l);
@@ -5163,7 +5189,7 @@ async function finalEnding(){
   RADIO_T=tick;shake=16;
   await n('——滋滋滋滋滋！');
   await say('radio','……喂？喂？麥克風測試，一、二。');
-  await say('radio','這次故事各位聽眾還滿意嗎？不滿意也不能申訴退款！');
+  await cgOrSay('radio');
   await say('radio','那麼，我們下次再見——滋——');
   RADIO_T=0;ach('h_radio');
   finish('final');
@@ -6381,9 +6407,10 @@ const SNACK={
   candy:{t:'萬聖節糖果',heal:2,c:'#ff5fa2',eat:'吃了一顆糖果',d:'吃一顆回復一顆心。'},
   rice:{t:'乘乘米果',heal:3,c:'#e8b84a',eat:'喀滋喀滋地吃了一片乘乘米果',d:'黃黃的橢圓形米果，鹹鹹甜甜的。回復一顆半的心。'},
   milk:{t:'洛神湯',heal:2,c:'#9a1f3a',eat:'喝了一杯洛神湯（原本貼著番茄汁的標籤）',d:'被換掉標籤的洛神湯。酸酸甜甜，還帶一點梅子的鹹味，熬得剛剛好……沒有署名，可是你就是知道是誰煮的。回復一顆心。'},
+  scake:{t:'南瓜史萊姆鬆餅',heal:3,c:'#e8a040',eat:'吃了一片南瓜史萊姆鬆餅。……它在嘴裡抖了一下',d:'拉拉剛出爐的南瓜史萊姆鬆餅，軟綿綿、香噴噴，偶爾會自己抖一下。回復一顆半的心。'},
   pine:{t:'鳳梨酥',heal:4,c:'#f0c860',eat:'吃了一塊鳳梨酥，內餡好扎實',d:'黃色長方形的鳳梨酥，酥皮會掉滿地。回復兩顆心。'},
 };
-const ITEM_NAME={milk:'洛神湯',candy:'糖果',rice:'乘乘米果',pine:'鳳梨酥',magic:'神奇藥水'};
+const ITEM_NAME={scake:'南瓜史萊姆鬆餅',milk:'洛神湯',candy:'糖果',rice:'乘乘米果',pine:'鳳梨酥',magic:'神奇藥水'};
 function useCandy(k){
   if(!S||busy)return;
   const has=Object.keys(SNACK).filter(x=>S.inv[x]>0);
@@ -6411,6 +6438,7 @@ function useMagic(){
 function drawItemIcon(g,k,x,y){
   if(k==='candy'){R(g,x-3,y-1,6,3,'#ff5fa2');R(g,x-1,y-1,2,3,'#efe3c8');R(g,x-6,y-2,3,5,'#ff5fa2');R(g,x+3,y-2,3,5,'#ff5fa2')}
   else if(k==='rice'){R(g,x-4,y-2,8,5,'#e8b84a');R(g,x-3,y-3,6,1,'#e8b84a');R(g,x-3,y+3,6,1,'#e8b84a');R(g,x-2,y-2,3,1,'#f6dc8a');R(g,x+1,y,1,1,'#b8862a');R(g,x-2,y+1,1,1,'#b8862a')}
+  else if(k==='scake'){R(g,x-5,y-1,10,5,'#7a4a1a');R(g,x-4,y-2,8,5,'#e8a040');R(g,x-3,y-2,6,1,'#f6d890');R(g,x-2,y,1,1,K);R(g,x+1,y,1,1,K);R(g,x-1,y+1,2,1,K)}
   else if(k==='pine'){R(g,x-5,y-3,10,7,'#b8762a');R(g,x-4,y-2,8,5,'#f0c860');R(g,x-3,y-2,6,1,'#f6dc8a');R(g,x-4,y+2,8,1,'#d8a040')}
   else if(k==='milk'){R(g,x-3,y-4,6,8,K);R(g,x-2,y-3,4,6,'#f2b8c6');R(g,x-2,y-1,4,2,'#efe8dc');R(g,x-1,y-5,2,1,'#ff5fa2')}
   else if(k==='candle'){const on=P.light>0,st=P.stow>0;R(g,x-3,y-3,7,8,on?'rgba(255,200,90,.25)':'rgba(200,220,235,.15)');R(g,x-1,y-1,3,6,'#efe3c8');R(g,x-1,y+4,3,1,'#c9bfb0');if(on||st){R(g,x,y-4,1,3,on?'#ffcc55':'#b8862a');if(on)R(g,x,y-5,1,1,'#fff2a0')}R(g,x-3,y-3,1,8,'#8a8f96');R(g,x+3,y-3,1,8,'#8a8f96')}
