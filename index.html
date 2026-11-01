@@ -1863,7 +1863,7 @@ function setSlot(k,id){
   const img=s.el.querySelector('img'),c=s.el.querySelector('canvas');
   const ph=s.el.querySelector('.ph');ph.textContent='立繪預留｜'+NAMES[id];
   if(portImg[id]){img.src=portImg[id].src;img.hidden=false;c.hidden=true;ph.hidden=true}
-  else{img.hidden=true;c.hidden=false;ph.hidden=false;const g=c.getContext('2d');g.clearRect(0,0,28,34);g.save();g.translate(6,10);
+  else{img.hidden=true;c.hidden=false;ph.hidden=true;/* 立繪就用點陣圖，不顯示「立繪預留」 */const g=c.getContext('2d');g.clearRect(0,0,28,34);g.save();g.translate(6,10);
     drawChar(g,id,'down',0,0,id==='po'?'stand':(id==='kaicho'&&NPCS.kaicho.state==='juice')?'juice':undefined);g.restore()}
 }
 function showPort(who){
