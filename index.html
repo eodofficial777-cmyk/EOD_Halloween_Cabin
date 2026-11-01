@@ -35,6 +35,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #loc{font-family:var(--f-disp);background:var(--rust);color:var(--cream);padding:2px 10px;border-radius:2px;letter-spacing:.08em;white-space:nowrap}
 #obj{flex:1;min-width:0;color:var(--dim);font-size:13px}
 #obj b{color:var(--cream);font-weight:700}
+/* 手機：任務指示收成一行，點一下展開／收起 */
+@media (max-width:700px),(hover:none) and (pointer:coarse){
+  #hud{row-gap:4px}
+  #loc{order:1}.hbtn{order:2;margin-left:auto}
+  #obj{order:3;flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;padding:2px 6px;background:rgba(255,255,255,.04);border-radius:2px;-webkit-tap-highlight-color:transparent}
+  #obj::before{content:'▸ ';color:var(--gold)}
+  #obj.open{white-space:normal}
+  #obj.open::before{content:'▾ '}
+}
 .hbtn{display:flex;gap:6px}
 .hbtn button{background:var(--brown);border:2px solid var(--dim);padding:2px 12px;border-radius:2px;font-size:13px}
 .hbtn button:hover{border-color:var(--cream)}
@@ -111,10 +120,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #cgOv .cgFrame{border:2px solid currentColor;line-height:0;background:#000}
 #cgOv .cgFrame img{width:100%;height:auto;display:block;opacity:0;transition:opacity .5s}
 #cgOv .cgFrame img.on{opacity:1}
-#cgOv .cgBox.card{width:auto;height:100%;max-width:100%;position:relative;align-items:center;justify-content:center}
+#cgOv .cgBox.card{position:static}
 #cgOv .cgBox.card .cgTop,#cgOv .cgBox.card .cgTxt{display:none}
-#cgOv .cgBox.card .cgFrame{border:0;background:transparent;height:100%;display:flex;align-items:center}
-#cgOv .cgBox.card .cgFrame img{width:auto;height:100%;max-width:100%;object-fit:contain}
+#cgOv .cgBox.card .cgFrame{border:0;background:transparent;position:static}
+#cgOv .cgBox.card .cgFrame img{position:absolute;inset:0;margin:auto;width:auto;height:auto;max-width:100%;max-height:100%}
 #cgOv .cgHot{position:absolute;background:transparent;border:0;padding:0;cursor:pointer}
 #cgOv .cgTxt{text-align:center;font-size:clamp(11px,1.8cqw,17px);line-height:1.6;min-height:3.4em;margin-top:1%}
 #chap{position:absolute;inset:0;z-index:4;background:#07050a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;text-align:center}
@@ -2117,7 +2126,18 @@ async function giveKeep(id,qid){
 const qGet=id=>QS()[id];
 const qOn=id=>!!(S&&qGet(id)&&qGet(id).st==='on');
 const qDoneP=id=>!!(S&&qGet(id)&&qGet(id).st==='done');
-function qStart(id,data={}){if(QS()[id])return;QS()[id]={st:'on',...data};toast('接下支線：'+QUESTS[id].t);updateHUD()}
+let QDEFER=null;/* 聽完委託之後，玩家自己決定要不要接 */
+const QDECLINE={kaicho:'沒關係的，不用勉強。想到了再來找我吧。',shisho:'……隨你。書不會跑。……應該。',sui:'欸～好吧！想通了再來找我！',lala:'沒、沒關係！有空的時候再拜託你！',
+  boss:'嗯。不急。',ian:'好啦！想玩的時候再來找大叔我！',ji:'哎呀，膽小鬼～反正你遲早會回來的。',po:'……嗯。……Zzz。'};
+async function askQuest(id,play){
+  QDEFER=[];const before=S.items.slice();let pend;
+  try{await play()}finally{pend=QDEFER;QDEFER=null}
+  if(!pend.length)return;
+  const c=await choose(`要幫${NAMES[id]}這個忙嗎？`,['交給我吧','現在先不要']);
+  if(c===0){for(const[a,b]of pend)qStart(a,b)}
+  else{for(const k of S.items.filter(k=>!before.includes(k)))rmItem(k);await say(id,QDECLINE[id]||'……這樣啊。改變主意的話，再來找我吧。')}
+}
+function qStart(id,data={}){if(QDEFER){QDEFER.push([id,data]);return}if(QS()[id])return;QS()[id]={st:'on',...data};toast('接下支線：'+QUESTS[id].t);updateHUD()}
 function qFinish(id,loot){const q=qGet(id);if(!q||q.st==='done')return;q.st='done';toast(`完成支線：${QUESTS[id].t}（${ROUTES[id][0]}）`);ach('q_'+id);checkAllQ();if(loot)setTimeout(()=>gainLoot(loot),1800);save()}
 
 /* 散落在各處、可以撿的東西（座標是放大後的新座標）。只有接下對應支線後才會出現 */
@@ -2462,6 +2482,7 @@ async function questIntro(id){
     case 'shisho':
       await n('司書坐在書堆裡，正翻著一本封面發黑的書。');
       await n('司書的眼睛底下，掛著兩圈深深的黑眼圈。旁邊堆著一疊空咖啡杯。');
+      await say('me','……你有睡覺嗎？');
       await say('shisho','睡覺？……書還沒吃完。我已經三天沒睡了。');
       await say('shisho','這棟宅邸的書，我一本都沒看過。……也一本都沒吃過。');
       await say('shisho','書裡也許寫著這個地方的秘密。宅邸裡到處都散落著書——幫我找來。');
@@ -2536,11 +2557,12 @@ async function questIntro(id){
       qStart('ji',{tested:[],rep:[]});break;
     case 'po':
       if(!S.flags.gathered){/* 序幕：圖卡裡的小波醒著，抱著一顆紅枕頭 */
-        await say('po','……這顆枕頭，是隨便抓來的。太硬了，睡起來不對。');
-        await say('po','我原本的枕頭不見了……我不想自己找。');
+        await n('你輕輕搖了搖小波。被子裡傳來含糊的聲音——');
+        await say('po','……嗯？……是你啊。……枕頭的事。');
+        await say('po','我原本的枕頭不見了……那顆紅的是隨便抓的，太硬了。我不想自己找。');
         await say('po','屋外那間小教堂，是「睡教」的教堂。教義只有一條：想睡就睡。……懶得解釋，你自己去看。');
         await say('po','你去幫我找睡起來最舒服的枕頭，拿去供在教堂的祭壇上。要軟軟的、涼涼的、有一點甜甜的味道，還要可以整個抱住……');
-        await n('說完，小波抱著紅枕頭倒回床上，一下子就睡著了。');
+        await n('說完，小波又把頭埋回被子裡了。');
         qStart('po',{got:[]});break;
       }
       if(NPCS.po.state==='sleep'){
@@ -2580,11 +2602,11 @@ function sideOptions(id){
   }
   if(id==='lala'&&ch>0&&!qGet('kaicho'))add('會長的番茄汁？',lalaOfferCans);
   if(id==='boss'&&qOn('boss')&&!(F.riot&&!F.riotDone))add('一起躺在大南瓜旁邊發呆',idleSession);
-  const avail={lala:1,shisho:1,ji:1,ian:1,boss:!(F.riot&&!F.riotDone),sui:NPCS.sui.state!=='nohead',po:NPCS.po.state==='stand'||(NPCS.po.state==='sleep'&&chOf()>=3)};
+  const avail={kaicho:ch===0||ch===5,lala:1,shisho:1,ji:1,ian:1,boss:!(F.riot&&!F.riotDone),sui:NPCS.sui.state!=='nohead',po:ch===0||NPCS.po.state==='stand'||(NPCS.po.state==='sleep'&&chOf()>=3)};
   if(avail[id]){
     if(id==='ian'&&hasItem('potion')&&qOn('ji')&&!qGet('ji').tested.includes('ian'))add('請 IAN 喝藥水',ianDrink);
     const q=qGet(id);
-    if(!q){if(ch>0)add('有什麼需要幫忙的嗎？',()=>talk0offer(id))}
+    if(!q)add('有什麼需要幫忙的嗎？',()=>askQuest(id,()=>ch===0?questIntro(id):talk0offer(id)));
     else{
       if(id==='ji'&&q.st!=='on'&&!hasItem('potion')&&ch<5)add('再要一瓶試作藥水',async()=>{await say('ji','上癮了？……也是啦，畢竟是我做的～拿去，裡面一樣加了個人秘方喔。');await say('ji','……成分？下一題～');addItem('potion')});
       if(q.st==='on'){
@@ -4137,15 +4159,15 @@ const CG={/* 立繪圖卡：放 cg/<id>.jpg。整張圖卡（約 2000×1420，�
   radio:{img:'cg/radio.jpg',loc:'廚房',lines:['「喲！各位聽眾對這次故事還滿意嗎？」','「不滿意也不退錢！給糖了也沒門！」']},
 };
 const MEET_AT={kaicho:'花園迷宮',shisho:'展覽室',sui:'屋外',lala:'廚房',boss:'屋外的大南瓜旁',ian:'屋外的墓園',ji:'玫瑰溫室',po:'2F 左客房'};
-const MEET={/* pre：立繪圖卡之後接著說的話；post：支線開場之後的收尾。['fn',函式] 可以在中間做事 */
-  kaicho:{pre:[],post:[['kaicho','晚餐的時候，大家應該會在餐廳碰面。到時候再好好聊吧。']]},
-  shisho:{pre:[['shisho','……想多待是真的。這棟宅邸的書，聞起來每一本都不一樣。'],['me','……你的黑眼圈好重，有睡覺嗎？']],post:[['shisho','晚餐？……吃完這本再說。別碰我正在讀的那本。']]},
-  sui:{pre:[['sui','而且外面還有這傢伙！……雖然牠好像不太喜歡我就是了。']],post:[['sui','肚子都餓了！等等開飯的時候，我要坐最好吃的那盤旁邊！']]},
-  lala:{pre:[['n','拉拉遞給你一片還在微微發抖的南瓜史萊姆鬆餅。'],['fn',()=>{S.inv.scake=(S.inv.scake||0)+1;sfx('pickup');toast(`獲得：南瓜史萊姆鬆餅（受傷時按 ${isTouch?'「糖」':'H'} 吃，可以補血）`);toastT=220}],['lala','不、不用現在吃也沒關係！肚子餓、或是受傷的時候再吃就好！']],post:[['lala','晚餐好了我會叫大家，等一下要到餐廳集合喔！']]},
-  boss:{pre:[['me','……我平常才沒有腦袋空空。']],post:[['boss','……開飯的時候再叫我。']]},
-  ian:{pre:[['ian','大叔我剛剛巡了一圈，這裡的墓園比我們營地還大！哈哈！']],post:[['ian','晚餐的時候見啦，大叔我肚子早就餓扁了！']]},
-  ji:{pre:[['ji','……現在還不急～先參觀一下吧？']],post:[['ji','晚餐的時候見，別遲到，遲到的人要喝我的新藥水～']]},
-  po:{pre:[['n','小波裹著床單，懷裡緊緊抱著一顆紅色的枕頭，眼睛快要閉起來了。']],post:[['po','……Zzz……嗯？……晚餐？……再五分鐘。……你先去，我晚點到。……大概。']]},
+const MEET={/* pre：立繪圖卡之後接著說的話；post：收尾（順便暗示之後可以找他幫忙）。['fn',函式] 可以在中間做事 */
+  kaicho:{pre:[],post:[['kaicho','對了……之後要是有空，能拜託你一件小事嗎？啊，不急的，順路再說就好。'],['kaicho','晚餐的時候，大家應該會在餐廳碰面。到時候再好好聊吧。']]},
+  shisho:{pre:[['shisho','……想多待是真的。這棟宅邸的書，聞起來每一本都不一樣。']],post:[['shisho','……閒著的話，晚點再來找我。有件事可以讓你做。'],['shisho','晚餐？……吃完這本再說。別碰我正在讀的那本。']]},
+  sui:{pre:[['sui','而且外面還有這傢伙！……雖然牠好像不太喜歡我就是了。']],post:[['n','翠身邊那隻半透明的羊駝，「呸」地噴了一口白霧。'],['sui','看吧！牠今天心情超差……欸，等等有空再來幫我想想辦法啦！'],['sui','肚子都餓了！等等開飯的時候，我要坐最好吃的那盤旁邊！']]},
+  lala:{pre:[['n','拉拉遞給你一片還在微微發抖的南瓜史萊姆鬆餅。'],['fn',()=>{S.inv.scake=(S.inv.scake||0)+1;sfx('pickup');toast(`獲得：南瓜史萊姆鬆餅（受傷時按 ${isTouch?'「糖」':'H'} 吃，可以補血）`);toastT=220}],['lala','不、不用現在吃也沒關係！肚子餓、或是受傷的時候再吃就好！']],post:[['lala','啊……那個，其實廚房這邊有點小麻煩……之後有空的話，可以再來找我嗎？'],['lala','晚餐好了我會叫大家，等一下要到餐廳集合喔！']]},
+  boss:{pre:[['me','……我平常才沒有腦袋空空。'],['boss','是嗎。……那就好。']],post:[['boss','累了的話，可以過來這邊躺。……開飯的時候再叫我。']]},
+  ian:{pre:[['ian','大叔我剛剛巡了一圈，這裡的墓園比我們營地還大！哈哈！']],post:[['ian','想練揮棒的話，隨時來找大叔我！'],['ian','晚餐的時候見啦，大叔我肚子早就餓扁了！']]},
+  ji:{pre:[['ji','……現在還不急～先參觀一下吧？']],post:[['ji','對了～我剛調好一批新藥水。有興趣的話，再來找天才聊聊吧？'],['ji','晚餐的時候見，別遲到，遲到的人要喝我的新藥水～']]},
+  po:{pre:[['n','小波裹著床單，懷裡緊緊抱著一顆紅色的枕頭，眼睛快要閉起來了。'],['po','……這顆枕頭，睡起來不對。']],post:[['po','……之後再說。我先睡一下。'],['n','小波抱著紅枕頭倒回床上，一下子就睡著了。']]},
 };
 function showCG(id){
   const c=CG[id];if(!c)return Promise.resolve(false);
@@ -4157,7 +4179,7 @@ function showCG(id){
     box.classList.remove('card');box.style.color=c.col||'#e0541c';$('cgLoc').textContent='地點：'+c.loc;tx.style.color='#d6d4de';tx.textContent='載入中……';
     ov.hidden=false;dlg.hidden=true;clearPorts();
     img.onload=()=>{
-      if(done)return;clearTimeout(to);ready=true;
+      if(done||ready)return;clearTimeout(to);ready=true;
       const card=img.naturalWidth/img.naturalHeight<1.5;/* 整張圖卡（字畫在圖上）比場景圖窄一點 */
       box.classList.toggle('card',card);
       const col=c.col||'#e0541c';box.style.color=col;tx.style.color=card?'':'#d6d4de';
@@ -4165,10 +4187,10 @@ function showCG(id){
       ov.hidden=false;dlg.hidden=true;clearPorts();sfx('ach');img.classList.add('on');
       if(card){/* 圖卡右上角畫好的 SKIP：蓋一個看不見的按鈕 */
         Object.assign(hot.style,{left:'74%',top:'5.5%',width:'16.5%',height:'5.5%'});hot.hidden=false;shown=1;full='x';
-        const place=()=>{const r=img.getBoundingClientRect(),pr=box.getBoundingClientRect();Object.assign(hot.style,{left:(r.left-pr.left+r.width*.742)+'px',top:(r.top-pr.top+r.height*.056)+'px',width:r.width*.163+'px',height:r.height*.052+'px'})};requestAnimationFrame(place);
+        const place=()=>{const r=img.getBoundingClientRect(),pr=ov.getBoundingClientRect();Object.assign(hot.style,{left:(r.left-pr.left+r.width*.742)+'px',top:(r.top-pr.top+r.height*.056)+'px',width:r.width*.163+'px',height:r.height*.052+'px'})};requestAnimationFrame(place);setTimeout(place,120);
       }else{full=c.lines.join('\n');timer=setInterval(()=>{shown++;tx.textContent=full.slice(0,shown);if(shown>=full.length)clearInterval(timer)},45)}
     };
-    img.src=c.img;
+    img.src=c.img;if(img.complete&&img.naturalWidth)img.onload();/* 已經載好的圖，有些瀏覽器不會再觸發 onload */
     const next=()=>{if(!ready)return;if(shown<full.length){shown=full.length;tx.textContent=full;clearInterval(timer)}else fin(true)};
     dlgRes=()=>{if(!ov.hidden)next()};ov.onclick=e=>{if(e.target.id!=='cgSkip'&&e.target.id!=='cgHot')next()};
     $('cgSkip').onclick=e=>{e.stopPropagation();fin(ready)};hot.onclick=e=>{e.stopPropagation();fin(true)};
@@ -4206,7 +4228,7 @@ async function meetTalk(id){
   await cgOrSay(id);
   const m=MEET[id]||{pre:[],post:[]},line=([w,t])=>w==='fn'?t():w==='n'?n(t):say(w,t);
   for(const l of m.pre)await line(l);
-  F['p_'+id]=1;if(!qGet(id))await questIntro(id);
+  F['p_'+id]=1;/* 支線不會自動接：之後再跟他說話，選「有什麼需要幫忙的嗎？」 */
   for(const l of m.post)await line(l);
   F.met[id]=1;updateHUD();
   const left=PRE_IDS.filter(k=>!F.met[k]);
@@ -7118,6 +7140,7 @@ function renderNote(){
 }
 document.querySelectorAll('#note .tabs button').forEach(b=>b.onclick=()=>{noteTab=b.dataset.tab;renderNote()});
 $('noteClose').onclick=()=>{$('note').hidden=true};
+$('obj').onclick=()=>$('obj').classList.toggle('open');
 $('btnItems').onclick=()=>openNote('items');$('btnNote').onclick=()=>openNote();$('pB').onclick=()=>openNote();
 function openMenu(){
   const cur=(S&&S.diff)||'normal';
