@@ -88,6 +88,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   .ch p,.ev .d,.keys{font-size:15px}
 }
 /* Chapter card */
+#cgOv{position:absolute;inset:0;z-index:5;background:#1e1c2e;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#cgOv .cgBox{width:84%;display:flex;flex-direction:column;gap:1.2%;font-family:var(--f-disp);color:#3ab8e8}
+#cgOv .cgTop{display:flex;justify-content:space-between;align-items:center;font-size:clamp(10px,1.6cqw,15px)}
+#cgOv .cgTop button{font:inherit;color:#3ab8e8;background:transparent;border:2px solid #2a8ab8;padding:2px 12px;cursor:pointer}
+#cgOv .cgFrame{border:2px solid #2aa8d8;line-height:0;background:#000}
+#cgOv .cgFrame img{width:100%;height:auto;display:block;opacity:0;transition:opacity .5s}
+#cgOv .cgFrame img.on{opacity:1}
+#cgOv .cgTxt{text-align:center;font-size:clamp(11px,1.8cqw,17px);line-height:1.6;min-height:3.4em;margin-top:1%}
 #chap{position:absolute;inset:0;z-index:4;background:#07050a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;text-align:center}
 #chap .c1{font-family:var(--f-disp);color:var(--gold);letter-spacing:.3em;font-size:clamp(13px,2vw,18px)}
 #chap .c2{font-family:var(--f-disp);font-size:clamp(26px,6vw,52px);color:var(--cream);text-shadow:3px 3px 0 var(--blood);letter-spacing:.1em}
@@ -232,6 +240,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div id="ports"><div class="port L" id="portL" hidden><img alt=""><canvas width="28" height="34"></canvas><span class="ph"></span></div><div class="port R" id="portR" hidden><img alt=""><canvas width="28" height="34"></canvas><span class="ph"></span></div></div>
     <div id="dlg" class="win" hidden><canvas id="face" width="24" height="24"></canvas><div class="dbody"><div id="dname"></div><div id="dtext"></div></div><div class="next">▼</div></div>
     <div id="choices" class="win" hidden></div>
+    <div id="cgOv" hidden><div class="cgBox"><div class="cgTop"><span id="cgLoc"></span><button id="cgSkip" type="button">&gt;&gt;SKIP_SCENE</button></div><div class="cgFrame"><img id="cgImg" alt=""></div><div class="cgTxt" id="cgTxt"></div></div></div>
     <div id="toast" hidden></div>
     <div id="allyFeed" aria-live="polite"></div>
     <div id="sokoBar" hidden><button type="button" id="sokoUndo">↶ 上一步</button><button type="button" id="sokoReset">⟲ 重來</button></div>
@@ -1602,7 +1611,8 @@ function applyWorld(){
   if(!llamaOk)set('horse','outside',33,13);
   if(S&&qGet('sui')&&qGet('sui').st==='alt')NPCS.horse.scene=null;
   if(ch===0){
-    if(!F.gathered){/* 開場晚餐：上排夜鷺、下排協會，玩家坐自己陣營那邊，流浪者坐桌邊 */
+    if(!F.gathered&&!F.metAll){/* 序幕一開始：大家散在宅邸各處，先去打招呼 */set('kaicho','maze',15,11);set('lala','kitchen',9,4);set('po','roomL',2,3,'sleep')}
+    else if(!F.gathered){/* 開場晚餐：上排夜鷺、下排協會，玩家坐自己陣營那邊，流浪者坐桌邊 */
       set('boss','dining',4,2);set('ian','dining',6,2);set('po','dining',8,2,'stand');set('ji','dining',10,2);
       set('shisho','dining',4,5);set('kaicho','dining',6,5);set('sui','dining',8,5);set('lala','dining',10,5);
       for(const id of['shisho','kaicho','sui','lala'])NPCS[id].dir='up'}
@@ -2307,7 +2317,7 @@ async function preEnd(){
 async function talk0(id){
   const F=S.flags,first=!F['p_'+id];
   if(id==='horse'){ach('h_horse');await n('半透明的幽靈羊駝斜眼看著你，嘴巴嚼個不停。');await n('「呸！」——一團冰冰涼涼的口水黏在你臉上。');addDirt('spit');return}
-  if(!F.gathered){return say(id,{kaicho:'大家都在 餐廳 集合，你也一起來吧。',boss:'大家都在餐廳等，你也快過去吧。',shisho:'餐廳。開會。……我只是去看戲的。',sui:'快點！大家都在 餐廳 等啦！',ji:'大家都在 餐廳 等你喔～遲到的人要喝我的新藥水～',lala:'大家都在 餐廳 集合喔，快過去吧！',ian:'喲！大家都在 餐廳 集合啦，快過去吧！',po:'……餐廳……開會……Zzz……'}[id]||'大家都在 餐廳 集合。')}
+  if(!F.gathered){if(!F.metAll)return meetTalk(id);return say(id,{kaicho:'大家都在 餐廳 集合，你也一起來吧。',boss:'大家都在餐廳等，你也快過去吧。',shisho:'餐廳。開會。……我只是去看戲的。',sui:'快點！大家都在 餐廳 等啦！',ji:'大家都在 餐廳 等你喔～遲到的人要喝我的新藥水～',lala:'大家都在 餐廳 集合喔，快過去吧！',ian:'喲！大家都在 餐廳 集合啦，快過去吧！',po:'……餐廳……開會……Zzz……'}[id]||'大家都在 餐廳 集合。')}
   if(!first){
     if(await sideTalk(id))return;
     if(id==='po'&&NPCS.po.state==='sleep')return say('po','……枕頭……祭壇……Zzz……');
@@ -3967,8 +3977,52 @@ async function intro(){
   await n('確認身體的劇變之後，仔細環顧四周，會發現自己正身處掛著巨大燭光吊燈的西洋宅邸大廳。');
   await n('外頭的天空似乎永遠不會日出。每隔一段時間乍到的雷雨，會讓宅邸失去所有電力。');
   await chapterCard('序幕　雷雨夜的晚餐');
-  await n('……大廳右上方的 餐廳，傳來吵吵鬧鬧的說話聲。好像有很多人。');
+  await n('……宅邸裡好像還有其他人。走廊、屋外、樓上，隱約都有說話聲。');
+  await n('先四處走走，跟大家打個招呼吧。');
   ach('m_start');
+}
+/* 序幕：先在宅邸裡跟大家打招呼。有繪師場景圖的人，第一次見面會先播一段場景展示（圖檔放在 cg/角色id.jpg） */
+const CG={
+  kaicho:{img:'cg/kaicho.jpg',loc:'花園迷宮',lines:['「撇除天候與日照問題，偶爾像這樣放鬆一下也不錯呢。」','「當然離開的方式也是正在尋找的，請不用擔心。」']},
+  shisho:{img:'cg/shisho.jpg',loc:'展覽室・書架旁',lines:['「這座宅邸的藏書大都相當美味，而且種類俱全。」','「很好。」']},
+};
+const MEET_AT={kaicho:'花園迷宮',shisho:'展覽室',sui:'屋外',lala:'廚房',boss:'屋外的大南瓜旁',ian:'屋外的墓園',ji:'玫瑰溫室',po:'2F 左客房'};
+const MEET={
+  kaicho:[['kaicho','你也被帶到這裡來了啊。外面的霧散不掉，天也一直不亮……不過，至少這裡的花開得很漂亮。'],['kaicho','晚餐的時候，大家應該會在餐廳碰面。到時候再好好聊吧。']],
+  shisho:[['shisho','……又一個。你也是被這棟房子「請」進來的？'],['shisho','書庫的書，我正在一本一本確認味道。別碰我正在讀的那本。']],
+  sui:[['sui','喔！你也在啊！我剛剛繞了一圈，外面全是霧，連個像樣的對手都沒有！'],['sui','肚子都餓了！等等開飯的時候，我要坐最好吃的那盤旁邊！']],
+  lala:[['lala','啊，{me}！你、你好！我一轉頭就在這裡的廚房了……鬆餅還在鍋子上耶！'],['lala','晚餐我正在準備，等一下大家都要到餐廳集合喔！']],
+  boss:[['n','大南瓜旁邊，首領懶洋洋地躺著，眼睛半睜半閉。'],['boss','你也被拉進來了。這顆大南瓜很安靜，我在這裡躺一下。開飯的時候再叫我。']],
+  ian:[['ian','喲！是你啊！大叔我剛剛巡了一圈，這房子大得很，墓園還比我們營地大！哈哈！'],['ian','晚餐的時候見啦，大叔我肚子早就餓扁了！']],
+  ji:[['ji','哎呀，是你。這溫室的玫瑰對外人特別熱情喔～要不要讓它們抱一下？'],['ji','……開玩笑的。晚餐的時候見，別遲到，遲到的人要喝我的新藥水～']],
+  po:[['n','小波整個人捲在床上的被子裡，只露出一撮頭髮。'],['po','……Zzz……嗯？……晚餐？……再五分鐘。……你先去，我晚點到。……大概。']],
+};
+function showCG(id){
+  const c=CG[id];if(!c)return Promise.resolve();
+  return new Promise(res=>{
+    const ov=$('cgOv'),img=$('cgImg'),tx=$('cgTxt');let done=false,shown=0,timer=0;
+    const fin=()=>{if(done)return;done=true;clearInterval(timer);ov.hidden=true;dlgRes=null;img.classList.remove('on');res()};
+    const full=c.lines.join('\n');
+    img.onerror=()=>fin();img.onload=()=>img.classList.add('on');img.src=c.img;
+    $('cgLoc').textContent='地點：'+c.loc;tx.textContent='';tx.style.whiteSpace='pre-line';
+    ov.hidden=false;dlg.hidden=true;clearPorts();sfx('ach');
+    timer=setInterval(()=>{shown++;tx.textContent=full.slice(0,shown);if(shown>=full.length)clearInterval(timer)},45);
+    const next=()=>{if(shown<full.length){shown=full.length;tx.textContent=full;clearInterval(timer)}else fin()};
+    dlgRes=next;ov.onclick=e=>{if(e.target.id!=='cgSkip')next()};$('cgSkip').onclick=e=>{e.stopPropagation();fin()};
+  });
+}
+async function meetTalk(id){
+  const F=S.flags;F.met=F.met||{};
+  if(F.met[id]){return say(id,{kaicho:'晚餐的時候，餐廳見吧。',shisho:'看完這本就過去。……大概。',sui:'等開飯啦！',lala:'晚餐快好了喔！',boss:'開飯的時候再叫我。',ian:'餐廳見啦！',ji:'別遲到喔～',po:'……Zzz……'}[id]||'待會餐廳見。')}
+  await showCG(id);
+  for(const[w,t]of MEET[id]||[])await(w==='n'?n(t):say(w,t));
+  F.met[id]=1;updateHUD();
+  const left=PRE_IDS.filter(k=>!F.met[k]);
+  if(!left.length){F.metAll=1;
+    await n('……遠遠地，傳來拉拉的聲音：「晚——餐——好——囉——！大家快到餐廳集合——！」');
+    await n('宅邸裡的腳步聲，一個一個往餐廳的方向去了。');
+    applyWorld();updateHUD();toast('大家都往餐廳集合了！');toastT=220}
+  else toast(`打過招呼了（${PRE_IDS.length-left.length}/${PRE_IDS.length}）`);
 }
 function chapterCard(t){
   return new Promise(res=>{
@@ -5137,7 +5191,7 @@ function changeScene(to,x,y,dir){
   if(SCENES[to].out&&P.light>0){P.stow=P.light;P.light=0;P.rainStow=1;setTimeout(()=>toast('外面在下雨，你把蠟燭收進燈罩裡。'),300)}
   else if(!SCENES[to].out&&P.rainStow&&P.stow>0){P.light=P.stow;P.stow=0;P.rainStow=0;setTimeout(()=>toast('回到屋裡，你把蠟燭重新拿了出來。'),300)}
   S.scene=to;sfx('door');for(const w of WEBS)w.torn=0;Object.assign(P,{x,y,dir,moving:false,prog:0,guard:true});if(SOKO[to]){sokoInit(to);setTimeout(()=>run(()=>sokoIntro(to)),60)}legsWarp();fade=1;$('loc').textContent=SCENES[to].name;onEnterScene(to);save();
-  if(to==='dining'&&chOf()===0&&!S.flags.gathered)run(gatherScene);
+  if(to==='dining'&&chOf()===0&&!S.flags.gathered&&S.flags.metAll)run(gatherScene);
   else if(to==='dining'&&chOf()===1&&!S.flags.discovered)run(discovery);
   if(to==='kitchen'&&chOf()===2&&!S.flags.disc2)run(discovery2);
   if(to==='hall'&&chOf()===2&&hasEv('trail')&&!S.flags.poFell2)run(stairFall);
@@ -6410,7 +6464,7 @@ function onEnterScene(to){
   if(!SCENES[to].out)CB.spawnT=Math.max(CB.spawnT||0,1800+Math.random()*1800);/* 剛進室內先讓人喘口氣 */
   if(to==='crypt')addDirt('dust');
   if(to==='crypt'&&!S.flags.finalDone)spawnRandom(2,['bat','lantern','pghost','sprite'],{region:[1,9,20,14]});
-  if(to==='maze')spawnRandom(5,FOE_OUT[foeCh()]);
+  if(to==='maze'&&chOf()>=1)spawnRandom(5,FOE_OUT[foeCh()]);
   if(to==='outside'&&S.flags.riot&&!S.flags.riotDone)spawnRiot();
   if(to==='attic'&&chOf()===2&&!S.flags.atticCleared){
     CB.lock=new Set(['5,5','6,5']);CB.lockKind='attic';
@@ -6443,7 +6497,7 @@ function updateCombat(){
     }
   }
   if(S.scene==='crypt'&&chOf()===4&&!S.flags.finalDone&&!CB.lock&&!P.moving&&P.y<=7){if(!S.flags.finalOk)run(finalGate);else if(S.flags.finalMet)startFinal();else run(finalIntro);return}
-  if(S.scene==='maze'&&!S.flags.bossMaze&&!CB.lock&&!P.moving&&P.x>=MZ.x0&&P.x<=MZ.x1&&P.y>=MZ.y0&&P.y<=MZ.y1){startBoss();return}
+  if(S.scene==='maze'&&chOf()>=1&&!S.flags.bossMaze&&!CB.lock&&!P.moving&&P.x>=MZ.x0&&P.x<=MZ.x1&&P.y>=MZ.y0&&P.y<=MZ.y1){startBoss();return}
   if(!S.flags.tut0&&CB.foes.some(e=>!e.spawn&&!e.leash)){S.flags.tut0=1;toast(isTouch?'災獸出現了！按「砍」空手也能揍':'災獸出現了！J／X 空手也能揍');toastT=300}
   /* NPC 助攻 */
   for(const id in ALLIES){
@@ -6780,7 +6834,7 @@ function updateHUD(){
   if(CB.mini==='llama'){$('obj').innerHTML=`支線｜對準羊駝的 <b>嘴巴</b> 丟糧草（攻擊鍵），躲開口水！剩下的糧草 <b>${CB.hay}</b>・紅蘿蔔（${isTouch?'技':'B'}）<b>${CB.lure||0}</b>　沒丟進嘴的糧草掉在地上，也能引開牠`;return}
   if(ch===0){
     const k=PRE_IDS.filter(id=>F['p_'+id]).length;
-    t=!F.gathered?'序幕｜大廳右上角的 <b>餐廳</b> 傳來說話聲，去看看。':`序幕｜在宅邸裡走走，跟每個人聊一聊。已聊過 <b>${k}/${PRE_IDS.length}</b>`;
+    t=!F.gathered?(F.metAll?'序幕｜大家都往 <b>餐廳</b> 集合了，過去看看吧。':`序幕｜在宅邸裡四處走走，跟大家打個招呼（${PRE_IDS.filter(k=>(F.met||{})[k]).length}/${PRE_IDS.length}）　還沒見到：`+PRE_IDS.filter(k=>!(F.met||{})[k]).map(k=>`${NAMES[k]}（${MEET_AT[k]}）`).join('、')):`序幕｜在宅邸裡走走，跟每個人聊一聊。已聊過 <b>${k}/${PRE_IDS.length}</b>`;
   }else if(ch===1){
     const k=REQ1.filter(hasEv).length;
     if(!F.discovered)t='第一幕｜前往 <b>餐廳</b>（大廳右上角的門），看看發生了什麼事。';
