@@ -3776,14 +3776,26 @@ function drawGarden(cx,cy){
     R(g,X+3,Y+4,1,4,'#6b4a2a');R(g,X+2,Y+3,3,2,'#9aa0a6');R(g,X+5,Y+6,3,2,'#d9a640');R(g,X+5,Y+6,1,1,'#f0c860')});
   for(const b of GARDEN){const X=b.x*T-cx,Y=b.y*T-cy,on=G&&G.beds.includes(b.id);Q(b.y*T,()=>{
     /* 木頭花圃箱 */R(g,X+1,Y+15,14,1,'rgba(0,0,0,.3)');R(g,X+1,Y+9,14,7,K);R(g,X+2,Y+10,12,5,'#6b4a2a');R(g,X+2,Y+10,12,1,'#8a6a3a');R(g,X+2,Y+12,12,1,'#5a3a20');R(g,X+3,Y+10,10,2,'#3a2a1c');R(g,X+4,Y+10,2,1,'#4a3420');R(g,X+9,Y+11,2,1,'#4a3420');
-    if(b.odd){const nod=Math.round(Math.sin(tick/9));R(g,X+7,Y-2,2,13,'#3f8a3a');R(g,X+4,Y+5,3,2,'#5fae3a');R(g,X+9,Y+3,3,2,'#5fae3a');
-      /* 花盤會慢慢轉過來，一直盯著玩家 */
+    if(b.odd){const nod=Math.round(Math.sin(tick/9));
+      /* 花盤會慢慢轉過來，一直盯著玩家（上下左右、斜角都會跟） */
       const[ppx,ppy]=pPix(),cl=v=>Math.max(-1,Math.min(1,v));
-      b._lx=(b._lx??0)+(cl((ppx-b.x*T)/40)-(b._lx??0))*.08;b._ly=(b._ly??0)+(cl((ppy-b.y*T+8)/40)-(b._ly??0))*.08;
-      const hs=Math.round(b._lx),hx=Math.round(b._lx*1.4),hy=Math.round(b._ly),ex=Math.round(b._lx*1.2),fw=Math.abs(b._lx)>.7?5:6,fx=X+5+hs+hx+(fw<6&&b._lx<0?0:0),fy=Y-6+nod+hy;
-      R(g,X+3+hs,Y-8+nod,10,10,'#ffd25a');R(g,X+2+hs,Y-6+nod,12,6,'#ffd25a');R(g,X+4+hs,Y-7+nod,8,1,'#ffe48a');
-      R(g,fx,fy,fw,6,'#6b4a2a');R(g,fx,fy,fw,1,'#7a5a34');
-      R(g,fx+1+ex,fy+2,1,1,K);R(g,fx+fw-2+ex,fy+2,1,1,K);R(g,fx+1+ex,fy+4,fw-2,1,K);return}
+      b._lx=(b._lx??0)+(cl((ppx-b.x*T)/36)-(b._lx??0))*.08;b._ly=(b._ly??0)+(cl((ppy-b.y*T+6)/36)-(b._ly??0))*.08;
+      const lx=b._lx,ly=b._ly,hs=Math.round(lx*1.5),vs=Math.round(ly*1.5),hy0=Y-8+nod+vs;
+      /* 莖：上段跟著花盤歪過去 */
+      R(g,X+7,Y+3,2,8,'#3f8a3a');R(g,X+7+Math.round(hs/2),Y-1+vs,2,5-vs,'#3f8a3a');R(g,X+7+hs,hy0+8,2,3,'#3f8a3a');
+      R(g,X+4,Y+5,3,2,'#5fae3a');R(g,X+9,Y+3,3,2,'#5fae3a');
+      /* 花瓣：抬頭時下緣露出背面、低頭時上緣露出背面 */
+      const PX=X+hs;R(g,PX+3,hy0,10,10,'#ffd25a');R(g,PX+2,hy0+2,12,6,'#ffd25a');
+      if(ly<-.4)R(g,PX+4,hy0+8,8,2,'#d8a830');else if(ly>.4)R(g,PX+4,hy0,8,2,'#d8a830');else R(g,PX+4,hy0+1,8,1,'#ffe48a');
+      if(lx<-.4)R(g,PX+12,hy0+2,2,6,'#d8a830');else if(lx>.4)R(g,PX+2,hy0+2,2,6,'#d8a830');
+      /* 臉：往玩家的方向偏，越偏越扁 */
+      const ax=Math.abs(lx),ay=Math.abs(ly),fw=ax>.6&&ax>=ay-.1?5:6,fh=ly<-.6&&ay>ax+.1?5:6;
+      const fx=PX+5+Math.round(lx*2)+(fw<6&&lx>0?1:0),fy=hy0+2+Math.round(ly*2);
+      R(g,fx,fy,fw,fh,'#6b4a2a');R(g,fx,fy,fw,1,'#7a5a34');
+      const ex=lx>.4?1:lx<-.4?-1:0,ey=ly>.4?1:0,shift=fw<6?ex:Math.max(0,ex)-Math.max(0,-ex);
+      R(g,fx+1+(fw<6?Math.min(0,ex)+ (ex>0?1:0):ex),fy+1+ey,1,1,K);R(g,fx+fw-2+(fw<6?Math.max(0,ex)-(ex<0?1:0):ex),fy+1+ey,1,1,K);
+      R(g,fx+1+(ex<0?(fw<6?-1:0):ex>0?1:0),fy+fh-2,ex&&fw<6?2:(ex?3:fw-2),1,K);
+      return}
     if(on){const sw=Math.round(Math.sin((tick+b.x*9)/20));for(const[fx,fy]of[[3,6],[8,4],[12,7]]){R(g,X+fx+1,Y+fy+2,1,9-fy,'#3f8a3a');R(g,X+fx+sw,Y+fy,3,3,b.c);R(g,X+fx+1+sw,Y+fy+1,1,1,b.c2)}}
     else for(const fx of[4,8,11]){R(g,X+fx,Y+7,1,4,'#6a5a3a');R(g,X+fx+1,Y+7,2,1,'#5a4a2a');R(g,X+fx+2,Y+8,1,1,'#7a5a3a')}})}
   if(F.gardenDone){const X=MZ.qx*T-cx,Y=MZ.qy*T-cy;for(let i=0;i<10;i++){const a=i/10*6.28,c=GARDEN[i%5].c;R(g,X+8+Math.round(Math.cos(a)*22),Y+8+Math.round(Math.sin(a)*16),2,2,c)}}
