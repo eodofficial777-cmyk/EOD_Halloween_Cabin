@@ -138,6 +138,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .tt-sub{font-family:var(--f-disp);color:var(--gold);font-size:clamp(11px,1.8vw,16px);letter-spacing:.3em}
 #title h1{margin:0;font-family:var(--f-disp);font-weight:400;font-size:clamp(28px,7.2vw,68px);line-height:1.05;letter-spacing:.06em;color:var(--cream);text-shadow:3px 3px 0 var(--blood),6px 6px 0 rgba(0,0,0,.6);text-wrap:balance}
 #title h1 span{color:var(--rust)}
+.tt-slots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:94%}
+.tt-slots button{font:inherit;font-size:clamp(11px,1.6vw,14px);line-height:1.35;background:rgba(14,10,12,.7);color:var(--dim);border:2px solid #5a4a42;border-radius:2px;padding:3px 10px;min-width:clamp(90px,17vw,150px);cursor:pointer;text-align:center}
+.tt-slots button b{display:block;color:var(--cream);font-weight:400;font-family:var(--f-disp)}
+.tt-slots button.on{border-color:var(--gold);color:var(--cream);box-shadow:inset 0 0 0 1px var(--gold)}
 .tt-menu{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .tt-menu button{font-family:var(--f-disp);background:var(--wall);border:2px solid var(--cream);box-shadow:inset 0 0 0 2px var(--brown);padding:3px clamp(10px,2vw,18px);font-size:clamp(13px,2vw,18px);border-radius:2px}
 .tt-menu button:hover,.tt-menu button:focus-visible{background:var(--rust)}
@@ -288,6 +292,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div id="title">
       <div class="tt-sub">荒漠終焉・萬聖節特別篇</div>
       <h1>荒中小屋<br><span>殺人事件</span></h1>
+      <div class="tt-slots" id="tSlots" role="radiogroup" aria-label="存檔欄"></div>
       <div class="tt-menu">
         <button type="button" id="tNew">開始調查</button>
         <button type="button" id="tCont">繼續</button>
@@ -1634,9 +1639,12 @@ for(const [k,sc] of Object.entries(SCENES)){
 const SAVE_KEY='eod_hw_cabin_save',END_KEY='eod_hw_cabin_endings';
 let S=null;
 function newState(name,outfit,ears,look){return{name,outfit,ears,look,scene:'hall',x:10,y:8,dir:'down',flags:{ch:0},ev:[],items:[],inv:{candy:0,ammo:0},mag:0}}
+/* 三個存檔欄：每欄有自己的角色、進度、章節存檔；成就、結局、畫廊大家共用。第 1 欄沿用舊的存檔位置 */
+let SLOT=0;const sk=k=>SLOT?k+'_s'+SLOT:k;
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
-function save(){if(S&&mode==='play'){S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag=P.ammo;S.light=P.light||0;S.stow=P.stow||0;S.rainStow=P.rainStow||0;ls.set(SAVE_KEY,JSON.stringify(S))}}
-function loadSave(){try{return JSON.parse(ls.get(SAVE_KEY)||'null')}catch(e){return null}}
+function save(){if(S&&mode==='play'){S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag=P.ammo;S.light=P.light||0;S.stow=P.stow||0;S.rainStow=P.rainStow||0;ls.set(sk(SAVE_KEY),JSON.stringify(S))}}
+function loadSave(slot=SLOT){try{return JSON.parse(ls.get(slot?SAVE_KEY+'_s'+slot:SAVE_KEY)||'null')}catch(e){return null}}
+SLOT=Math.min(2,Math.max(0,+(ls.get('eod_hw_cabin_slot')||0)||0));
 function endings(){try{return JSON.parse(ls.get(END_KEY)||'[]')}catch(e){return[]}}
 
 const NPCS={kaicho:{},shisho:{},sui:{},lala:{},boss:{},ian:{},ji:{},po:{},horse:{deco:1},batk:{},cone:{},legs:{},ghost:{}};
@@ -3469,8 +3477,8 @@ const ALT_NOTE={po:'供奉了另一個枕頭，大家一起熬夜聊到了天亮
 /* 每一章開始時自動存一份，可以從標題或選單的「章節選擇」回到那一章重玩 */
 const CHAP_KEY='eod_hw_cabin_ch';
 const CHAP_NAMES=['序幕　雷雨夜的晚餐','第一幕　會長之死','第二幕　消失的小波','第三幕　南瓜裡的頭','第四幕　裂成兩半的科學怪人'];
-function chapterSave(n){if(!S)return;S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag=P.ammo;ls.set(CHAP_KEY+n,JSON.stringify({t:Date.now(),name:S.name,s:S}));toast('章節存檔：'+CHAP_NAMES[n])}
-function chapterGet(n){try{return JSON.parse(ls.get(CHAP_KEY+n)||'null')}catch(e){return null}}
+function chapterSave(n){if(!S)return;S.x=P.x;S.y=P.y;S.dir=P.dir;S.hp=P.hp;S.mag=P.ammo;ls.set(sk(CHAP_KEY)+n,JSON.stringify({t:Date.now(),name:S.name,s:S}));toast('章節存檔：'+CHAP_NAMES[n])}
+function chapterGet(n){try{return JSON.parse(ls.get(sk(CHAP_KEY)+n)||'null')}catch(e){return null}}
 function renderChap(){
   const box=$('chapList');box.innerHTML='';
   CHAP_NAMES.forEach((t,i)=>{
@@ -5333,7 +5341,7 @@ function cryptDark(px,py){
 function finish(type){
   if(type==='final'){ach('m_final');if(!S.flags.deaths)ach('h_nodeath')}
   const e=endings();if(!e.includes(type)){e.push(type);ls.set(END_KEY,JSON.stringify(e))}
-  ls.del(SAVE_KEY);mode='ending';
+  ls.del(sk(SAVE_KEY));mode='ending';
   const ec=$('endCv'),g=ec.getContext('2d');drawLineup(g,type);
   $('endS').textContent='THE END';
   $('endT').textContent='終幕　天亮了';
@@ -7154,9 +7162,20 @@ $('tAch').onclick=openAch;$('tChap').onclick=openChap;$('menuChap').onclick=()=>
 $('toTitle').onclick=()=>{save();$('menu').hidden=true;toTitle()};
 
 /* 標題與建立角色 */
+function slotInfo(i){
+  const v=loadSave(i);if(!v){const any=[0,1,2,3,4].some(n=>{try{return!!ls.get((i?CHAP_KEY+'_s'+i:CHAP_KEY)+n)}catch(e){return false}});return{t:'空的存檔',sub:any?'（有章節存檔）':'—'}}
+  const F=v.flags||{},ch=F.ch??0;return{t:v.name||'新來的你',sub:`${FAC_NAME[v.faction]||'流浪者'}｜${F.post?'破關後':(CHAP_NAMES[ch]||'').split('　')[0]}`};
+}
+function renderSlots(){
+  const box=$('tSlots');box.innerHTML='';
+  for(let i=0;i<3;i++){const inf=slotInfo(i),b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.setAttribute('aria-checked',i===SLOT);b.className=i===SLOT?'on':'';
+    b.innerHTML=`<b>存檔 ${i+1}　${inf.t.replace(/[<>&]/g,'')}</b>${inf.sub}`;b.onclick=()=>pickSlot(i);box.append(b)}
+}
+function pickSlot(i){SLOT=i;ls.set('eod_hw_cabin_slot',String(i));setupSel=loadLook();renderSlots();$('tCont').disabled=!loadSave();$('tChap').disabled=!CHAP_NAMES.some((_,n)=>chapterGet(n))}
 function toTitle(){
   mode='title';S=null;busy=false;dlg.hidden=true;$('choices').hidden=true;choiceState=null;clearPorts();cutDark=false;
   applyWorld();$('title').hidden=false;$('hud').style.visibility='hidden';$('keybar').style.visibility='hidden';
+  renderSlots();
   $('tCont').disabled=!loadSave();
   $('tChap').disabled=!CHAP_NAMES.some((_,i)=>chapterGet(i));
   const e=endings();AD=achData();const ag=ACHS.filter(a=>AD.got[a.id]).length;
@@ -7164,7 +7183,8 @@ function toTitle(){
   setTimeout(()=>$('tNew').focus(),50);
 }
 const LOOK_KEY='eod_hw_cabin_look';
-let setupSel=(()=>{try{const v=JSON.parse(ls.get(LOOK_KEY)||'null');if(v&&v.outfit)return{...LOOK_DEF,ears:'wolf',...v,accs:v.accs||[]}}catch(e){}return{...LOOK_DEF,outfit:'pumpkin',ears:'wolf',accs:[]}})();
+const loadLook=()=>{try{const v=JSON.parse(ls.get(sk(LOOK_KEY))||ls.get(LOOK_KEY)||'null');if(v&&v.outfit)return{...LOOK_DEF,ears:'wolf',...v,accs:v.accs||[]}}catch(e){}return{...LOOK_DEF,outfit:'pumpkin',ears:'wolf',accs:[]}};
+let setupSel=loadLook();
 function selLook(){const{outfit,ears,...look}=setupSel;return{outfit,ears,look}}
 /* 用目前的選擇（加上覆寫）畫一個主角 */
 function drawSel(g,over,dir='down',f=0){const tmpS=S,s={...setupSel,...over};S={name:'',outfit:s.outfit,ears:s.ears,look:s,flags:{}};drawChar(g,'me',dir,f,0);S=tmpS}
@@ -7205,12 +7225,12 @@ function randomLook(){
   for(const a of ACCS)if(Math.random()<.18&&!(ACC_GROUP[a.id]&&setupSel.accs.some(x=>ACC_GROUP[x]===ACC_GROUP[a.id])))setupSel.accs.push(a.id);
   renderSetup();
 }
-$('tNew').onclick=()=>{renderSetup();$('setup').hidden=false;clearInterval(pvTimer);pvTimer=setInterval(()=>{if($('setup').hidden)return clearInterval(pvTimer);pvTick++;drawPreview()},50);$('nm').focus()};
+$('tNew').onclick=()=>{const old=loadSave();if(old&&!confirm(`存檔 ${SLOT+1}（${old.name||'新來的你'}）已經有進度了。\n要在這一欄重新開始嗎？舊的進度會被蓋掉。\n（想保留的話，先在上面選另一個空的存檔欄）`))return;renderSetup();$('setup').hidden=false;clearInterval(pvTimer);pvTimer=setInterval(()=>{if($('setup').hidden)return clearInterval(pvTimer);pvTick++;drawPreview()},50);$('nm').focus()};
 $('setupBack').onclick=()=>{$('setup').hidden=true;clearInterval(pvTimer)};
 $('rndBtn').onclick=randomLook;
 $('goBtn').onclick=()=>{
   const name=$('nm').value.trim()||'新來的你';clearInterval(pvTimer);
-  ls.set(LOOK_KEY,JSON.stringify(setupSel));
+  ls.set(sk(LOOK_KEY),JSON.stringify(setupSel));
   const{outfit,ears,look}=selLook();
   $('setup').hidden=true;S=newState(name,outfit,ears,look);S.gender=setupSel.gender||'x';S.faction=setupSel.faction||'wander';S.diff=setupSel.diff||'normal';S.cilantro=setupSel.cilantro||'never';startPlay(true);chapterSave(0);
   if(look.accs.length>=3)ach('h_dress');if(outfit==='vamp'&&look.accs.includes('fang'))ach('h_vampfan');
