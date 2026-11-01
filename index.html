@@ -3777,7 +3777,13 @@ function drawGarden(cx,cy){
   for(const b of GARDEN){const X=b.x*T-cx,Y=b.y*T-cy,on=G&&G.beds.includes(b.id);Q(b.y*T,()=>{
     /* 木頭花圃箱 */R(g,X+1,Y+15,14,1,'rgba(0,0,0,.3)');R(g,X+1,Y+9,14,7,K);R(g,X+2,Y+10,12,5,'#6b4a2a');R(g,X+2,Y+10,12,1,'#8a6a3a');R(g,X+2,Y+12,12,1,'#5a3a20');R(g,X+3,Y+10,10,2,'#3a2a1c');R(g,X+4,Y+10,2,1,'#4a3420');R(g,X+9,Y+11,2,1,'#4a3420');
     if(b.odd){const nod=Math.round(Math.sin(tick/9));R(g,X+7,Y-2,2,13,'#3f8a3a');R(g,X+4,Y+5,3,2,'#5fae3a');R(g,X+9,Y+3,3,2,'#5fae3a');
-      R(g,X+3,Y-8+nod,10,10,'#ffd25a');R(g,X+2,Y-6+nod,12,6,'#ffd25a');R(g,X+5,Y-6+nod,6,6,'#6b4a2a');R(g,X+6,Y-4+nod,1,1,K);R(g,X+9,Y-4+nod,1,1,K);R(g,X+6,Y-2+nod,4,1,K);return}
+      /* 花盤會慢慢轉過來，一直盯著玩家 */
+      const[ppx,ppy]=pPix(),cl=v=>Math.max(-1,Math.min(1,v));
+      b._lx=(b._lx??0)+(cl((ppx-b.x*T)/40)-(b._lx??0))*.08;b._ly=(b._ly??0)+(cl((ppy-b.y*T+8)/40)-(b._ly??0))*.08;
+      const hs=Math.round(b._lx),hx=Math.round(b._lx*1.4),hy=Math.round(b._ly),ex=Math.round(b._lx*1.2),fw=Math.abs(b._lx)>.7?5:6,fx=X+5+hs+hx+(fw<6&&b._lx<0?0:0),fy=Y-6+nod+hy;
+      R(g,X+3+hs,Y-8+nod,10,10,'#ffd25a');R(g,X+2+hs,Y-6+nod,12,6,'#ffd25a');R(g,X+4+hs,Y-7+nod,8,1,'#ffe48a');
+      R(g,fx,fy,fw,6,'#6b4a2a');R(g,fx,fy,fw,1,'#7a5a34');
+      R(g,fx+1+ex,fy+2,1,1,K);R(g,fx+fw-2+ex,fy+2,1,1,K);R(g,fx+1+ex,fy+4,fw-2,1,K);return}
     if(on){const sw=Math.round(Math.sin((tick+b.x*9)/20));for(const[fx,fy]of[[3,6],[8,4],[12,7]]){R(g,X+fx+1,Y+fy+2,1,9-fy,'#3f8a3a');R(g,X+fx+sw,Y+fy,3,3,b.c);R(g,X+fx+1+sw,Y+fy+1,1,1,b.c2)}}
     else for(const fx of[4,8,11]){R(g,X+fx,Y+7,1,4,'#6a5a3a');R(g,X+fx+1,Y+7,2,1,'#5a4a2a');R(g,X+fx+2,Y+8,1,1,'#7a5a3a')}})}
   if(F.gardenDone){const X=MZ.qx*T-cx,Y=MZ.qy*T-cy;for(let i=0;i<10;i++){const a=i/10*6.28,c=GARDEN[i%5].c;R(g,X+8+Math.round(Math.cos(a)*22),Y+8+Math.round(Math.sin(a)*16),2,2,c)}}
