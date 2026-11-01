@@ -88,7 +88,23 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   .ch p,.ev .d,.keys{font-size:15px}
 }
 /* Chapter card */
-#cgOv{position:absolute;inset:0;z-index:5;background:#1e1c2e;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#galOv{position:fixed;inset:0;z-index:60;background:#1a1722;overflow:auto;color:var(--cream)}
+#galOv .galWrap{max-width:960px;margin:0 auto;padding:16px}
+#galOv .galHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+#galOv h2{margin:0;font-family:var(--f-disp);font-weight:400;color:var(--gold)}
+#galOv button{font:inherit;background:#2a2230;color:var(--cream);border:2px solid var(--cream);padding:4px 12px;cursor:pointer}
+#galOv .galGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+#galOv .galItem{display:flex;flex-direction:column;gap:4px;padding:0;border:2px solid #4a3e52;background:#14121a;text-align:center}
+#galOv .galItem .th{aspect-ratio:1631/943;overflow:hidden;display:block}
+#galOv .galItem .th img{width:100%;height:100%;object-fit:cover;display:block}
+#galOv .galItem .th.card img{width:122.1%;height:auto;margin:-10.2% 0 0 -10.4%;object-fit:fill}
+#galOv .galItem .ph{aspect-ratio:1631/943;display:flex;align-items:center;justify-content:center;color:#7a6e86;font-size:13px}
+#galOv .galItem span{padding:2px 0 6px;font-size:14px}
+#galOv .galItem:disabled{cursor:default;opacity:.75}
+#galOv .galView{position:fixed;inset:0;background:#1a1722;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px;box-sizing:border-box}
+#galOv .galView img{max-width:100%;max-height:calc(100% - 56px);object-fit:contain;cursor:pointer}
+#galOv .galNav{display:flex;gap:16px;align-items:center}
+#cgOv{position:absolute;inset:0;z-index:5;background:#1a1722;display:flex;align-items:center;justify-content:center;cursor:pointer}
 #cgOv .cgBox{width:84%;display:flex;flex-direction:column;gap:1.2%;font-family:var(--f-disp);color:#3ab8e8}
 #cgOv .cgTop{display:flex;justify-content:space-between;align-items:center;font-size:clamp(10px,1.6cqw,15px)}
 #cgOv .cgTop button{font:inherit;color:inherit;background:transparent;border:2px solid currentColor;padding:2px 12px;cursor:pointer}
@@ -250,7 +266,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div id="ports"><div class="port L" id="portL" hidden><img alt=""><canvas width="28" height="34"></canvas><span class="ph"></span></div><div class="port R" id="portR" hidden><img alt=""><canvas width="28" height="34"></canvas><span class="ph"></span></div></div>
     <div id="dlg" class="win" hidden><canvas id="face" width="24" height="24"></canvas><div class="dbody"><div id="dname"></div><div id="dtext"></div></div><div class="next">▼</div></div>
     <div id="choices" class="win" hidden></div>
-    <div id="cgOv" hidden><div class="cgBox"><div class="cgTop"><span id="cgLoc"></span><button id="cgSkip" type="button">&gt;&gt;SKIP_SCENE</button></div><div class="cgFrame"><img id="cgImg" alt=""><button id="cgHot" class="cgHot" type="button" aria-label="略過" hidden></button></div><div class="cgTxt" id="cgTxt"></div></div></div>
+    <div id="galOv" hidden role="dialog" aria-label="畫廊"><div class="galWrap"><div class="galHead"><h2>畫廊</h2><button type="button" id="galClose">關閉</button></div><div class="galGrid" id="galGrid"></div></div><div class="galView" id="galView" hidden><img id="galImg" alt=""><div class="galNav"><button type="button" id="galPrev">‹ 上一張</button><span id="galCap"></span><button type="button" id="galNext">下一張 ›</button></div></div></div>
+<div id="cgOv" hidden><div class="cgBox"><div class="cgTop"><span id="cgLoc"></span><button id="cgSkip" type="button">&gt;&gt;SKIP_SCENE</button></div><div class="cgFrame"><img id="cgImg" alt=""><button id="cgHot" class="cgHot" type="button" aria-label="略過" hidden></button></div><div class="cgTxt" id="cgTxt"></div></div></div>
     <div id="toast" hidden></div>
     <div id="allyFeed" aria-live="polite"></div>
     <div id="sokoBar" hidden><button type="button" id="sokoUndo">↶ 上一步</button><button type="button" id="sokoReset">⟲ 重來</button></div>
@@ -268,6 +285,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
         <button type="button" id="tChars">登場人物</button>
         <button type="button" id="tChap">章節選擇</button>
         <button type="button" id="tAch">成就</button>
+        <button type="button" id="tGal">畫廊</button>
       </div>
       <div id="ttEnd"></div>
     </div>
@@ -363,7 +381,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div class="mbtns snd"><button id="mMusic" type="button">音樂：開</button><button id="mSfx" type="button">音效：開</button></div>
     <h3>難易度</h3>
     <div id="mDiff" role="radiogroup" aria-label="難易度"></div><p class="diffNote" id="mDiffNote"></p>
-    <div class="mbtns"><button id="menuAch" type="button">成就</button><button id="menuChap" type="button">章節選擇</button><button id="menuRestart" type="button">從頭開始</button><button id="toTitle" type="button">回到標題</button></div>
+    <div class="mbtns"><button id="menuAch" type="button">成就</button><button id="menuGal" type="button">畫廊</button><button id="menuChap" type="button">章節選擇</button><button id="menuRestart" type="button">從頭開始</button><button id="toTitle" type="button">回到標題</button></div>
   </div>
 </div>
 
@@ -2517,6 +2535,14 @@ async function questIntro(id){
       await n(`（藥水收在「道具」裡。拿著它去調查玫瑰、南瓜田、大南瓜，或跟 IAN 說話，就能倒給它們試；想自己喝，${isTouch?'點上方的「道具」':'按 I 或點上方的「道具」'}，再按「喝一口」。）`);
       qStart('ji',{tested:[],rep:[]});break;
     case 'po':
+      if(!S.flags.gathered){/* 序幕：圖卡裡的小波醒著，抱著一顆紅枕頭 */
+        await say('po','……這顆枕頭，是隨便抓來的。太硬了，睡起來不對。');
+        await say('po','我原本的枕頭不見了……我不想自己找。');
+        await say('po','屋外那間小教堂，是「睡教」的教堂。教義只有一條：想睡就睡。……懶得解釋，你自己去看。');
+        await say('po','你去幫我找睡起來最舒服的枕頭，拿去供在教堂的祭壇上。要軟軟的、涼涼的、有一點甜甜的味道，還要可以整個抱住……');
+        await n('說完，小波抱著紅枕頭倒回床上，一下子就睡著了。');
+        qStart('po',{got:[]});break;
+      }
       if(NPCS.po.state==='sleep'){
         await n('小波睡得很熟。你靠近的時候，他翻了個身，開始說夢話——');
         await say('po','……枕頭……我的枕頭不見了……');
@@ -4100,15 +4126,15 @@ async function intro(){
 /* 序幕：先在宅邸裡跟大家打招呼。有繪師場景圖的人，第一次見面會先播一段場景展示（圖檔放在 cg/角色id.jpg） */
 const CG={/* 立繪圖卡：放 cg/<id>.jpg。整張圖卡（約 2000×1420，字已經畫在圖上）會直接顯示；
   只有場景圖（比較寬）的話，會在下方用打字的方式顯示台詞；還沒有圖的話，就用一般對話框說這兩句。 */
-  kaicho:{img:'cg/kaicho.jpg',loc:'花園迷宮',col:'#3ab8e8',lines:['「連綿的陰雨可真令人心慌啊，不過能靜下來感受悠哉的氛圍，也是挺難得的體驗。」','「啊、當然大家都很努力尋找出去的方法，也別太擔心呢。」']},
-  shisho:{img:'cg/shisho.jpg',loc:'展覽室・書架旁',col:'#3ab8e8',lines:['「這裡的藏書都散發一股充滿年代感的氣味，真讓人想多待一段時間。」','「開玩笑的。」']},
-  boss:{img:'cg/boss.jpg',loc:'農園',lines:['「第一次體會腦袋空空的感覺。你平常也是這樣嗎？」','「現在變得能聽南瓜說話了。待在這裡反而能平靜些。」']},
+  kaicho:{img:'cg/kaicho.jpg',loc:'迷宮花園',col:'#3ab8e8',lines:['「連綿的陰雨可真令人心慌啊，不過能靜下來感受悠哉的氛圍，也是挺難得的體驗。」','「啊、當然大家都很努力尋找出去的方法，也別太擔心呢。」']},
+  shisho:{img:'cg/shisho.jpg',loc:'書庫',col:'#3ab8e8',lines:['「這裡的藏書都散發一股充滿年代感的氣味，真讓人想多待一段時間。」','「開玩笑的。」']},
+  boss:{img:'cg/boss.jpg',loc:'南瓜田',lines:['「第一次體會腦袋空空的感覺。你平常也是這樣嗎？」','「現在變得能聽南瓜說話了。待在這裡反而能平靜些。」']},
   ian:{img:'cg/ian.jpg',loc:'墓園',lines:['「哦！這幾天待在這還習慣嗎？」','「這裡的怪跟外面不一樣也是挺有趣的！想來練習揮棒嗎？」']},
-  ji:{img:'cg/ji.jpg',loc:'玫瑰溫室',lines:['「這不是很有趣嗎？雖然少了點會讓人快樂的草～」','「嗯哼？想當實驗材料的話，可是隨時歡迎的喲？」']},
-  po:{img:'cg/po.jpg',loc:'2F 左客房',lines:['「外面一直打雷有夠吵……」','「我只想找個安靜的地方睡覺……醒來能有阿鳳姨的鬆餅吃就好了。」']},
-  sui:{img:'cg/sui.jpg',loc:'屋外',lines:['「我為啥跑出來？還不是因為裡面有夠悶！」','「這樣掉頭就走很正常吧？」']},
+  ji:{img:'cg/ji.jpg',loc:'玫瑰研究室',lines:['「這不是很有趣嗎？雖然少了點會讓人快樂的草～」','「嗯哼？想當實驗材料的話，可是隨時歡迎的喲？」']},
+  po:{img:'cg/po.jpg',loc:'宅邸',lines:['「外面一直打雷有夠吵……」','「我只想找個安靜的地方睡覺……醒來能有阿鳳姨的鬆餅吃就好了。」']},
+  sui:{img:'cg/sui.jpg',loc:'中庭',lines:['「我為啥跑出來？還不是因為裡面有夠悶！」','「這樣掉頭就走很正常吧？」']},
   lala:{img:'cg/lala.jpg',loc:'廚房',lines:['「您好！在這邊過得還好嗎？」','「雖然不能出去有點麻煩，不過我開始做鬆餅了唷！這是最新出爐的南瓜史萊姆鬆餅！請幫我嚐一下味道吧？」']},
-  radio:{img:'cg/radio.jpg',loc:'？？？',lines:['「喲！各位聽眾對這次故事還滿意嗎？」','「不滿意也不退錢！給糖了也沒門！」']},
+  radio:{img:'cg/radio.jpg',loc:'廚房',lines:['「喲！各位聽眾對這次故事還滿意嗎？」','「不滿意也不退錢！給糖了也沒門！」']},
 };
 const MEET_AT={kaicho:'花園迷宮',shisho:'展覽室',sui:'屋外',lala:'廚房',boss:'屋外的大南瓜旁',ian:'屋外的墓園',ji:'玫瑰溫室',po:'2F 左客房'};
 const MEET={/* pre：立繪圖卡之後接著說的話；post：支線開場之後的收尾。['fn',函式] 可以在中間做事 */
@@ -4119,7 +4145,7 @@ const MEET={/* pre：立繪圖卡之後接著說的話；post：支線開場之�
   boss:{pre:[['me','……我平常才沒有腦袋空空。']],post:[['boss','……開飯的時候再叫我。']]},
   ian:{pre:[['ian','大叔我剛剛巡了一圈，這裡的墓園比我們營地還大！哈哈！']],post:[['ian','晚餐的時候見啦，大叔我肚子早就餓扁了！']]},
   ji:{pre:[['ji','……現在還不急～先參觀一下吧？']],post:[['ji','晚餐的時候見，別遲到，遲到的人要喝我的新藥水～']]},
-  po:{pre:[['n','說完，小波把被子拉過頭頂，翻了個身。']],post:[['po','……Zzz……嗯？……晚餐？……再五分鐘。……你先去，我晚點到。……大概。']]},
+  po:{pre:[['n','小波裹著床單，懷裡緊緊抱著一顆紅色的枕頭，眼睛快要閉起來了。']],post:[['po','……Zzz……嗯？……晚餐？……再五分鐘。……你先去，我晚點到。……大概。']]},
 };
 function showCG(id){
   const c=CG[id];if(!c)return Promise.resolve(false);
@@ -4146,6 +4172,27 @@ function showCG(id){
     $('cgSkip').onclick=e=>{e.stopPropagation();fin(true)};hot.onclick=e=>{e.stopPropagation();fin(true)};
   });
 }
+/* ---------------- 畫廊：標題畫面和選單都能打開，隨時看立繪圖卡 ---------------- */
+const GAL_IDS=['kaicho','shisho','sui','lala','boss','ian','ji','po','radio'];
+let galList=[],galI=0,galLoaded=new Set();
+function galLocked(id){return id==='radio'&&!endings().length}
+function openGallery(){
+  const grid=$('galGrid');grid.innerHTML='';galList=[];galLoaded=new Set();
+  for(const id of GAL_IDS){
+    const b=document.createElement('button');b.type='button';b.className='galItem';
+    const lock=galLocked(id),name=lock?'？？？':NAMES[id];
+    const ph=document.createElement('div');ph.className='ph';ph.textContent=lock?'通關後解鎖':'圖卡準備中';
+    if(!lock){const im=new Image();im.alt=name;im.onload=()=>{const th=document.createElement('div');th.className='th'+(im.naturalWidth/im.naturalHeight<1.5?' card':'');th.append(im);ph.replaceWith(th);galLoaded.add(id);galList=GAL_IDS.filter(x=>galLoaded.has(x));b.disabled=false;b.onclick=()=>galShow(galList.indexOf(id))};im.src=CG[id].img}
+    b.disabled=true;b.append(ph);const cap=document.createElement('span');cap.textContent=name;b.append(cap);grid.append(b);
+  }
+  $('galView').hidden=true;$('galOv').hidden=false;$('galClose').focus();
+}
+function galShow(i){if(!galList.length)return;galI=(i+galList.length)%galList.length;const id=galList[galI];$('galImg').src=CG[id].img;$('galImg').alt=NAMES[id];$('galCap').textContent=`${NAMES[id]}　${galI+1} / ${galList.length}`;$('galView').hidden=false}
+function closeGallery(){if(!$('galView').hidden){$('galView').hidden=true;return}$('galOv').hidden=true}
+$('tGal').onclick=openGallery;$('menuGal').onclick=openGallery;$('galClose').onclick=()=>{$('galView').hidden=true;closeGallery()};
+$('galImg').onclick=()=>{$('galView').hidden=true};$('galPrev').onclick=()=>galShow(galI-1);$('galNext').onclick=()=>galShow(galI+1);
+window.addEventListener('keydown',e=>{if($('galOv').hidden)return;e.stopImmediatePropagation();
+  if(e.key==='Escape'){e.preventDefault();closeGallery()}else if(!$('galView').hidden&&(e.key==='ArrowLeft'||e.key==='a'))galShow(galI-1);else if(!$('galView').hidden&&(e.key==='ArrowRight'||e.key==='d'))galShow(galI+1)},true);
 /* 有圖就秀圖卡，還沒有圖就照樣把那兩句話說出來 */
 async function cgOrSay(id){if(await showCG(id))return;for(const t of(CG[id]||{lines:[]}).lines)await say(id,t.replace(/^「|」$/g,''))}
 async function meetTalk(id){
