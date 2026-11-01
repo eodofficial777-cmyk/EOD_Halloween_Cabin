@@ -238,7 +238,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   <header id="hud">
     <span id="loc">荒中小屋</span>
     <div id="obj">雷雨夜，宅邸裡似乎發生了什麼事。</div>
-    <div class="hbtn"><button id="btnNote" type="button">筆記</button><button id="btnMenu" type="button">選單</button></div>
+    <div class="hbtn"><button id="btnItems" type="button">道具</button><button id="btnNote" type="button">筆記</button><button id="btnMenu" type="button">選單</button></div>
   </header>
   <div id="stage">
     <canvas id="cv" width="320" height="208"></canvas>
@@ -267,7 +267,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
       <div id="ttEnd"></div>
     </div>
   </div>
-  <div id="keybar" aria-label="按鍵指引"><span><kbd>方向鍵</kbd><kbd>WASD</kbd>移動</span><span><kbd>Shift</kbd>跑</span><span><kbd>Z</kbd><kbd>空白</kbd>調查／對話</span><span><kbd>J</kbd>近戰</span><span><kbd>K</kbd>開槍</span><span><kbd>R</kbd>換彈</span><span><kbd>H</kbd>吃東西</span><span><kbd>V</kbd>藥水</span><span><kbd>N</kbd>筆記</span><span><kbd>M</kbd>音樂</span><span><kbd>Esc</kbd>選單</span></div>
+  <div id="keybar" aria-label="按鍵指引"><span><kbd>方向鍵</kbd><kbd>WASD</kbd>移動</span><span><kbd>Shift</kbd>跑</span><span><kbd>Z</kbd><kbd>空白</kbd>調查／對話</span><span><kbd>J</kbd>近戰</span><span><kbd>K</kbd>開槍</span><span><kbd>R</kbd>換彈</span><span><kbd>H</kbd>吃東西</span><span><kbd>V</kbd>藥水</span><span><kbd>I</kbd>道具</span><span><kbd>N</kbd>筆記</span><span><kbd>M</kbd>音樂</span><span><kbd>Esc</kbd>選單</span></div>
   <div id="pad">
     <div class="dpad">
       <button class="u" data-d="up" aria-label="上">▲</button>
@@ -348,6 +348,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
       <kbd>H / Q</kbd><span>吃東西補血（糖果、乘乘米果、鳳梨酥，會自動挑最剛好的）</span>
       <kbd>V</kbd><span>喝神奇藥水（隨機變身約 10 秒）</span>
       <kbd>Z / 空白 / Enter</kbd><span>調查、對話、翻下一句</span>
+      <kbd>I</kbd><span>打開道具欄（也可以點上方的「道具」）</span>
       <kbd>N / Tab</kbd><span>打開調查筆記</span>
       <kbd>Esc</kbd><span>選單</span>
       <kbd>M</kbd><span>音樂開關</span>
@@ -2193,7 +2194,7 @@ function bookCaught(){
 }
 const CANS={c1:'小教堂冷藏箱旁邊，夾在兩袋血袋中間的一瓶番茄汁。……放錯地方了吧。',c2:'閣樓的玩具堆裡，一隻泰迪熊抱著一瓶番茄汁。',c3:'大南瓜底下壓著一瓶番茄汁。首領應該沒發現。',c4:'司書的書堆旁邊，一瓶番茄汁被拿來當書擋。',c5:'番茄苗旁邊埋著一瓶番茄汁，瓶子上寫著「肥料？」。',c6:'浴缸旁邊泡著一瓶「番茄汁」。瓶子裡的紅色清清透透的，好像少了點番茄的濃稠……是泡太久了嗎？',c7:'儲藏室的麵粉袋後面，藏著一瓶番茄汁。瓶蓋上寫著「會長的備用」。'};
 const FEEDS={hay1:'一捆乾草',hay2:'一捆乾草',hay3:'一捆乾草',clover:'一把苜蓿',carrot:'一袋紅蘿蔔',oats:'一袋燕麥'};
-Object.assign(ITEMS,{potion:{t:'薊的神秘試作藥水',d:'冒著粉紅色泡泡的藥水。薊說什麼都可以試：玫瑰、南瓜田、首領的大南瓜、大叔，或是你自己。'}});
+Object.assign(ITEMS,{potion:{t:'薊的神秘試作藥水',d:'冒著粉紅色泡泡的藥水。薊說什麼都可以試：玫瑰、南瓜田、首領的大南瓜、大叔，或是你自己。【用法】拿著它去調查玫瑰、南瓜田、大南瓜，或跟 IAN 說話，就會問你要不要倒；想自己喝，按下面的「喝一口」。'}});
 for(const k in PILLOWS)ITEMS['p_'+k]={t:PILLOWS[k].t,d:PILLOWS[k].d};
 
 /* ---------------- 找東西的位置隨機 ----------------
@@ -2508,6 +2509,7 @@ async function questIntro(id){
       addItem('potion');
       await say('ji','……就是你了！幫我找測試對象嘛～玫瑰、南瓜田、首領的大南瓜、大叔……或是你自己也行，反正看起來很耐操。');
       await say('ji','試完要回來報告喔～我的研究筆記，可是要流傳千古的。');
+      await n(`（藥水收在「道具」裡。拿著它去調查玫瑰、南瓜田、大南瓜，或跟 IAN 說話，就能倒給它們試；想自己喝，${isTouch?'點上方的「道具」':'按 I 或點上方的「道具」'}，再按「喝一口」。）`);
       qStart('ji',{tested:[],rep:[]});break;
     case 'po':
       if(NPCS.po.state==='sleep'){
@@ -5884,7 +5886,7 @@ function drawCandleGlow(px,py,cx,cy){
 function nearTile(ch){for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(tileAt(P.x+dx,P.y+dy)===ch)return true;return false}
 function stepHazard(){
   if(!S||busy||CB.lock||CB.mini||P.hazCd>0)return;
-  if(chOf()<1||(chOf()>=5&&!S.flags.post))return;
+  if(chOf()<1||chOf()>=5)return;
   const F=S.flags,dark=blackOn>0&&!(P.light>0),r=Math.random();
   if(S.scene==='greenhouse'&&nearTile('r')&&r<(dark?.35:.03)){P.hazCd=60*20;return run(()=>roseTrip(dark))}
   if(S.scene==='kitchen'&&!(P.morph)){const lq=qGet('lala'),mad=lq&&lq.st==='alt',calm=lq&&lq.st==='done';
@@ -6578,7 +6580,7 @@ function onEnterScene(to){
   if(!SCENES[to].out)CB.spawnT=Math.max(CB.spawnT||0,1800+Math.random()*1800);/* 剛進室內先讓人喘口氣 */
   if(to==='crypt')addDirt('dust');
   if(to==='crypt'&&!S.flags.finalDone)spawnRandom(2,['bat','lantern','pghost','sprite'],{region:[1,9,20,14]});
-  if(to==='maze'&&chOf()>=1)spawnRandom(5,FOE_OUT[foeCh()]);
+  if(to==='maze'&&chOf()>=1&&chOf()<5)spawnRandom(5,FOE_OUT[foeCh()]);
   if(to==='outside'&&S.flags.riot&&!S.flags.riotDone)spawnRiot();
   if(to==='attic'&&chOf()===2&&!S.flags.atticCleared){
     CB.lock=new Set(['5,5','6,5']);CB.lockKind='attic';
@@ -6611,7 +6613,7 @@ function updateCombat(){
     }
   }
   if(S.scene==='crypt'&&chOf()===4&&!S.flags.finalDone&&!CB.lock&&!P.moving&&P.y<=7){if(!S.flags.finalOk)run(finalGate);else if(S.flags.finalMet)startFinal();else run(finalIntro);return}
-  if(S.scene==='maze'&&chOf()>=1&&!S.flags.bossMaze&&!CB.lock&&!P.moving&&P.x>=MZ.x0&&P.x<=MZ.x1&&P.y>=MZ.y0&&P.y<=MZ.y1){startBoss();return}
+  if(S.scene==='maze'&&chOf()>=1&&chOf()<5&&!S.flags.bossMaze&&!CB.lock&&!P.moving&&P.x>=MZ.x0&&P.x<=MZ.x1&&P.y>=MZ.y0&&P.y<=MZ.y1){startBoss();return}
   if(!S.flags.tut0&&CB.foes.some(e=>!e.spawn&&!e.leash)){S.flags.tut0=1;toast(isTouch?'災獸出現了！按「砍」空手也能揍':'災獸出現了！J／X 空手也能揍');toastT=300}
   /* NPC 助攻 */
   for(const id in ALLIES){
@@ -7036,7 +7038,7 @@ function renderNote(){
 }
 document.querySelectorAll('#note .tabs button').forEach(b=>b.onclick=()=>{noteTab=b.dataset.tab;renderNote()});
 $('noteClose').onclick=()=>{$('note').hidden=true};
-$('btnNote').onclick=()=>openNote();$('pB').onclick=()=>openNote();
+$('btnItems').onclick=()=>openNote('items');$('btnNote').onclick=()=>openNote();$('pB').onclick=()=>openNote();
 function openMenu(){
   const cur=(S&&S.diff)||'normal';
   diffButtons($('mDiff'),cur,id=>{if(!S)return;S.diff=id;syncMaxHP();P.hp=Math.min(P.hp,MAXHP);save();updateHUD();toast('難易度改成「'+DIFFS[id].name+'」了。');openMenu()});
@@ -7130,7 +7132,7 @@ const KEYDIR={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
 window.addEventListener('keydown',e=>{
   if(e.target&&e.target.tagName==='INPUT')return;
   if(!$('credits').hidden){if(e.key==='Escape'||e.key==='Enter'){if($('crEnd').hidden){endCredits();e.preventDefault()}}return}
-  if(!$('chapOv').hidden||!$('achOv').hidden||!$('note').hidden||!$('menu').hidden||!$('setup').hidden){if(e.key==='Escape'||((e.key==='n'||e.key==='N'||e.key==='Tab')&&!$('note').hidden)){$('chapOv').hidden=true;$('achOv').hidden=true;$('note').hidden=true;$('menu').hidden=true;$('setup').hidden=true;e.preventDefault()}return}
+  if(!$('chapOv').hidden||!$('achOv').hidden||!$('note').hidden||!$('menu').hidden||!$('setup').hidden){if(e.key==='Escape'||((e.key==='n'||e.key==='N'||e.key==='Tab'||e.key==='i'||e.key==='I')&&!$('note').hidden)){$('chapOv').hidden=true;$('achOv').hidden=true;$('note').hidden=true;$('menu').hidden=true;$('setup').hidden=true;e.preventDefault()}return}
   if(!$('ending').hidden)return;
   if(mode!=='play')return;
   if(choiceState){
@@ -7154,6 +7156,7 @@ window.addEventListener('keydown',e=>{
   if(d){if(!held.includes(d))held.push(d);e.preventDefault();return}
   if(e.key==='z'||e.key==='Z'||e.key===' '||e.key==='Enter'){e.preventDefault();if(e.repeat)return;if(dlgRes)advance();else interact();return}
   if(e.key==='n'||e.key==='N'||e.key==='Tab'){e.preventDefault();if(!busy)openNote();return}
+  if(e.key==='i'||e.key==='I'){e.preventDefault();if(!busy)openNote('items');return}
   if(e.key==='Escape'){openMenu()}
 });
 window.addEventListener('keydown',e=>{if(e.key==='Shift')runHeld=true});
