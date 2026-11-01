@@ -4152,10 +4152,12 @@ function showCG(id){
   return new Promise(res=>{
     const ov=$('cgOv'),box=ov.querySelector('.cgBox'),img=$('cgImg'),tx=$('cgTxt'),hot=$('cgHot');let done=false,shown=0,timer=0,full='';
     const fin=ok=>{if(done)return;done=true;clearInterval(timer);clearTimeout(to);ov.hidden=true;dlgRes=null;img.classList.remove('on');hot.hidden=true;res(ok)};
-    const to=setTimeout(()=>fin(false),4000);
+    let ready=false;const to=setTimeout(()=>fin(false),20000);/* 網路慢的時候多等一下，真的載不到才改用對話框 */
     img.classList.remove('on');img.onerror=()=>fin(false);
+    box.classList.remove('card');box.style.color=c.col||'#e0541c';$('cgLoc').textContent='地點：'+c.loc;tx.style.color='#d6d4de';tx.textContent='載入中……';
+    ov.hidden=false;dlg.hidden=true;clearPorts();
     img.onload=()=>{
-      if(done)return;clearTimeout(to);
+      if(done)return;clearTimeout(to);ready=true;
       const card=img.naturalWidth/img.naturalHeight<1.5;/* 整張圖卡（字畫在圖上）比場景圖窄一點 */
       box.classList.toggle('card',card);
       const col=c.col||'#e0541c';box.style.color=col;tx.style.color=card?'':'#d6d4de';
@@ -4167,11 +4169,14 @@ function showCG(id){
       }else{full=c.lines.join('\n');timer=setInterval(()=>{shown++;tx.textContent=full.slice(0,shown);if(shown>=full.length)clearInterval(timer)},45)}
     };
     img.src=c.img;
-    const next=()=>{if(shown<full.length){shown=full.length;tx.textContent=full;clearInterval(timer)}else fin(true)};
+    const next=()=>{if(!ready)return;if(shown<full.length){shown=full.length;tx.textContent=full;clearInterval(timer)}else fin(true)};
     dlgRes=()=>{if(!ov.hidden)next()};ov.onclick=e=>{if(e.target.id!=='cgSkip'&&e.target.id!=='cgHot')next()};
-    $('cgSkip').onclick=e=>{e.stopPropagation();fin(true)};hot.onclick=e=>{e.stopPropagation();fin(true)};
+    $('cgSkip').onclick=e=>{e.stopPropagation();fin(ready)};hot.onclick=e=>{e.stopPropagation();fin(true)};
   });
 }
+/* 一打開網頁就先在背景把圖卡載好，見面時才不會等 */
+const CG_PRE={};function preloadCG(){for(const id in CG){if(CG_PRE[id])continue;const im=new Image();im.decoding='async';im.src=CG[id].img;CG_PRE[id]=im}}
+setTimeout(preloadCG,300);
 /* ---------------- 畫廊：標題畫面和選單都能打開，隨時看立繪圖卡 ---------------- */
 const GAL_IDS=['kaicho','shisho','sui','lala','boss','ian','ji','po','radio'];
 let galList=[],galI=0,galLoaded=new Set();
