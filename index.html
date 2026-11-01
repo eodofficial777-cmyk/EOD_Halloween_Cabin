@@ -2291,12 +2291,12 @@ async function gatherScene(){
     else if(cp==='hate'){await n('你默默拿起湯匙，把湯上的香菜一片一片挑到碗邊。');await say('shisho','……挑得真仔細。排成一圈，像在辦一場小型葬禮。');await say('lala','對、對不起！下次你那碗我不放！')}
     else{await n('你盯著湯上綠綠的小葉子，猶豫了一下。……香菜，到底是什麼味道？');await say('ian','沒吃過？試試看嘛！大叔我什麼都吃！')}}
   await say('kaicho','總之，大家先各自在宅邸裡看看吧。有什麼發現，再互相交換情報。別太勉強自己喔。');
-  await say('kaicho','{NEW}，就麻煩你到處走走，跟每個人都聊一聊吧。大家都在附近。');
   await say('lala','會長，你晚餐一口都沒吃耶？');
   await say('kaicho','謝謝你，拉拉。我晚點喝杯番茄汁就好，別擔心。');
   await n('會長說完便站了起來。他的臉，好像比剛才又更白了一點。');
   await n('大家紛紛起身，各自散開了。');
-  fade=1;applyWorld();updateHUD();
+  for(const k of PRE_IDS)F['p_'+k]=1;F.preEnd=true;
+  fade=1;applyWorld();updateHUD();await preEnd();
 }
 /* 序幕：每個人都問過一輪之後，第一幕開始 */
 function preCheck(){
@@ -2305,9 +2305,8 @@ function preCheck(){
 }
 async function preEnd(){
   if(chOf()>=1)return;
-  await n('……宅邸裡的每個人，你都問過一輪了。');
   await n('雖然還是搞不清楚這裡是什麼地方，但至少大家看起來都還算平安。');
-  await n('聽說會長回 餐廳 喝東西去了。你走回大廳，想整理一下思緒——');
+  await n('會長說要留在 餐廳 喝杯番茄汁。你走回大廳，想整理一下思緒——');
   await chapterCard('第一幕　會長之死');
   S.flags.ch=1;ach('m_prologue');applyWorld();changeScene('hall',10,8,'down');chapterSave(1);
   shake=14;
@@ -2334,10 +2333,15 @@ async function talk0(id){
     boss:[0,['會長倒下了。','晚餐的時候他一口都沒吃，我看到了。只是沒人問我。'],['小波不見了。','剛剛有塊床單從天花板飄過去，我只是剛好看到而已。'],'大家都在懷疑我。我懶得解釋，你們自己查清楚吧。',['拉拉被冤枉了。','那孩子整晚都在煎鬆餅，香味一直沒斷過。哪來的空去砍人？'],'要走了啊。……大南瓜也想一起走嗎？'],
     sui:[0,'會長倒下了？是誰幹的，給我站出來單挑！……還有那隻羊駝，不准再對我吐口水！','那個愛偷懶的不見了？八成又躲去哪睡了！我騎羊駝去把他揪出來！……如果牠肯讓我騎的話。',0,'那個傻大個斷了？八成又是那個臭女人的藥水害的！我的頭也常常掉，習慣就好啦！','要走了？走之前，我要跟那隻羊駝分出勝負！']}[id];
    const pr=PRE&&PRE[rc];if(pr){if(Array.isArray(pr)){await say(id,pr[0]);if(await choose('',['多問一句','算了'])===0)await say(id,pr[1])}else await say(id,pr)}}
+  await questIntro(id);
+  preCheck();
+}
+/* 各 NPC 的支線開場（序幕打招呼時、或之後補接） */
+async function questIntro(id){
   switch(id){
     case 'kaicho':
-      await n('會長蹲在玫瑰花叢旁，正把一株小小的番茄苗種進土裡。');
-      await say('kaicho','啊，是你啊。我在幫薊顧一下花。這些孩子在這種地方也努力開著，很了不起吧？');
+      await n('會長蹲在花圃旁，正把一株小小的番茄苗種進土裡。');
+      await say('kaicho','啊，我在幫薊顧一下花。這些孩子在這種地方也努力開著，很了不起吧？');
       await say('kaicho','番茄？……啊哈哈，被發現了。只是覺得它跟玫瑰種在一起，顏色很搭而已。');
       await say('me','你的臉色很差耶。');
       await say('kaicho','老毛病了，有點貧血而已。謝謝你擔心，等一下回餐廳喝杯番茄汁就好。');
@@ -2370,7 +2374,7 @@ async function talk0(id){
     case 'lala':{
       const keep=S.flags.realCh??S.flags.ch;
       await say('lala',[
-        '大家突然被丟到這種地方，一定都餓了！肚子餓就沒辦法思考，我先來準備宵夜！',
+        '大家突然被丟到這種地方，一定都餓了！肚子餓就沒辦法思考，晚餐我正在準備！',
         '會長倒下了……我、我得做點什麼才行！肚子餓就沒辦法思考，我來做宵夜！',
         '小波不見了……他回來的時候一定很餓！我先多煎一點鬆餅！',
         '首領被大家懷疑……我不知道該怎麼辦，只好先做鬆餅！做鬆餅的時候，我比較能冷靜下來。',
@@ -2437,7 +2441,6 @@ async function talk0(id){
       await say('po','……就這樣。拜託了……Zzz……');
       qStart('po',{got:[]});break;
   }
-  preCheck();
 }
 
 /* ---------------- 支線：跟 NPC 對話時的選項 ---------------- */
@@ -3987,15 +3990,15 @@ const CG={
   shisho:{img:'cg/shisho.jpg',loc:'展覽室・書架旁',lines:['「這座宅邸的藏書大都相當美味，而且種類俱全。」','「很好。」']},
 };
 const MEET_AT={kaicho:'花園迷宮',shisho:'展覽室',sui:'屋外',lala:'廚房',boss:'屋外的大南瓜旁',ian:'屋外的墓園',ji:'玫瑰溫室',po:'2F 左客房'};
-const MEET={
-  kaicho:[['kaicho','你也被帶到這裡來了啊。外面的霧散不掉，天也一直不亮……不過，至少這裡的花開得很漂亮。'],['kaicho','晚餐的時候，大家應該會在餐廳碰面。到時候再好好聊吧。']],
-  shisho:[['shisho','……又一個。你也是被這棟房子「請」進來的？'],['shisho','書庫的書，我正在一本一本確認味道。別碰我正在讀的那本。']],
-  sui:[['sui','喔！你也在啊！我剛剛繞了一圈，外面全是霧，連個像樣的對手都沒有！'],['sui','肚子都餓了！等等開飯的時候，我要坐最好吃的那盤旁邊！']],
-  lala:[['lala','啊，{me}！你、你好！我一轉頭就在這裡的廚房了……鬆餅還在鍋子上耶！'],['lala','晚餐我正在準備，等一下大家都要到餐廳集合喔！']],
-  boss:[['n','大南瓜旁邊，首領懶洋洋地躺著，眼睛半睜半閉。'],['boss','你也被拉進來了。這顆大南瓜很安靜，我在這裡躺一下。開飯的時候再叫我。']],
-  ian:[['ian','喲！是你啊！大叔我剛剛巡了一圈，這房子大得很，墓園還比我們營地大！哈哈！'],['ian','晚餐的時候見啦，大叔我肚子早就餓扁了！']],
-  ji:[['ji','哎呀，是你。這溫室的玫瑰對外人特別熱情喔～要不要讓它們抱一下？'],['ji','……開玩笑的。晚餐的時候見，別遲到，遲到的人要喝我的新藥水～']],
-  po:[['n','小波整個人捲在床上的被子裡，只露出一撮頭髮。'],['po','……Zzz……嗯？……晚餐？……再五分鐘。……你先去，我晚點到。……大概。']],
+const MEET={/* pre：場景圖之後的招呼；post：支線開場之後的收尾 */
+  kaicho:{pre:[['kaicho','你也被帶到這裡來了啊。外面的霧散不掉，天也一直不亮……不過，至少這裡的花開得很漂亮。']],post:[['kaicho','晚餐的時候，大家應該會在餐廳碰面。到時候再好好聊吧。']]},
+  shisho:{pre:[['shisho','……又一個。你也是被這棟房子「請」進來的？']],post:[['shisho','晚餐？……吃完這本再說。別碰我正在讀的那本。']]},
+  sui:{pre:[['sui','喔！你也在啊！我剛剛繞了一圈，外面全是霧，連個像樣的對手都沒有！']],post:[['sui','肚子都餓了！等等開飯的時候，我要坐最好吃的那盤旁邊！']]},
+  lala:{pre:[['lala','啊，{me}！你、你好！我一轉頭就在這裡的廚房了……鬆餅還在鍋子上耶！']],post:[['lala','晚餐好了我會叫大家，等一下要到餐廳集合喔！']]},
+  boss:{pre:[],post:[['boss','……開飯的時候再叫我。']]},
+  ian:{pre:[['ian','喲！是你啊！大叔我剛剛巡了一圈，這房子大得很，墓園還比我們營地大！哈哈！']],post:[['ian','晚餐的時候見啦，大叔我肚子早就餓扁了！']]},
+  ji:{pre:[['ji','哎呀，是你。']],post:[['ji','晚餐的時候見，別遲到，遲到的人要喝我的新藥水～']]},
+  po:{pre:[['n','小波整個人捲在床上的被子裡，只露出一撮頭髮。']],post:[['po','……Zzz……嗯？……晚餐？……再五分鐘。……你先去，我晚點到。……大概。']]},
 };
 function showCG(id){
   const c=CG[id];if(!c)return Promise.resolve();
@@ -4013,9 +4016,12 @@ function showCG(id){
 }
 async function meetTalk(id){
   const F=S.flags;F.met=F.met||{};
-  if(F.met[id]){return say(id,{kaicho:'晚餐的時候，餐廳見吧。',shisho:'看完這本就過去。……大概。',sui:'等開飯啦！',lala:'晚餐快好了喔！',boss:'開飯的時候再叫我。',ian:'餐廳見啦！',ji:'別遲到喔～',po:'……Zzz……'}[id]||'待會餐廳見。')}
+  if(F.met[id]){if(await sideTalk(id))return;return say(id,{kaicho:'晚餐的時候，餐廳見吧。',shisho:'看完這本就過去。……大概。',sui:'等開飯啦！',lala:'晚餐快好了喔！',boss:'開飯的時候再叫我。',ian:'餐廳見啦！',ji:'別遲到喔～',po:'……Zzz……'}[id]||'待會餐廳見。')}
   await showCG(id);
-  for(const[w,t]of MEET[id]||[])await(w==='n'?n(t):say(w,t));
+  const m=MEET[id]||{pre:[],post:[]},line=([w,t])=>w==='n'?n(t):say(w,t);
+  for(const l of m.pre)await line(l);
+  F['p_'+id]=1;if(!qGet(id))await questIntro(id);
+  for(const l of m.post)await line(l);
   F.met[id]=1;updateHUD();
   const left=PRE_IDS.filter(k=>!F.met[k]);
   if(!left.length){F.metAll=1;
