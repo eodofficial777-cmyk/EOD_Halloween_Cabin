@@ -1616,7 +1616,7 @@ function applyWorld(){
       set('boss','dining',4,2);set('ian','dining',6,2);set('po','dining',8,2,'stand');set('ji','dining',10,2);
       set('shisho','dining',4,5);set('kaicho','dining',6,5);set('sui','dining',8,5);set('lala','dining',10,5);
       for(const id of['shisho','kaicho','sui','lala'])NPCS[id].dir='up'}
-    else{set('kaicho','greenhouse',10,7);set('lala','kitchen',9,4);set('po','hall',12,6,'stand')}
+    else{/* 晚餐後：會長留在餐廳喝番茄汁，其他人回到各自的地方 */set('kaicho','dining',6,5).dir='up';set('lala','kitchen',9,4);set('po','hall',12,6,'stand')}
   }else if(ch===1){
     set('kaicho','dining',7,6,'down');
     if(F.discovered)set('lala','kitchen',9,4);else set('lala','dining',10,7);
@@ -2295,8 +2295,17 @@ async function gatherScene(){
   await say('kaicho','謝謝你，拉拉。我晚點喝杯番茄汁就好，別擔心。');
   await n('會長說完便站了起來。他的臉，好像比剛才又更白了一點。');
   await n('大家紛紛起身，各自散開了。');
-  for(const k of PRE_IDS)F['p_'+k]=1;F.preEnd=true;
-  fade=1;applyWorld();updateHUD();await preEnd();
+  await say('kaicho','我在這裡喝杯番茄汁再走。有什麼事，隨時來找我。');
+  for(const k of PRE_IDS)F['p_'+k]=1;F.adT=0;
+  fade=1;applyWorld();updateHUD();
+}
+/* 晚餐後：離開餐廳、在宅邸裡晃個一兩分鐘，就會聽到拉拉的尖叫 */
+const AFTER_DINNER=90*60;
+function dinnerTick(){
+  const F=S&&S.flags;if(!F||chOf()!==0||!F.gathered||F.preEnd||busy)return;
+  if(S.scene==='dining'&&!F.adT)return;
+  F.adT=(F.adT||0)+1;
+  if(F.adT>=AFTER_DINNER&&S.scene!=='dining'){F.preEnd=true;run(preEnd)}
 }
 /* 序幕：每個人都問過一輪之後，第一幕開始 */
 function preCheck(){
@@ -2305,13 +2314,13 @@ function preCheck(){
 }
 async function preEnd(){
   if(chOf()>=1)return;
-  await n('雖然還是搞不清楚這裡是什麼地方，但至少大家看起來都還算平安。');
-  await n('會長說要留在 餐廳 喝杯番茄汁。你走回大廳，想整理一下思緒——');
-  await chapterCard('第一幕　會長之死');
-  S.flags.ch=1;ach('m_prologue');applyWorld();changeScene('hall',10,8,'down');chapterSave(1);
-  shake=14;
+  if(S.scene==='dining'){await n('雖然還是搞不清楚這裡是什麼地方，但至少大家看起來都還算平安。');await n('你走回大廳，想整理一下思緒——');changeScene('hall',10,8,'down')}
+  shake=14;sfx('hit');
   await n('——啊啊啊啊啊！！');
   await n('拉拉的尖叫聲，從 餐廳 傳了過來。');
+  await n('……餐廳？會長剛剛還在那裡喝番茄汁——');
+  await chapterCard('第一幕　會長之死');
+  S.flags.ch=1;ach('m_prologue');applyWorld();chapterSave(1);updateHUD();
 }
 async function talk0(id){
   const F=S.flags,first=!F['p_'+id];
@@ -2446,42 +2455,44 @@ async function questIntro(id){
 /* ---------------- 支線：跟 NPC 對話時的選項 ---------------- */
 async function sideTalk(id){
   if(!S)return false;
-  const opts=[sideOption(id),sideExtra(id)].filter(Boolean);if(!opts.length)return false;
-  if(chOf()>0||opts.length>1||sideExtra(id)){const c=await choose(`要跟${NAMES[id]}說什麼？`,['聊聊現況',...opts.map(o=>'（支線）'+o[0])]);if(c===0)return false;await opts[c-1][1]();return true}
-  await opts[0][1]();return true;
+  const opts=sideOptions(id);if(!opts.length)return false;
+  const c=await choose(`要跟${NAMES[id]}說什麼？`,['聊聊現況',...opts.map(o=>(o[2]?'':'（支線）')+o[0])]);if(c===0)return false;await opts[c-1][1]();return true;
 }
-/* 第二個支線選項（跟主要選項並列） */
-function sideExtra(id){
-  if(id==='lala'&&chOf()>0&&!qGet('kaicho'))return['會長的番茄汁？',lalaOfferCans];
-  if(id==='sui'&&qGet('sui')&&qGet('sui').st==='done'&&NPCS.sui.state!=='nohead')return['跟翠和羊駝賽跑（花園迷宮）',suiRace];
-  return null;
-}
-function sideOption(id){
-  const ch=chOf();
-  {const lo=LOST.find(l=>(l.owner===id||(id==='batk'&&l.owner==='kaicho'))&&hasItem('lost_'+l.id));if(lo&&!['nohead','down','sleep','pile'].includes(NPCS[id].state))return['把'+lo.t+'還給'+NAMES[id],()=>returnLost(lo)]}
-  const F=S.flags;
+/* 跟 NPC 說話時能做的事，全部列出來 */
+function sideOptions(id){
+  const ch=chOf(),F=S.flags,L=[],add=(t,f,plain)=>L.push([t,f,plain]);
+  const busyState=['nohead','down','sleep','pile'].includes(NPCS[id].state);
+  for(const lo of LOST)if((lo.owner===id||(id==='batk'&&lo.owner==='kaicho'))&&hasItem('lost_'+lo.id)&&!busyState)add('把'+lo.t+'還給'+NAMES[id],()=>returnLost(lo),1);
   if(cansOk()){
-    if(id==='kaicho'&&(ch===0||ch===5))return['把番茄汁交給會長',cansToKaicho];
-    if(id==='lala')return['把番茄汁交給拉拉',cansToLala];
-    if(id==='batk')return['把番茄汁給小蝙蝠',cansToBat];
-    if(id==='po'&&NPCS.po.state==='stand')return['小波好像一直盯著你手上的番茄汁',cansToPo];
+    if(id==='kaicho'&&(ch===0||ch===5))add('把番茄汁交給會長',cansToKaicho);
+    if(id==='lala')add('把番茄汁交給拉拉',cansToLala);
+    if(id==='batk')add('把番茄汁給小蝙蝠',cansToBat);
+    if(id==='po'&&NPCS.po.state==='stand')add('小波好像一直盯著你手上的番茄汁',cansToPo);
   }
-  if(id==='boss'&&qOn('boss'))return F.riot&&!F.riotDone?null:['一起躺在大南瓜旁邊發呆',idleSession];
+  if(id==='lala'&&ch>0&&!qGet('kaicho'))add('會長的番茄汁？',lalaOfferCans);
+  if(id==='boss'&&qOn('boss')&&!(F.riot&&!F.riotDone))add('一起躺在大南瓜旁邊發呆',idleSession);
   const avail={lala:1,shisho:1,ji:1,ian:1,boss:!(F.riot&&!F.riotDone),sui:NPCS.sui.state!=='nohead',po:NPCS.po.state==='stand'||(NPCS.po.state==='sleep'&&chOf()>=3)};
-  if(!avail[id])return null;
-  if(id==='ian'&&hasItem('potion')&&qOn('ji')&&!qGet('ji').tested.includes('ian'))return['請 IAN 喝藥水',ianDrink];
-  const q=qGet(id);
-  if(!q)return ch>0?['有什麼需要幫忙的嗎？',()=>talk0offer(id)]:null;
-  if(id==='ji'&&q.st!=='on'&&!hasItem('potion')&&ch<5)return['再要一瓶試作藥水',async()=>{await say('ji','上癮了？……也是啦，畢竟是我做的～拿去，裡面一樣加了個人秘方喔。');await say('ji','……成分？下一題～');addItem('potion')}];
-  if(q.st!=='on')return null;
-  if(id==='lala'&&(q.got||[]).length>=SLIMES.length)return['史萊姆鬆餅都抓回來了',lalaDone];
-  if(id==='shisho'&&(q.got||[]).length>=BOOK_N)return['把書交給司書',shishoDone];
-  if(id==='ji'&&q.tested.some(k=>!q.rep.includes(k)))return['報告藥水的實驗結果',jiReport];
-  if(id==='ji'&&!hasItem('potion'))return['再要一瓶藥水',async()=>{await say('ji','弄丟了？……你的手是裝飾品嗎？真拿你沒辦法，這瓶給你。');addItem('potion')}];
-  if(id==='ian'&&(q.sack||[]).length)return[`怪物棒球（怪物袋 ${q.sack.length} 隻）`,pitchSession];
-  if(id==='sui'&&(q.got||[]).length>=Object.keys(FEEDS).length)return['去中庭餵羊駝',llamaStart];
-  return null;
+  if(avail[id]){
+    if(id==='ian'&&hasItem('potion')&&qOn('ji')&&!qGet('ji').tested.includes('ian'))add('請 IAN 喝藥水',ianDrink);
+    const q=qGet(id);
+    if(!q){if(ch>0)add('有什麼需要幫忙的嗎？',()=>talk0offer(id))}
+    else{
+      if(id==='ji'&&q.st!=='on'&&!hasItem('potion')&&ch<5)add('再要一瓶試作藥水',async()=>{await say('ji','上癮了？……也是啦，畢竟是我做的～拿去，裡面一樣加了個人秘方喔。');await say('ji','……成分？下一題～');addItem('potion')});
+      if(q.st==='on'){
+        if(id==='lala'&&(q.got||[]).length>=SLIMES.length)add('史萊姆鬆餅都抓回來了',lalaDone);
+        if(id==='shisho'&&(q.got||[]).length>=BOOK_N)add('把書交給司書',shishoDone);
+        if(id==='ji'&&q.tested.some(k=>!q.rep.includes(k)))add('報告藥水的實驗結果',jiReport);
+        if(id==='ji'&&!hasItem('potion'))add('再要一瓶藥水',async()=>{await say('ji','弄丟了？……你的手是裝飾品嗎？真拿你沒辦法，這瓶給你。');addItem('potion')});
+        if(id==='ian'&&(q.sack||[]).length)add(`怪物棒球（怪物袋 ${q.sack.length} 隻）`,pitchSession);
+        if(id==='sui'&&(q.got||[]).length>=Object.keys(FEEDS).length)add('去中庭餵羊駝',llamaStart);
+      }
+    }
+  }
+  if(id==='sui'&&qGet('sui')&&qGet('sui').st==='done'&&NPCS.sui.state!=='nohead')add('跟翠和羊駝賽跑（花園迷宮）',suiRace);
+  return L;
 }
+function sideOption(id){const o=sideOptions(id)[0];return o?[o[0],o[1]]:null}
+function sideExtra(id){return null}
 /* 舊存檔（已經過了序幕）也能接到支線 */
 async function talk0offer(id){const F=S.flags,keep=F.ch;F.preEnd=F.gathered=true;F['p_'+id]=0;F.ch=0;F.realCh=keep;try{await talk0(id)}finally{F.ch=keep;delete F.realCh}}
 /* 薊的支線讓 IAN 喝藥水（也可以直接跟 IAN 說） */
@@ -5833,7 +5844,7 @@ function update(){
   if(PITCH)pitchTick();
   idleTick();
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
-  if(mode==='play'){pfTick();raceTick();suiAmbient();chaseTick();wanderTick()}
+  if(mode==='play'){pfTick();raceTick();suiAmbient();chaseTick();wanderTick();dinnerTick()}
   bgmTick();
   sokoBarSync();
   if(ORGAN_T>0)ORGAN_T--;if(BROOM_T>0)BROOM_T--;
@@ -6858,7 +6869,7 @@ function updateHUD(){
   if(CB.mini==='llama'){$('obj').innerHTML=`支線｜對準羊駝的 <b>嘴巴</b> 丟糧草（攻擊鍵），躲開口水！剩下的糧草 <b>${CB.hay}</b>・紅蘿蔔（${isTouch?'技':'B'}）<b>${CB.lure||0}</b>　沒丟進嘴的糧草掉在地上，也能引開牠`;return}
   if(ch===0){
     const k=PRE_IDS.filter(id=>F['p_'+id]).length;
-    t=!F.gathered?(F.metAll?'序幕｜大家都往 <b>餐廳</b> 集合了，過去看看吧。':`序幕｜在宅邸裡四處走走，跟大家打個招呼（${PRE_IDS.filter(k=>(F.met||{})[k]).length}/${PRE_IDS.length}）　還沒見到：`+PRE_IDS.filter(k=>!(F.met||{})[k]).map(k=>`${NAMES[k]}（${MEET_AT[k]}）`).join('、')):`序幕｜在宅邸裡走走，跟每個人聊一聊。已聊過 <b>${k}/${PRE_IDS.length}</b>`;
+    t=!F.gathered?(F.metAll?'序幕｜大家都往 <b>餐廳</b> 集合了，過去看看吧。':`序幕｜在宅邸裡四處走走，跟大家打個招呼（${PRE_IDS.filter(k=>(F.met||{})[k]).length}/${PRE_IDS.length}）　還沒見到：`+PRE_IDS.filter(k=>!(F.met||{})[k]).map(k=>`${NAMES[k]}（${MEET_AT[k]}）`).join('、')):'序幕｜晚餐結束了。會長留在 <b>餐廳</b> 喝番茄汁，其他人也各自散開了。在宅邸裡晃晃吧。';
   }else if(ch===1){
     const k=REQ1.filter(hasEv).length;
     if(!F.discovered)t='第一幕｜前往 <b>餐廳</b>（大廳右上角的門），看看發生了什麼事。';
