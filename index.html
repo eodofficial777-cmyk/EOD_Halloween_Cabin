@@ -115,6 +115,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #ttEnd{font-size:clamp(11px,1.5vw,13px);color:var(--dim);min-height:1em}
 
 /* Touch pad */
+#keybar{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;width:100%;max-width:var(--stageW,960px);margin:2px auto 0;font-size:12px;line-height:1.4;color:#b9a58e;visibility:hidden}
+#keybar span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+#keybar kbd{font:inherit;font-size:11px;padding:0 4px;border:1px solid #6b5a4a;border-bottom-width:2px;border-radius:3px;background:#2a2230;color:var(--cream)}
+@media (hover:none) and (pointer:coarse){#keybar{display:none}}
+@media (max-width:700px){#keybar{display:none}}
 #pad{display:none;justify-content:space-between;align-items:center;width:100%;max-width:var(--stageW,960px);margin:4px auto 0;user-select:none;-webkit-user-select:none;touch-action:none}
 .dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:2px}
 .dpad button,.abtn button{background:var(--brown);border:2px solid var(--dim);border-radius:4px;font-size:18px;touch-action:none}
@@ -262,6 +267,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
       <div id="ttEnd"></div>
     </div>
   </div>
+  <div id="keybar" aria-label="按鍵指引"><span><kbd>方向鍵</kbd><kbd>WASD</kbd>移動</span><span><kbd>Shift</kbd>跑</span><span><kbd>Z</kbd><kbd>空白</kbd>調查／對話</span><span><kbd>J</kbd>近戰</span><span><kbd>K</kbd>開槍</span><span><kbd>R</kbd>換彈</span><span><kbd>H</kbd>吃東西</span><span><kbd>V</kbd>藥水</span><span><kbd>N</kbd>筆記</span><span><kbd>M</kbd>音樂</span><span><kbd>Esc</kbd>選單</span></div>
   <div id="pad">
     <div class="dpad">
       <button class="u" data-d="up" aria-label="上">▲</button>
@@ -361,13 +367,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
     <div class="endS" id="endS"></div>
     <div class="endT" id="endT"></div>
     <p class="endP" id="endP"></p>
-    <button class="btn" id="toCredits" type="button">工作人員名單</button>
+    <div class="mbtns"><button class="btn" id="toCredits" type="button">工作人員名單</button><button class="btn" id="toPost" type="button">回到宅邸解支線</button></div>
   </div>
 </div>
 
 <div id="credits" class="ov" hidden>
   <div class="roll-wrap"><div class="roll" id="roll"></div></div>
-  <div class="cr-end" id="crEnd" hidden><div class="big">THE END</div><div class="endS">萬聖節快樂</div><button class="btn" id="crTitle" type="button">回到標題</button></div>
+  <div class="cr-end" id="crEnd" hidden><div class="big">THE END</div><div class="endS">萬聖節快樂</div><div class="mbtns"><button class="btn" id="crPost" type="button">回到宅邸解支線</button><button class="btn" id="crTitle" type="button">回到標題</button></div></div>
   <button id="skipCr" type="button">略過</button>
 </div>
 
@@ -1628,22 +1634,24 @@ function applyWorld(){
   }
   /* 巡邏路線：NPC 會在這些格子之間來回走動（說話時會停下來） */
   const pat=(id,pts,spd,wait)=>{const o=NPCS[id];if(o.scene){o.patrol=pts.map(([x,y])=>toNew(o.scene,x,y));o.pspd=spd||null;o.pwait=wait??null}};
-  if(NPCS.sui.state!=='nohead'&&NPCS.sui.scene==='outside'&&ch<5){pat('sui',[[28,15],[25,15],[25,13],[28,13]]);if(llamaOk)NPCS.sui.follower='horse'}
+  if(NPCS.sui.state!=='nohead'&&NPCS.sui.scene==='outside'&&(ch<5||F.post)){pat('sui',[[28,15],[25,15],[25,13],[28,13]]);if(llamaOk)NPCS.sui.follower='horse'}
   if(ch===4){
     set('ian','outside',21,5,'upper');
     if(F.legsFollow&&S&&mode==='play')Object.assign(NPCS.legs,{scene:S.scene,x:P.x,y:P.y,state:null,queue:[],mv:null,patrol:null});else set('legs','outside',24,5);
     if(!F.finalDone)set('ghost','crypt',11,3);
   }
-  if(ch===5){
+  if(ch===5&&F.post){/* 破關後：天亮了，大家還待在宅邸裡，可以重玩支線 */
+    set('kaicho','maze',2,11).dir='left';set('lala','kitchen',9,4);set('po','hall',12,6,'stand');set('ghost','dining',8,5);
+  }else if(ch===5){
     for(const id in NPCS)NPCS[id].scene=null;
     const C=[['kaicho',15,20],['lala',17,20],['ian',13,20],['shisho',19,20],['sui',21,20],['boss',12,21],['ji',14,21],['po',18,21,'stand'],['ghost',16,18]];
     for(const[id,x,y,st]of C)set(id,'outside',x,y,st);if(qDoneP('sui'))set('horse','outside',22,21);
   }
-  if(NPCS.ian.scene==='outside'&&NPCS.ian.state!=='upper'&&ch<5)pat('ian',[[14,5],[34,5]]);
+  if(NPCS.ian.scene==='outside'&&NPCS.ian.state!=='upper'&&(ch<5||F.post))pat('ian',[[14,5],[34,5]]);
   if(NPCS.legs.scene==='outside'&&!F.legsFollow)pat('legs',[[24,5],[31,5]]);
   if(NPCS.ji.scene==='greenhouse')pat('ji',[[4,2],[11,2]]);
-  if((ch===1&&F.discovered)||(ch===0&&F.gathered))pat('lala',[[9,4],[9,2],[4,2],[4,3]]);
-  if((ch===1&&F.poAwake)||(ch===0&&F.gathered))pat('po',[[12,6],[15,6],[15,8],[12,8]]);
+  if((ch===1&&F.discovered)||(ch===0&&F.gathered)||F.post)pat('lala',[[9,4],[9,2],[4,2],[4,3]]);
+  if((ch===1&&F.poAwake)||(ch===0&&F.gathered)||F.post)pat('po',[[12,6],[15,6],[15,8],[12,8]]);
   /* 被錐齒獸追著跑的蝙蝠會長（第二、三幕） */
   if(ch>=2&&ch<5)placeChase();
 }
@@ -2187,6 +2195,49 @@ const FEEDS={hay1:'一捆乾草',hay2:'一捆乾草',hay3:'一捆乾草',clover:
 Object.assign(ITEMS,{potion:{t:'薊的神秘試作藥水',d:'冒著粉紅色泡泡的藥水。薊說什麼都可以試：玫瑰、南瓜田、首領的大南瓜、大叔，或是你自己。'}});
 for(const k in PILLOWS)ITEMS['p_'+k]={t:PILLOWS[k].t,d:PILLOWS[k].d};
 
+/* ---------------- 找東西的位置隨機 ----------------
+   每次開新遊戲（或破關後重玩支線），書、枕頭、糧草會在「原本那個房間」裡重新挑地方放。
+   跟家具綁在一起的（床上的羽毛枕、浴缸邊的海綿枕、棺材裡的枕頭、番茄汁……）維持原位。 */
+const PROP_FIXED=new Set(['door13','log','feather','velvet','pumpkinp','sponge','coffin','pancake']);
+const PROP_HOME=PROPS.map(p=>[p.sc,p.x,p.y]);
+const propMovable=p=>p.k!=='can'&&!PROP_FIXED.has(p.id);
+function applyPropPos(){PROPS.forEach((p,i)=>{const o=S&&S.propPos&&S.propPos[p.id];[p.sc,p.x,p.y]=o||PROP_HOME[i]})}
+function sceneReach(blocked){
+  const s=sc(),seen=new Set(),q=[];const add=(x,y)=>{const k=x+','+y;if(!seen.has(k)){seen.add(k);q.push([x,y])}};
+  for(const e of s.exitsN)add(e[0],e[1]);
+  while(q.length){const[x,y]=q.shift();for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=nx+','+ny;if(nx<0||ny<0||nx>=s.w||ny>=s.h||seen.has(k)||(blocked&&blocked.has(k)))continue;if(walkable(nx,ny)||npcAt(nx,ny))add(nx,ny)}}
+  return seen;
+}
+function shufflePropPos(qid){
+  if(!S)return;S.propPos=S.propPos||{};
+  const keepSc=S.scene,keepCh=S.flags.ch,byScene={};
+  PROPS.forEach((p,i)=>{if(propMovable(p)&&(!qid||p.q===qid))(byScene[PROP_HOME[i][0]]=byScene[PROP_HOME[i][0]]||[]).push(p)});
+  try{
+    for(const[scn,list]of Object.entries(byScene)){
+      if(!SCENES[scn]||SOKO[scn])continue;
+      S.scene=scn;const s=sc();
+      S.flags.ch=4;const r4=sceneReach();S.flags.ch=0;const r0=sceneReach();/* 之後的檢查都用序幕的規則 */
+      const exits=s.exitsN.map(e=>e[0]+','+e[1]);
+      const nearExit=(x,y)=>exits.some(k=>{const[a,b]=k.split(',').map(Number);return Math.abs(a-x)+Math.abs(b-y)<=2});
+      const others=new Set(PROPS.filter(p=>p.sc===scn&&!list.includes(p)).map(p=>p.x+','+p.y));
+      const cand=[...r0].filter(k=>{if(!r4.has(k)||others.has(k))return false;const[x,y]=k.split(',').map(Number);const c=tileAt(x,y);
+        return c&&c!=='X'&&c!=='D'&&!nearExit(x,y)&&walkable(x,y)&&!npcAt(x,y)&&!spotBusy(scn,x,y)&&!(LOST.some(l=>l.sc===scn&&Math.abs(l.x-x)+Math.abs(l.y-y)<2))&&!GEAR.some(g=>g.sc===scn&&Math.abs(g.x-x)+Math.abs(g.y-y)<2)&&!(scn===keepSc&&Math.abs(P.x-x)+Math.abs(P.y-y)<3)});
+      const placed=new Set();
+      for(const p of list){
+        let ok=null;
+        for(let t=0;t<60&&cand.length;t++){
+          const k=cand[(Math.random()*cand.length)|0];if(placed.has(k))continue;
+          const[x,y]=k.split(',').map(Number);
+          if([...placed].some(o=>{const[a,b]=o.split(',').map(Number);return Math.abs(a-x)+Math.abs(b-y)<3}))continue;
+          const bl=new Set([...placed,k]),r=sceneReach(bl);
+          if([...r0].every(q=>bl.has(q)||r.has(q))){ok=k;break}
+        }
+        if(ok){placed.add(ok);const[x,y]=ok.split(',').map(Number);S.propPos[p.id]=[scn,x,y]}else delete S.propPos[p.id];
+      }
+    }
+  }finally{S.scene=keepSc;S.flags.ch=keepCh}
+  applyPropPos();
+}
 function propActive(p){
   const q=qGet(p.q);if(!q||q.st!=='on')return false;
   if(p.k==='pillow')return!(q.got||[]).includes(p.id)&&!q.offered;
@@ -2298,6 +2349,27 @@ async function gatherScene(){
   await say('kaicho','我在這裡喝杯番茄汁再走。有什麼事，隨時來找我。');
   for(const k of PRE_IDS)F['p_'+k]=1;F.adT=0;
   fade=1;applyWorld();updateHUD();
+}
+/* ---------------- 破關後：回到宅邸，重玩支線 ---------------- */
+function goPost(){
+  if(!S)return;$('ending').hidden=true;$('credits').hidden=true;
+  const F=S.flags;F.post=1;F.ch=5;F.finalDone=1;S.scene='hall';[S.x,S.y]=toNew('hall',10,8);S.v=2;S.dir='down';S.hp=99;
+  startPlay(false);save();
+  run(async()=>{await n('……陽光灑進大廳。大家好像都還不急著回家。');
+    await n('還沒解完的委託，或是想換個做法重新挑戰的支線，都可以再去找大家聊聊。（找東西的位置，每次重玩都會換地方。）')});
+}
+const POST_LINE={kaicho:'天亮了，向日葵也終於曬到太陽了。……我也想多待一會兒。',shisho:'書還沒吃完。……走之前，總得把這裡的書架清空。',sui:'還沒玩夠啦！再來比一場！',
+  lala:'早餐要吃鬆餅嗎？……啊，又跑了一坨。對不起！',boss:'天亮了，大南瓜曬起來暖暖的。不急著走。',ian:'天亮啦！大叔我再陪你玩幾局！',ji:'早安～熬夜也這麼美，果然是天才。',
+  po:'……天亮了。……那就，再睡一下。',ghost:'你還在呀！……嘿嘿，那、那我們再玩一下下？',horse:'幽靈羊駝在陽光下變得更透明了。……還是在嚼東西。'};
+async function talkPost(id){const t=POST_LINE[id];if(!t)return;return id==='horse'?n(t):say(id,t)}
+async function replayQuest(id){
+  const c=await choose(`要重新挑戰「${QUESTS[id].t}」嗎？`,['重新挑戰（換個做法、換個結局）','算了']);if(c===1)return;
+  const QS0=QS();delete QS0[id];const F=S.flags;
+  if(id==='po'){for(const k of Object.keys(PILLOWS))rmItem('p_'+k)}
+  if(id==='ji')rmItem('potion');
+  shufflePropPos(id);applyWorld();
+  F.realCh=5;try{await questIntro(id)}finally{delete F.realCh}
+  applyWorld();updateHUD();toast('支線重新開始了！東西換地方藏了喔。');
 }
 /* 晚餐後：離開餐廳、在宅邸裡晃個一兩分鐘，就會聽到拉拉的尖叫 */
 const AFTER_DINNER=90*60;
@@ -2489,6 +2561,7 @@ function sideOptions(id){
     }
   }
   if(id==='sui'&&qGet('sui')&&qGet('sui').st==='done'&&NPCS.sui.state!=='nohead')add('跟翠和羊駝賽跑（花園迷宮）',suiRace);
+  if(F.post&&QUESTS[id]){const q=qGet(id);if(q&&(q.st==='done'||q.st==='alt'))add(`再挑戰一次「${QUESTS[id].t}」`,()=>replayQuest(id),1)}
   return L;
 }
 function sideOption(id){const o=sideOptions(id)[0];return o?[o[0],o[1]]:null}
@@ -2759,7 +2832,7 @@ function drawRide(g,X,Y,dir,f){g.save();g.translate(X,Y);drawChar(g,'horse',dir=
 /* 翠偶爾會騎著羊駝在草地上飆車，偶爾會被甩下來 */
 const SUI={mode:'walk',t:60*25};
 function suiAmbient(){
-  if(!S||mode!=='play'||busy||S.scene!=='outside'||CB.mini||chOf()>=5)return;
+  if(!S||mode!=='play'||busy||S.scene!=='outside'||CB.mini||(chOf()>=5&&!S.flags.post))return;
   const o=NPCS.sui,q=qGet('sui');if(!q||q.st!=='done'||o.scene!=='outside'||o.state==='nohead')return;
   if(--SUI.t>0)return;
   if(SUI.mode==='walk'){SUI.mode='ride';SUI.t=60*12;o.state='ride';o.follower=null;NPCS.horse.scene=null;o.patrol=[[25,13],[31,13],[31,24],[25,24]];o.pspd=2.4;o.pwait=0;o.pi=0;
@@ -4119,6 +4192,7 @@ async function talk(id){
   if(chOf()===0)return talk0(id);
   if(await sideTalk(id))return;
   if(id==='lala'&&F.discovered&&S.inv.candy===0&&P.hp<MAXHP){S.inv.candy=1;toast('拉拉塞了一顆糖果給你：「受傷了要記得吃喔！」')}
+  if(chOf()===5)return talkPost(id);
   if(chOf()===2)return talk2(id);
   if(chOf()===3)return talk3(id);
   if(chOf()===4)return talk4(id);
@@ -5181,6 +5255,7 @@ function startCredits(){
 }
 function endCredits(){$('crEnd').hidden=false;$('crTitle').focus()}
 $('toCredits').onclick=startCredits;
+$('toPost').onclick=goPost;$('crPost').onclick=goPost;
 $('skipCr').onclick=endCredits;
 $('crTitle').onclick=()=>{$('credits').hidden=true;toTitle()};
 
@@ -5805,7 +5880,7 @@ function drawCandleGlow(px,py,cx,cy){
 function nearTile(ch){for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(tileAt(P.x+dx,P.y+dy)===ch)return true;return false}
 function stepHazard(){
   if(!S||busy||CB.lock||CB.mini||P.hazCd>0)return;
-  if(chOf()<1||chOf()>=5)return;
+  if(chOf()<1||(chOf()>=5&&!S.flags.post))return;
   const F=S.flags,dark=blackOn>0&&!(P.light>0),r=Math.random();
   if(S.scene==='greenhouse'&&nearTile('r')&&r<(dark?.35:.03)){P.hazCd=60*20;return run(()=>roseTrip(dark))}
   if(S.scene==='kitchen'&&!(P.morph)){const lq=qGet('lala'),mad=lq&&lq.st==='alt',calm=lq&&lq.st==='done';
@@ -6890,7 +6965,7 @@ function updateHUD(){
     else if(!F.riddle)t='第四幕｜往 <b>小教堂</b> 的地下墓室深處前進！';
     else if(lampsN()<4)t=`第四幕｜點亮四盞南瓜燈：<b>小教堂、花園迷宮、小波的臥室、南瓜田</b>（${lampsN()}/4）。謎題抄在筆記裡，卡住了就問問熟悉那裡的人`;
     else t='第四幕｜封印解開了！前往 <b>地下墓室深處</b>。';
-  }else if(ch===5){t='終幕｜天亮了。';
+  }else if(ch===5){t=F.post?'破關後｜天亮了，大家還在宅邸裡。可以找大家重玩支線，試試另一種結局。':'終幕｜天亮了。';
   }else{
     const k=REQ3.filter(hasEv).length;
     if(!F.a3seen)t='第三幕｜外面傳來悶悶的求救聲，去 <b>屋外的大南瓜</b> 看看。';
@@ -6972,7 +7047,7 @@ $('toTitle').onclick=()=>{save();$('menu').hidden=true;toTitle()};
 /* 標題與建立角色 */
 function toTitle(){
   mode='title';S=null;busy=false;dlg.hidden=true;$('choices').hidden=true;choiceState=null;clearPorts();cutDark=false;
-  applyWorld();$('title').hidden=false;$('hud').style.visibility='hidden';
+  applyWorld();$('title').hidden=false;$('hud').style.visibility='hidden';$('keybar').style.visibility='hidden';
   $('tCont').disabled=!loadSave();
   $('tChap').disabled=!CHAP_NAMES.some((_,i)=>chapterGet(i));
   const e=endings();AD=achData();const ag=ACHS.filter(a=>AD.got[a.id]).length;
@@ -7035,12 +7110,13 @@ $('nm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$(
 $('tCont').onclick=()=>{const s=loadSave();if(!s)return;S=s;startPlay(false)};
 $('tChars').onclick=()=>{S=S||null;openNote('chars')};
 function startPlay(isNew){
-  mode='play';$('title').hidden=true;$('hud').style.visibility='visible';
+  mode='play';$('title').hidden=true;$('hud').style.visibility='visible';$('keybar').style.visibility='visible';
   if(S.v!==2){[S.x,S.y]=toNew(S.scene,S.x,S.y);S.v=2}
   syncMaxHP();
   Object.assign(P,{morph:null,fresh:0,x:S.x,y:S.y,dir:S.dir||'down',moving:false,prog:0,wc:0,stun:0,sticky:0,hazCd:0,light:S.light||0,stow:S.stow||0,rainStow:S.rainStow||0,draft:null,napCd:0,hp:S.hp>0?Math.min(S.hp,MAXHP):MAXHP,ammo:S.mag||0,reload:0,inv:0,mcd:0,gcd:0});
   S.inv=S.inv||{candy:0,ammo:0};
   clearCombat();meleeHeld=gunHeld=false;meleeQ=gunQ=0;
+  if(isNew)shufflePropPos();else applyPropPos();
   applyWorld();spawnSlimes();if(SOKO[S.scene])sokoInit(S.scene);fade=1;nextBlack=60*180;blackOn=0;updateHUD();
   if(isNew)run(intro);
 }
@@ -7096,7 +7172,7 @@ $('stage').addEventListener('click',e=>{if(mode==='play'&&e.target===cv){if(hudT
 
 /* 啟動 */
 function sizeStage(){
-  const avail=window.innerHeight-(window.matchMedia('(max-width:700px), (hover:none) and (pointer:coarse)').matches?230:90);
+  const avail=window.innerHeight-(window.matchMedia('(max-width:700px), (hover:none) and (pointer:coarse)').matches?230:124);
   const w=Math.max(280,Math.min(960,avail*320/208));
   document.documentElement.style.setProperty('--stageW',Math.round(w)+'px');
 }
