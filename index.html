@@ -1779,7 +1779,10 @@ function walkTo(id,tx,ty,spd=1.6,yFirst=false){
     const gx=()=>{while(x!==tx){x+=Math.sign(tx-x);q.push([x,y])}},gy=()=>{while(y!==ty){y+=Math.sign(ty-y);q.push([x,y])}};
     if(yFirst){gy();gx()}else{gx();gy()}
     if(!q.length)return res();
-    o.queue=q;o.qspd=spd;o.qdone=res;
+    /* 保險：路上被東西擋住走不過去的話，過一段時間就直接到終點，劇情不會卡住 */
+    let done=false;const fin=()=>{if(done)return;done=true;clearTimeout(guard);res()};
+    const guard=setTimeout(()=>{if(done)return;if(o.qdone===fin){Object.assign(o,{x:tx,y:ty,queue:[],mv:null,qdone:null})}fin()},1800+q.length*500/Math.max(.5,spd));
+    o.queue=q;o.qspd=spd;o.qdone=fin;
   });
 }
 function updateNpcs(){
