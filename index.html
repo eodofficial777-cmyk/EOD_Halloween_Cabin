@@ -2683,25 +2683,37 @@ function sideOptions(id){
 /* 收集型支線：還沒收集完也可以回去報告進度，順便問剩下的在哪裡 */
 /* 會長的番茄汁也可以跟拉拉回報進度（會長倒下的時候，就是交給拉拉） */
 async function lalaJuiceProgress(){
-  const k=kq(),l=PROPS.filter(p=>p.q==='kaicho'&&!k.got.includes(p.id)).map(p=>SCENES[p.sc]&&SCENES[p.sc].name).filter(Boolean),u=[...new Set(l)];
+  const k=kq(),scs=PROPS.filter(p=>p.q==='kaicho'&&!k.got.includes(p.id)).map(p=>p.sc);
   await say('lala',`會長的番茄汁，已經找到 ${k.real} 瓶真的了！還差 ${Math.max(0,CANS_N-k.real)} 瓶。`);
-  if(u.length)await say('lala',`我記得會長說過，${u.length>3?u.slice(0,3).join('、')+'那幾個地方':u.join('、')}好像還藏著幾瓶！`);
+  await askWhere('lala',scs,w=>`會長說過，${w}好像還藏著幾瓶！`,r=>`我記得會長說過，${r}好像還藏著幾瓶！`);
   if(k.unk.length)await say('lala','啊，還沒檢查的那幾瓶，記得先聞一聞喔！上次有一瓶打開是洛神湯，雖然也很好喝啦！');
   await say('lala',chOf()>=1&&chOf()<=4?'找齊五瓶就拿來給我，我幫會長冰起來！':'找齊五瓶的話，直接拿給會長，或是拿來給我都可以喔！');
 }
 /* 33 → 三十三 */
 function cnNum(n){const d='零一二三四五六七八九';if(n<10)return d[n];if(n<20)return'十'+(n%10?d[n%10]:'');if(n<100)return d[Math.floor(n/10)]+'十'+(n%10?d[n%10]:'');return String(n)}
+/* 剩下的東西大概在哪：預設只說「屋子裡／屋外」，玩家想知道再說是哪幾個房間 */
+function vagueWhere(scs){const o=scs.some(sc=>SCENES[sc]&&SCENES[sc].out),i=scs.some(sc=>SCENES[sc]&&!SCENES[sc].out);return o&&i?'屋子裡跟屋外':o?'屋外':'屋子裡'}
+function roomsOf(scs){const u=[...new Set(scs.map(sc=>SCENES[sc]&&SCENES[sc].name).filter(Boolean))];return u.length>3?u.slice(0,3).join('、')+'那幾個地方':u.join('、')}
+async function askWhere(id,scs,vague,exact){
+  if(!scs.length)return;await say(id,vague(vagueWhere(scs)));
+  if(await choose('要問問看剩下的在哪裡嗎？',['我自己再找找','告訴我在哪裡'])===1)await say(id,exact(roomsOf(scs)));
+}
+/* 收集型支線：還沒收集完也可以回去報告進度 */
 function questProgress(id,q){
-  const where=list=>{const u=[...new Set(list.map(sc=>SCENES[sc]&&SCENES[sc].name).filter(Boolean))];return u.length>3?u.slice(0,3).join('、')+'那幾個地方':u.join('、')};
   const left=k=>PROPS.filter(p=>p.q===k&&!(q.got||[]).includes(p.id)).map(p=>p.sc);
   if(id==='lala'){const n=(q.got||[]).length;if(n>=SLIMES.length)return null;const sc=SLIMES.filter(x=>!q.got.includes(x.id)).map(x=>x.sc);
-    return()=>say('lala',`目前抓回來 ${n}／${SLIMES.length} 坨了！剩下的好像還在${where(sc)}跑來跑去，麻煩你了！`)}
+    return async()=>{await say('lala',`目前抓回來 ${n}／${SLIMES.length} 坨了！`);
+      await askWhere('lala',sc,w=>`剩下的應該還在${w}跑來跑去，牠們很會躲喔！`,r=>`我剛剛好像看到牠們往${r}跑過去了！麻煩你了！`)}}
   if(id==='shisho'){const n=(q.got||[]).length;if(n>=BOOK_N)return null;
-    return async()=>{await say('shisho',`${n}／${BOOK_N} 本。不夠。`);await say('shisho',`剩下的味道，從${where(left('shisho'))}飄過來。去那邊翻翻。`)}}
+    return async()=>{await say('shisho',`${n}／${BOOK_N} 本。不夠。`);
+      await askWhere('shisho',left('shisho'),w=>`剩下的，${w}還聞得到。自己找。`,r=>`麻煩。${r}，味道最重。`)}}
   if(id==='sui'){const n=(q.got||[]).length,N=Object.keys(FEEDS).length;if(n>=N)return null;
-    return()=>say('sui',`糧草 ${n}／${N} 份！剩下的應該在${where(left('sui'))}，快去找啦！`)}
+    return async()=>{await say('sui',`糧草 ${n}／${N} 份！`);
+      await askWhere('sui',left('sui'),w=>`剩下的應該在${w}，再找找啦！`,r=>`真拿你沒辦法！去${r}找找看啦！`)}}
   if(id==='kaicho'){const k=kq();if(!k||k.real>=CANS_N)return null;
-    return async()=>{await say('kaicho',`已經幫我找到 ${k.real} 瓶了嗎？謝謝你，不用急的。`);const l=left('kaicho');if(l.length)await say('kaicho',`我記得${where(l)}，好像還藏著幾瓶。`);if(k.unk.length)await say('kaicho','還沒檢查過的那幾瓶，記得聞一聞再拿來喔。')}}
+    return async()=>{await say('kaicho',`已經幫我找到 ${k.real} 瓶了嗎？謝謝你，不用急的。`);
+      await askWhere('kaicho',left('kaicho'),w=>`我總覺得${w}還藏著幾瓶。`,r=>`我記得${r}，好像還藏著幾瓶。`);
+      if(k.unk.length)await say('kaicho','還沒檢查過的那幾瓶，記得聞一聞再拿來喔。')}}
   return null;
 }
 function sideOption(id){const o=sideOptions(id)[0];return o?[o[0],o[1]]:null}
