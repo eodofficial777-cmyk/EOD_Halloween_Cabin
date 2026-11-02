@@ -2680,6 +2680,8 @@ function sideOptions(id){
   return L;
 }
 /* 收集型支線：還沒收集完也可以回去報告進度，順便問剩下的在哪裡 */
+/* 33 → 三十三 */
+function cnNum(n){const d='零一二三四五六七八九';if(n<10)return d[n];if(n<20)return'十'+(n%10?d[n%10]:'');if(n<100)return d[Math.floor(n/10)]+'十'+(n%10?d[n%10]:'');return String(n)}
 function questProgress(id,q){
   const where=list=>{const u=[...new Set(list.map(sc=>SCENES[sc]&&SCENES[sc].name).filter(Boolean))];return u.length>3?u.slice(0,3).join('、')+'那幾個地方':u.join('、')};
   const left=k=>PROPS.filter(p=>p.q===k&&!(q.got||[]).includes(p.id)).map(p=>p.sc);
@@ -4660,7 +4662,15 @@ async function talk2(id){
         addEv('alibi');
         await say('ian','話說回來，剛剛把小波扛進去的時候，我是不是太用力了啊？這孩子輕得跟枕頭一樣。');return;
       }
-      {const F=S.flags;F.ian=(F.ian||32)+1;if(F.ian>=40)ach('h_ian');return say('ian',(F.ian>=40?'……':'')+F.ian+'片。')}
+      {const F=S.flags;F.ian=(F.ian||32)+1;const c=F.ian,cn=cnNum(c);
+        /* 每問一次就多一片，IAN 越來越心虛 */
+        const L={33:`${cn}片！啊，剛剛順手又吃了一片，不算不算！`,34:`${cn}片。拉拉一直遞過來，大叔我總不能不吃吧！`,35:`${cn}片了。咳，這是在幫拉拉試吃新口味啦！`,
+          36:`${cn}片。你、你一直問，大叔我壓力很大耶！`,37:`${cn}片。拜託別跟首領說，她會唸大叔我一整個月的！`,38:`${cn}片。連大叔我自己都數得有點不好意思了啦！`,
+          39:`${cn}片。這片吃完就真的是最後一片了，大叔我發誓！`};
+        if(c===40){await say('ian',`${cn}片。好啦好啦大叔我承認，嘴巴根本沒停過！`);await n('IAN 把整張臉藏到鬆餅塔後面，只露出一對發紅的耳朵。');
+          await say('ian','不過拉拉一步都沒離開過，這點是真的！大叔我一直盯著他手上的鍋子啊！');ach('h_ian');return}
+        if(L[c])return say('ian',L[c]);
+        return say('ian',`${cn}片。`+['別數了別數了，大叔我已經放棄治療了！','大叔我的胃是無底洞，你今天才知道嗎！','這片是最後一片。好吧，上一片大叔我也是這樣說的。','再問下去，拉拉的麵粉就要被大叔我吃光啦！'][c%4])}
     case 'shisho':
       if(!hasEv('ghost2')){
         await say('shisho','噓。我在用餐，不過，要問什麼就問吧。');
