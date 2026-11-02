@@ -3020,7 +3020,7 @@ function pitchOne(m,q){
     PITCH={m,ph:'aim',t:0,x:0,w:.055+Math.min(.04,(q.hr||0)*.012),arms:!!S.flags.ianArms,hr:q.hr||0,strikes:q.strikes||0,left:q.sack.length,fin:res,trail:[]};
     dlgRes=()=>{
       const p=PITCH;if(!p||p.ph!=='aim')return;
-      p.x=Math.sin(p.t*p.w);const d=Math.abs(p.x)/DF().pitch;p.res=(PZ.find(z=>d<z[0])||[0,0])[1];
+      p.x=Math.sin(p.t*p.w);const d=Math.abs(p.x)/DF().pitch;p.res=Math.abs(p.x)>=.9?0:(PZ.find(z=>d<z[0])||[0,0])[1];/* 停在最邊邊一定揮空（簡單模式也一樣，才走得到三振路線） */
       p.ph='go';p.t=0;p.end=160;dlgRes=null;
     };
   });
