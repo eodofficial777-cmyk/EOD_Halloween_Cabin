@@ -6670,12 +6670,13 @@ function updFoe(e,pcx,pcy){
         shake=4;
       }
       if(rage&&--e.st<=0){e.st=320;if(CB.foes.length<5){spawnFoe('bat',e.x-14,e.y,true);spawnFoe('bat',e.x+14,e.y,true)}}
+      {const lb=$('bossbar').querySelector('span');if(lb.textContent!=='南瓜稻草人')lb.textContent='南瓜稻草人'}/* 別的小遊戲改過標題，這裡要改回來 */
       $('bossbar').hidden=false;$('bossfill').style.width=Math.max(0,e.hp/e.max*100)+'%';
       break}
   }
 }
 function startBoss(){
-  S.flags.bossHurt=0;
+  S.flags.bossHurt=0;$('bossbar').querySelector('span').textContent='南瓜稻草人';
   CB.lockKind='boss';CB.lock=new Set();
   const s=sc();
   for(let y=MZ.y0-1;y<=MZ.y1+1;y++)for(let x=MZ.x0-1;x<=MZ.x1+1;x++){
