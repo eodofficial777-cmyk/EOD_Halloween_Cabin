@@ -2629,7 +2629,7 @@ function sideOptions(id){
     const q=qGet(id);
     if(!q)add('有什麼需要幫忙的嗎？',()=>askQuest(id,()=>ch===0?questIntro(id):talk0offer(id)));
     else{
-      if(id==='ji'&&q.st!=='on'&&!hasItem('potion')&&ch<5)add('再要一瓶試作藥水',async()=>{await say('ji','上癮了？也是啦，畢竟是我做的～拿去，裡面一樣加了個人秘方喔。');await say('ji','成分？下一題～');addItem('potion')});
+      if(id==='ji'&&q.st!=='on'&&!hasItem('potion')&&(ch<5||F.post))add('再要一瓶試作藥水',async()=>{await say('ji','上癮了？也是啦，畢竟是我做的～拿去，裡面一樣加了個人秘方喔。');await say('ji','成分？下一題～');addItem('potion')});
       if(q.st==='on'){
         if(id==='lala'&&(q.got||[]).length>=SLIMES.length)add('史萊姆鬆餅都抓回來了',lalaDone);
         if(id==='shisho'&&(q.got||[]).length>=BOOK_N)add('把書交給司書',shishoDone);
@@ -7138,7 +7138,7 @@ function renderNote(){
     for(const k in SNACK)if(S.inv[k])rows.push([SNACK[k].t,`${S.inv[k]} 個。${SNACK[k].d}`,'補給','eat:'+k]);
     if(qOn('kaicho')){const q=kq();if(q.real)rows.push(['番茄汁（真的）',`${q.real} 瓶。要交給會長的。還差 ${Math.max(0,CANS_N-q.real)} 瓶。`,'支線']);if(q.unk.length)rows.push(['還沒檢查的「番茄汁」',`${q.unk.length} 瓶。有些可能被換成了洛神湯，聞一聞、看看顏色或搖一搖就知道。`,'支線','check'])}
     if(S.inv.magic)rows.push(['神奇藥水',`${S.inv.magic} 瓶。喝下去會隨機變成怪物（不會被攻擊）、南瓜（原地滾動、動不了）或幽靈（攻擊會穿透），大約 10 秒。`,'補給','magic']);
-    S.items.forEach(k=>rows.push([ITEMS[k].t,ITEMS[k].d,'重要',k==='potion'&&qOn('ji')&&!qGet('ji').tested.includes('self')?'potion':null]));
+    S.items.forEach(k=>rows.push([ITEMS[k].t,ITEMS[k].d,'重要',k==='potion'?'potion':null]));
     if(!rows.length){body.innerHTML='<p class="empty">身上沒有帶著什麼。宅邸裡發亮的地方，也許可以翻找看看。</p>';return}
     const l=document.createElement('div');l.className='evlist';
     rows.forEach(([t,dd,tag,act])=>{const d=document.createElement('div');d.className='ev'+(tag==='武器'?' key':'');
