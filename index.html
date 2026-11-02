@@ -3296,6 +3296,10 @@ async function altar(){
   if(q&&q.st==='done')return n('祭壇正中央供奉著那顆會飄的白色抱枕。一靠近，就忍不住想打哈欠。');
   if(q&&q.st==='alt')return n('祭壇上供奉著'+PILLOWS[q.offered].t+'。坐在這裡，就會很想找人聊天。');
   if(!q)return n('祭壇上鋪著白布，正中央刻著兩個字：「好睡」。這裡似乎是「睡教」的教堂。');
+  if(q.st==='on'&&q.offered&&PILLOWS[q.offered]){/* 舊版本供奉鬆餅枕頭時會卡住：枕頭已經供上去了，直接把結局補完 */
+    await n('祭壇上還擺著你之前供奉的'+PILLOWS[q.offered].t+'。');
+    if(q.offered==='ghost'){await n('你覺得今晚，宅邸裡的每個人都會睡得很好。');qFinish('po',{candy:3});return}
+    await n('那一晚，宅邸裡的大家第一次聚在一起，聊天聊到了天亮。');qAlt('po',{candy:3});return}
   const have=Object.keys(PILLOWS).filter(k=>hasItem('p_'+k));
   if(!have.length)return n('祭壇正中央刻著「好睡」兩個字，旁邊有一個空空的枕頭座。小波說要供奉最舒服的枕頭。');
   const c=await choose('要把哪個枕頭供奉在祭壇上？（只能供奉一次）',[...have.map(k=>PILLOWS[k].t),'算了，再找找看']);
@@ -3308,7 +3312,7 @@ async function altar(){
     await n(PILLOWS[k].no);
     await n('祭壇沉默了一下，還是收下了它。教堂裡的蠟燭搖了搖。');
     await n({feather:'那天晚上，宅邸裡的每個人都熱得翻來覆去，一整晚沒睡好。',lavender:'那天晚上，宅邸裡的每個人都在夢裡傻笑，傻笑到天亮。',
-      flour:'那天晚上，宅邸裡的每個人睡到一半都在打噴嚏。哈啾——',pumpkinp:'那天晚上，宅邸裡的每個人都夢到自己被南瓜籽淹沒了。',sponge:'那天晚上，宅邸裡的每個人醒來，枕頭都是濕的。',coffin:'那天晚上，宅邸裡的每個人都夢到了一整晚的蜘蛛。',velvet:'那天晚上，宅邸裡的每個人都在找自己的枕頭，誰也抱不住。'}[k]);
+      flour:'那天晚上，宅邸裡的每個人睡到一半都在打噴嚏。哈啾——',pancake:'那天晚上，宅邸裡的每個人都被熱呼呼的鬆餅香味熏醒，肚子咕嚕咕嚕叫個不停。',pumpkinp:'那天晚上，宅邸裡的每個人都夢到自己被南瓜籽淹沒了。',sponge:'那天晚上，宅邸裡的每個人醒來，枕頭都是濕的。',coffin:'那天晚上，宅邸裡的每個人都夢到了一整晚的蜘蛛。',velvet:'那天晚上，宅邸裡的每個人都在找自己的枕頭，誰也抱不住。'}[k]||'那天晚上，宅邸裡的每個人都睡得不太安穩。');
     if(chOf()===2&&!S.flags.poFell2){
       await n('不知道從哪裡，傳來小波含糊的聲音：「睡不著，那就熬夜吧，呼啊……」');
       await n('那一晚，宅邸裡的大家聚在大廳，聊天聊到了天亮。只有小波不在——');
@@ -3460,7 +3464,7 @@ function llamaFail(){
       await n('翠把頭夾在腋下，大步走向森林邊緣。');
       await n('遠遠的濃霧裡，好像有一隻半透明的羊駝，正在跟森林裡的什麼東西玩耍。');
       await say('sui','看起來，牠在森林裡過得很開心。那就好！');
-      qAlt('sui',{candy:2,ammo:4});
+      qAlt('sui',{candy:2,ammo:4});applyWorld();
     });return;
   }
   applyWorld();
