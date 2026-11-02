@@ -1709,11 +1709,14 @@ function applyWorld(){
   }
   /* 巡邏路線：NPC 會在這些格子之間來回走動（說話時會停下來） */
   const pat=(id,pts,spd,wait)=>{const o=NPCS[id];if(o.scene){o.patrol=pts.map(([x,y])=>toNew(o.scene,x,y));o.pspd=spd||null;o.pwait=wait??null}};
-  if(NPCS.sui.state!=='nohead'&&NPCS.sui.scene==='outside'&&(ch<5||F.post)){pat('sui',[[28,15],[25,15],[25,13],[28,13]]);if(llamaOk)NPCS.sui.follower='horse'}
+  if(NPCS.sui.state!=='nohead'&&NPCS.sui.scene==='outside'&&(ch<5||F.post)&&!(ch===4&&!F.disc4)){pat('sui',[[28,15],[25,15],[25,13],[28,13]]);if(llamaOk)NPCS.sui.follower='horse'}
   if(ch===4){
     set('ian','outside',21,5,'upper');
     if(F.legsFollow&&S&&mode==='play')Object.assign(NPCS.legs,{scene:S.scene,x:P.x,y:P.y,state:null,queue:[],mv:null,patrol:null});else set('legs','outside',24,5);
     if(!F.finalDone)set('ghost','crypt',11,3);
+    if(!F.disc4){/* 第四幕開頭：大家圍在墓園的 IAN 旁邊 */
+      set('lala','outside',19,6).dir='right';set('boss','outside',23,6).dir='left';set('shisho','outside',20,7).dir='up';set('ji','outside',22,4).dir='down';set('sui','outside',19,4).dir='right';
+    }
   }
   if(ch===5&&F.post){/* 破關後：天亮了，大家還待在宅邸裡，可以重玩支線 */
     set('kaicho','maze',2,10);set('lala','kitchen',9,4);set('po','hall',12,6,'stand');set('ghost','dining',8,5);
@@ -4944,6 +4947,8 @@ function riotKill(){
 async function riotEnd(){
   ach('m_riot');
   const B=NPCS.batk,C=NPCS.cone;
+  /* 打完的時候玩家常常在田的最下面：先把鏡頭帶回大南瓜前面，才看得到後面的過程 */
+  if(S.scene==='outside'){fade=1;CB.foes=CB.foes.filter(f=>!f.riot);const[nx,ny]=toNew('outside',6,13);Object.assign(P,{x:nx,y:ny,dir:'up',moving:false,prog:0});await sleep(350)}
   await say('boss','好啦好啦，我知道了。');
   await say('boss','大南瓜也被吵醒了。');
   await n('你重新爬上梯子，把手伸進南瓜頂上的洞裡——');
@@ -4993,6 +4998,11 @@ function hintSpot(x,y){return S?HINT_SPOTS.find(h=>h.sc===S.scene&&h.x===x&&h.y=
 function hintSeen(id){achSeen('hints',id,4,'h_hints')}
 const HINT4={cut:'墓園裡 IAN 的上半身',seam:'IAN 的下半身（看看斷口）',shoe:'IAN 的下半身（再看看腳上）',bottle:'IAN 旁邊草地上發亮的東西',notji:'溫室裡的薊（給她看看藥水瓶）',growth:'展覽室的司書',laugh:'屋外的首領',dream:'睡著的小波（湊近聽聽）'};
 const BOTTLE={x:22,y:7};
+/* 走到墓園附近（看得到大家圍成一圈）才開始 */
+function disc4Tick(){
+  if(!S||busy||S.scene!=='outside'||chOf()!==4||S.flags.disc4)return;
+  const[ox,oy]=toOld('outside',P.x,P.y);if(oy<=8&&ox>=13)run(disc4);
+}
 async function disc4(){
   S.flags.disc4=true;
   await n('墓園裡，大家已經圍成了一圈。');
@@ -5012,6 +5022,7 @@ async function disc4(){
     wander:[['n','協會的拉拉，被懷疑弄斷了夜鷺的阿北。兩邊的人，都看向不屬於任何一邊的你。'],['ian','流浪者！你最公正了，拜託你查清楚啦！大叔我可不想看兩邊吵架！']]});
   await n('IAN 的下半身走了過來，輕輕踢了踢你的腳。好像有話想說。');
   await n('看來，又得靠你來查清楚了。');
+  await n('大家議論紛紛地散開了。');fade=1;applyWorld();
 }
 async function talk4(id){
   const F=S.flags;
@@ -5514,7 +5525,6 @@ function changeScene(to,x,y,dir){
   if(to==='kitchen'&&chOf()===2&&!S.flags.disc2)run(discovery2);
   if(to==='hall'&&chOf()===2&&hasEv('trail')&&!S.flags.poFell2)run(stairFall);
   if(to==='outside'&&chOf()===3&&!S.flags.a3seen)run(act3Scene);
-  if(to==='outside'&&chOf()===4&&!S.flags.disc4)run(disc4);
 }
 function onArrive(){
   webCheck();
@@ -6127,7 +6137,7 @@ function update(){
   if(PITCH)pitchTick();
   idleTick();
   if(P.fresh>0&&mode==='play'&&!busy)P.fresh--;
-  if(mode==='play'){pfTick();raceTick();suiAmbient();chaseTick();wanderTick();dinnerTick()}
+  if(mode==='play'){pfTick();raceTick();suiAmbient();chaseTick();wanderTick();dinnerTick();disc4Tick()}
   bgmTick();
   sokoBarSync();
   if(ORGAN_T>0)ORGAN_T--;if(BROOM_T>0)BROOM_T--;
