@@ -3363,6 +3363,12 @@ async function lalaDone(){
   qFinish('lala',{candy:3});
 }
 async function shishoDone(){
+  if(!qGet('shisho').got.includes('manners')){/* 最好吃的那本還沒找到：讓玩家選要不要先去找 */
+    await say('me','書找得差不多了。');
+    await say('shisho','還少一本。我聞得到，酸酸甜甜的，就在宅邸的某個地方。');
+    const w=await choose('要先去把那本找來嗎？',['先去找那本','就這樣交給司書']);
+    if(w===0)return say('shisho','嗯。找到了再來。');
+  }
   await say('me','宅邸裡散落的書，全部找齊了。');
   await n('司書把書一本一本攤開，用指尖輕輕撫過書頁。');
   await say('shisho','《荒中小屋施工日誌》，「這棟小屋，會自己把需要它的人請進來」。');
