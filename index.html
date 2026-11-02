@@ -45,6 +45,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   #obj.open::before{content:'▾ '}
 }
 .hbtn{display:flex;gap:6px}
+.hbtn button{white-space:nowrap}
 .hbtn button{background:var(--brown);border:2px solid var(--dim);padding:2px 12px;border-radius:2px;font-size:13px}
 .hbtn button:hover{border-color:var(--cream)}
 
@@ -167,6 +168,39 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .abtn .b{width:52px;height:52px;font-size:13px}
 @media (hover:none) and (pointer:coarse){#pad{display:flex}}
 @media (max-width:700px){#pad{display:flex}}
+/* 手機橫拿：方向鍵在左、動作鍵在右，遊戲畫面夾在中間，可以用滿整個高度 */
+@media (orientation:landscape) and (max-height:520px){
+  #app{padding-block:6px;padding-inline:8px;gap:4px}
+  #hud{flex-wrap:nowrap}
+  #hud #obj{order:2;flex:1 1 auto;min-width:0}
+  #hud .hbtn{order:3}
+  #pad{position:fixed;left:0;right:0;bottom:max(6px,env(safe-area-inset-bottom));margin:0;max-width:none;padding:0 max(8px,env(safe-area-inset-left)) 0 max(8px,env(safe-area-inset-right));box-sizing:border-box;pointer-events:none;align-items:flex-end}
+  #pad>*{pointer-events:auto}
+  .dpad{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px)}
+  .abtn{gap:6px}.abtn button{width:54px;height:54px}.abtn .b{width:46px;height:46px;font-size:12px}
+}
+/* 有血條的時候，提示訊息往下移，不要蓋住血條 */
+#stage:has(#bossbar:not([hidden])) #toast{top:25%}
+/* 標題畫面在小螢幕上縮小排版 */
+@container (max-width:560px){
+  #title{gap:4px}
+  .tt-sub{display:none}
+  #title h1{font-size:clamp(20px,9cqw,40px)}
+  .tt-slots{gap:4px}
+  .tt-slots button{min-width:0;padding:1px 7px;font-size:10px;line-height:1.3}
+  .tt-slots button .sub{display:none}
+  .tt-menu{gap:4px}
+  .tt-menu button{font-size:12px;padding:2px 8px}
+}
+/* 手機：圖卡用整個螢幕顯示 */
+@media (max-width:700px),(hover:none) and (pointer:coarse){#cgOv{position:fixed;z-index:60}}
+/* 手機直拿：圖卡上的字太小，下面再用大一點的字寫一次 */
+@media (max-width:700px) and (orientation:portrait){
+  #cgOv .cgBox.card{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+  #cgOv .cgBox.card .cgFrame{width:100%}
+  #cgOv .cgBox.card .cgFrame img{position:static;width:100%;height:auto;max-height:none;margin:0}
+  #cgOv .cgBox.card .cgTxt{display:block;color:#d6d4de;font-size:15px;line-height:1.7;padding:0 14px;min-height:0}
+}
 
 /* Overlays */
 .ov{position:fixed;inset:0;background:rgba(8,5,7,.82);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;box-sizing:border-box}
@@ -2632,6 +2666,7 @@ function sideOptions(id){
       if(id==='ji'&&q.st!=='on'&&!hasItem('potion')&&(ch<5||F.post))add('再要一瓶試作藥水',async()=>{await say('ji','上癮了？也是啦，畢竟是我做的～拿去，裡面一樣加了個人秘方喔。');await say('ji','成分？下一題～');addItem('potion')});
       if(q.st==='on'){
         if(id==='lala'&&(q.got||[]).length>=SLIMES.length)add('史萊姆鬆餅都抓回來了',lalaDone);
+        {const pr=questProgress(id,q);if(pr)add('報告進度',pr)}
         if(id==='shisho'&&(q.got||[]).length>=BOOK_N)add('把書交給司書',shishoDone);
         if(id==='ji'&&q.tested.some(k=>!q.rep.includes(k)))add('報告藥水的實驗結果',jiReport);
         if(id==='ji'&&!hasItem('potion'))add('再要一瓶藥水',async()=>{await say('ji','弄丟了？你的手是裝飾品嗎？真拿你沒辦法，這瓶給你。');addItem('potion')});
@@ -2643,6 +2678,20 @@ function sideOptions(id){
   if(id==='sui'&&qGet('sui')&&qGet('sui').st==='done'&&NPCS.sui.state!=='nohead')add('跟翠和羊駝賽跑（花園迷宮）',suiRace);
   if(F.post&&QUESTS[id]){const q=qGet(id);if(q&&(q.st==='done'||q.st==='alt'))add(`再玩一次「${QUESTS[id].t}」，解另一條結局`,()=>replayQuest(id),1)}
   return L;
+}
+/* 收集型支線：還沒收集完也可以回去報告進度，順便問剩下的在哪裡 */
+function questProgress(id,q){
+  const where=list=>{const u=[...new Set(list.map(sc=>SCENES[sc]&&SCENES[sc].name).filter(Boolean))];return u.length>3?u.slice(0,3).join('、')+'那幾個地方':u.join('、')};
+  const left=k=>PROPS.filter(p=>p.q===k&&!(q.got||[]).includes(p.id)).map(p=>p.sc);
+  if(id==='lala'){const n=(q.got||[]).length;if(n>=SLIMES.length)return null;const sc=SLIMES.filter(x=>!q.got.includes(x.id)).map(x=>x.sc);
+    return()=>say('lala',`目前抓回來 ${n}／${SLIMES.length} 坨了！剩下的好像還在${where(sc)}跑來跑去，麻煩你了！`)}
+  if(id==='shisho'){const n=(q.got||[]).length;if(n>=BOOK_N)return null;
+    return async()=>{await say('shisho',`${n}／${BOOK_N} 本。不夠。`);await say('shisho',`剩下的味道，從${where(left('shisho'))}飄過來。去那邊翻翻。`)}}
+  if(id==='sui'){const n=(q.got||[]).length,N=Object.keys(FEEDS).length;if(n>=N)return null;
+    return()=>say('sui',`糧草 ${n}／${N} 份！剩下的應該在${where(left('sui'))}，快去找啦！`)}
+  if(id==='kaicho'){const k=kq();if(!k||k.real>=CANS_N)return null;
+    return async()=>{await say('kaicho',`已經幫我找到 ${k.real} 瓶了嗎？謝謝你，不用急的。`);const l=left('kaicho');if(l.length)await say('kaicho',`我記得${where(l)}，好像還藏著幾瓶。`);if(k.unk.length)await say('kaicho','還沒檢查過的那幾瓶，記得聞一聞再拿來喔。')}}
+  return null;
 }
 function sideOption(id){const o=sideOptions(id)[0];return o?[o[0],o[1]]:null}
 function sideExtra(id){return null}
@@ -4208,7 +4257,7 @@ function showCG(id){
       $('cgLoc').textContent='地點：'+c.loc;tx.textContent='';tx.style.whiteSpace='pre-line';
       ov.hidden=false;dlg.hidden=true;clearPorts();sfx('ach');img.classList.add('on');
       if(card){/* 圖卡右上角畫好的 SKIP：蓋一個看不見的按鈕 */
-        Object.assign(hot.style,{left:'74%',top:'5.5%',width:'16.5%',height:'5.5%'});hot.hidden=false;shown=1;full='x';
+        Object.assign(hot.style,{left:'74%',top:'5.5%',width:'16.5%',height:'5.5%'});hot.hidden=false;shown=1;full='x';tx.textContent=c.lines.join('\n');tx.style.color='';
         const place=()=>{const r=img.getBoundingClientRect(),pr=ov.getBoundingClientRect();Object.assign(hot.style,{left:(r.left-pr.left+r.width*.742)+'px',top:(r.top-pr.top+r.height*.056)+'px',width:r.width*.163+'px',height:r.height*.052+'px'})};requestAnimationFrame(place);setTimeout(place,120);
       }else{full=c.lines.join('\n');timer=setInterval(()=>{shown++;tx.textContent=full.slice(0,shown);if(shown>=full.length)clearInterval(timer)},45)}
     };
@@ -7023,7 +7072,7 @@ function render(){
   }
   if(mode==='play'&&S&&!busy){
     for(const [id,o] of Object.entries(NPCS)){if(o.scene!==key)continue;
-      const need=(chOf()===0&&S.flags.gathered&&PRE_IDS.includes(id)&&!S.flags['p_'+id])||(qGet(id)&&sideOption(id));
+      const need=(chOf()===0&&S.flags.gathered&&PRE_IDS.includes(id)&&!S.flags['p_'+id])||(!!NPCS[id]&&sideOptions(id).some(o=>o[0]!=='報告進度'));
       if(need){const[bx,by]=npcPos(o);bubble(bx-cx,by-cy-(id==='ji'?22:16))}}
   }
   if(mode==='play'&&S&&!busy)for(const k in SEARCH){
@@ -7194,7 +7243,7 @@ function slotInfo(i){
 function renderSlots(){
   const box=$('tSlots');box.innerHTML='';
   for(let i=0;i<3;i++){const inf=slotInfo(i),b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.setAttribute('aria-checked',i===SLOT);b.className=i===SLOT?'on':'';
-    b.innerHTML=`<b>存檔 ${i+1}　${inf.t.replace(/[<>&]/g,'')}</b>${inf.sub}`;b.onclick=()=>pickSlot(i);box.append(b)}
+    b.innerHTML=`<b>存檔 ${i+1}　${inf.t.replace(/[<>&]/g,'')}</b><span class="sub">${inf.sub}</span>`;b.title=inf.sub;b.onclick=()=>pickSlot(i);box.append(b)}
 }
 function pickSlot(i){SLOT=i;ls.set('eod_hw_cabin_slot',String(i));setupSel=loadLook();renderSlots();$('tCont').disabled=!loadSave();$('tChap').disabled=!CHAP_NAMES.some((_,n)=>chapterGet(n))}
 function toTitle(){
@@ -7329,8 +7378,9 @@ $('stage').addEventListener('click',e=>{if(mode==='play'&&e.target===cv){if(hudT
 
 /* 啟動 */
 function sizeStage(){
-  const avail=window.innerHeight-(window.matchMedia('(max-width:700px), (hover:none) and (pointer:coarse)').matches?230:124);
-  const w=Math.max(280,Math.min(960,avail*320/208));
+  const land=window.matchMedia('(orientation:landscape) and (max-height:520px)').matches;
+  const avail=window.innerHeight-(land?52:window.matchMedia('(max-width:700px), (hover:none) and (pointer:coarse)').matches?230:124);
+  const w=land?Math.max(240,Math.min(avail*320/208,window.innerWidth-2*(Math.min(190,window.innerWidth*.24)))):Math.max(280,Math.min(960,avail*320/208));
   document.documentElement.style.setProperty('--stageW',Math.round(w)+'px');
 }
 window.addEventListener('resize',sizeStage);sizeStage();
