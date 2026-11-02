@@ -2459,7 +2459,7 @@ async function gatherScene(){
 /* ---------------- 破關後：回到宅邸，重玩支線 ---------------- */
 function goPost(){
   if(!S)return;$('ending').hidden=true;$('credits').hidden=true;
-  const F=S.flags;F.post=1;F.ch=5;F.finalDone=1;S.scene='hall';[S.x,S.y]=toNew('hall',10,8);S.v=2;S.dir='down';S.hp=99;
+  const F=S.flags;F.post=1;F.ch=5;F.finalDone=1;F.bossMaze=true;/* 稻草人沒打過的話，破關後也留下乾草堆和鑰匙，糖果倉庫才進得去 */S.scene='hall';[S.x,S.y]=toNew('hall',10,8);S.v=2;S.dir='down';S.hp=99;
   startPlay(false);save();
   run(async()=>{await n('陽光灑進大廳。大家好像都還不急著回家。');
     await n('還沒解完的委託，或是想換個做法重新挑戰的支線，都可以再去找大家聊聊。（找東西的位置，每次重玩都會換地方。）')});
@@ -5508,12 +5508,14 @@ const sc=()=>SCENES[S?S.scene:'outside'];
 function tileAt(x,y){const s=sc();if(y<0||y>=s.h||x<0||x>=s.w)return'#';return s.map[y][x]}
 function npcAt(x,y){for(const [id,o] of Object.entries(NPCS))if(o.scene===S.scene&&o.x===x&&o.y===y)return id;return null}
 const SIGN={scene:'maze',x:15,y:8};
+/* 儲藏室：只有小波被關在裡面的時候（第二幕發現他不見之前）才鎖著 */
+const storageOpen=()=>!(chOf()===2&&!S.flags.disc2);
 function walkable(x,y){
   if(CB.lock&&CB.lock.has(x+','+y))return false;
   const[ox,oy]=toOld(S.scene,x,y);
   if(S.scene==='f2'&&ox===9&&oy===1)return!!S.flags.atticOpen;
-  if(S.scene==='kitchen'&&ox===0&&oy===3)return chOf()===2&&!!S.flags.disc2;
-  if(S.scene==='chapel'&&ox===14&&oy===9)return chOf()===4&&!!S.flags.ded4;
+  if(S.scene==='kitchen'&&ox===0&&oy===3)return storageOpen();
+  if(S.scene==='chapel'&&ox===14&&oy===9)return(chOf()===4&&!!S.flags.ded4)||chOf()>=5;
   if(hintSpot(x,y))return false;
   if(secretAt(x,y))return false;
   if(lostAt(x,y)||gearAt(x,y)||pfAt(x,y)||bedAt(x,y)||hallObj(S.scene,x,y))return false;
@@ -6241,7 +6243,7 @@ const SECRETS=[
   {id:'chapel',a:{sc:'exhibit',t:[[2,9]],land:[2,10,'down']},b:{sc:'chapel',t:[[1,13]],land:[2,13,'right']}},
   {id:'maze',a:{sc:'roomR',t:[[15,2],[16,2]],land:[15,3,'down']},b:{sc:'maze',t:[[1,20]],land:[2,20,'right']}},
   {id:'cell',a:{sc:'storage',t:[[2,4]],land:[3,4,'left']},b:{sc:'cell',land:[9,1,'left']}},
-  {id:'crypt',a:{sc:'cell',t:[[11,4]],land:[10,4,'left']},b:{sc:'crypt',t:[[0,10]],land:[1,10,'right']},gate:()=>chOf()>=4&&!!S.flags.ded4},
+  {id:'crypt',a:{sc:'cell',t:[[11,4]],land:[10,4,'left']},b:{sc:'crypt',t:[[0,10]],land:[1,10,'right']},gate:()=>(chOf()>=4&&!!S.flags.ded4)||chOf()>=5},
 ];
 const SEC_T={
   chapel:{a:[['這個書架上，有一本書比其他的凸出來一點。','書背上沒有字。'],'把書推回去','喀。書架往旁邊滑開了——後面是一條往下的石階，飄出一股蠟燭和舊木頭的味道。'],
@@ -6382,7 +6384,8 @@ function objectAt(nx,ny){
   if(s==='chapel'&&x===14&&y===10)return async()=>{
     if(!hasEv('blood')){await n('角落擺著一個小冷藏箱，上面貼著協會的紅十字。');await n('裡面整整齊齊放著好幾袋醫療用血袋。標籤寫著：「會長的備用口糧——他不會自己喝，請大家盯著他喝。」');await n('一袋都沒少。');addEv('blood')}
     else await n('冷藏箱裡的血袋，一袋都沒少。')};
-  if(s==='kitchen'&&x===0&&y===3&&!(chOf()===2&&S.flags.disc2))return()=>n('儲藏室的門。拉拉說裡面只有麵粉和果醬。');
+  if(s==='kitchen'&&x===0&&y===3&&!storageOpen())return()=>n('儲藏室的門鎖著。小波被關在裡面，門縫底下傳出細細的打呼聲。');
+  if(s==='storage'&&x===8&&y===5&&chOf()!==2)return()=>n('儲藏室的門。從裡面看，門鎖跟門板都好好的。');
   if(s==='storage'&&x===8&&y===5)return async()=>{
     if(!hasEv('lock')){await n('你從裡面仔細檢查儲藏室的門。');await n('門鎖沒有被撬過的刮痕，門板也完好無缺。');await n('牆上唯一的通風口只有手掌大，還封著一層完整的蜘蛛網。');await n('架子的釘子上，勾著幾根白色的線頭。跟那塊破布是同一種布料。');addEv('lock')}
     else await n('完好的門鎖。這扇門沒有被人從外面打開過。')};
