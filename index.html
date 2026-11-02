@@ -2264,6 +2264,17 @@ function sceneReach(blocked){
 function shufflePropPos(qid){
   if(!S)return;S.propPos=S.propPos||{};
   const keepSc=S.scene,keepCh=S.flags.ch,byScene={};
+  /* 每一章 NPC 會站的地方、巡邏經過的點，都不要放東西（不然會被 NPC 擋住、按下去變成跟人說話） */
+  const npcSpots=new Set(),keepF={...S.flags};
+  try{for(const v of[{ch:0},{ch:0,metAll:1},{ch:0,gathered:1,metAll:1},{ch:1},{ch:1,discovered:1,poAwake:1},{ch:2},{ch:2,disc2:1,poFell2:1},{ch:3},{ch:3,suiBack:1},{ch:4},{ch:5},{ch:5,post:1}]){
+    Object.assign(S.flags,v);applyWorld();
+    for(const o of Object.values(NPCS)){if(!o.scene)continue;const pts=[[o.x,o.y],...(o.patrol||[])];
+      const add=(x,y)=>{for(const[dx,dy]of[[0,0],[1,0],[-1,0],[0,1],[0,-1]])npcSpots.add(o.scene+':'+(x+dx)+','+(y+dy))};
+      const lp=o.patrol&&o.patrol.length?[...o.patrol,o.patrol[0]]:[];
+      for(const[x,y]of pts)add(x,y);
+      for(let i=1;i<lp.length;i++){let[x,y]=lp[i-1];const[tx,ty]=lp[i];while(x!==tx){add(x,y);x+=Math.sign(tx-x)}while(y!==ty){add(x,y);y+=Math.sign(ty-y)}add(x,y)}}
+    for(const k of Object.keys(v))if(!(k in keepF))delete S.flags[k];Object.assign(S.flags,keepF)}}
+  finally{for(const k of Object.keys(S.flags))if(!(k in keepF))delete S.flags[k];Object.assign(S.flags,keepF);applyWorld()}
   PROPS.forEach((p,i)=>{if(propMovable(p)&&(!qid||p.q===qid))(byScene[PROP_HOME[i][0]]=byScene[PROP_HOME[i][0]]||[]).push(p)});
   try{
     for(const[scn,list]of Object.entries(byScene)){
@@ -2273,7 +2284,7 @@ function shufflePropPos(qid){
       const exits=s.exitsN.map(e=>e[0]+','+e[1]);
       const nearExit=(x,y)=>exits.some(k=>{const[a,b]=k.split(',').map(Number);return Math.abs(a-x)+Math.abs(b-y)<=2});
       const others=new Set(PROPS.filter(p=>p.sc===scn&&!list.includes(p)).map(p=>p.x+','+p.y));
-      const cand=[...r0].filter(k=>{if(!r4.has(k)||others.has(k))return false;const[x,y]=k.split(',').map(Number);const c=tileAt(x,y);
+      const cand=[...r0].filter(k=>{if(!r4.has(k)||others.has(k)||npcSpots.has(scn+':'+k))return false;const[x,y]=k.split(',').map(Number);const c=tileAt(x,y);
         return c&&c!=='X'&&c!=='D'&&!nearExit(x,y)&&walkable(x,y)&&!npcAt(x,y)&&!spotBusy(scn,x,y)&&!(LOST.some(l=>l.sc===scn&&Math.abs(l.x-x)+Math.abs(l.y-y)<2))&&!GEAR.some(g=>g.sc===scn&&Math.abs(g.x-x)+Math.abs(g.y-y)<2)&&!(scn===keepSc&&Math.abs(P.x-x)+Math.abs(P.y-y)<3)});
       const placed=new Set();
       for(const p of list){
